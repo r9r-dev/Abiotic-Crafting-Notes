@@ -1,0 +1,97 @@
+{
+  "crafting_bench": {
+    "id": "crafting_bench",
+    "name": "Crafting Bench",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_craftingbench.png",
+    "category": "Furniture and Benches",
+    "weight": 30,
+    "stack_size": 1,
+    "durability": 1500,
+    "variants": [
+      {
+        "ingredients": [
+          {"item_id": "duct_tape", "item_name": "Duct Tape", "quantity": 4},
+          {"item_id": "power_supply_unit", "item_name": "Power Supply Unit", "quantity": 1},
+          {"item_id": "metal_pipe", "item_name": "Metal Pipe", "quantity": 2}
+        ],
+        "station": null
+      },
+      {
+        "ingredients": [
+          {"item_id": "duct_tape", "item_name": "Duct Tape", "quantity": 4},
+          {"item_id": "power_supply_unit", "item_name": "Power Supply Unit", "quantity": 1},
+          {"item_id": "hydro_pipe", "item_name": "Hydro Pipe", "quantity": 2}
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": "Metal Scrap",
+    "repair_quantity": 1,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Crafting_Bench"
+  },
+  "duct_tape": {
+    "id": "duct_tape",
+    "name": "Duct Tape",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_ducttape.png",
+    "category": "Resources and Sub-components",
+    "weight": 0.1,
+    "stack_size": 50,
+    "durability": null,
+    "variants": [],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Duct_Tape"
+  },
+  "power_supply_unit": {
+    "id": "power_supply_unit",
+    "name": "Power Supply Unit",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_psu.png",
+    "category": "Resources and Sub-components",
+    "weight": 2,
+    "stack_size": 10,
+    "durability": null,
+    "variants": [],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Power_Supply_Unit"
+  },
+  "metal_pipe": {
+    "id": "metal_pipe",
+    "name": "Metal Pipe",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_metalpipe.png",
+    "category": "Resources and Sub-components",
+    "weight": 1,
+    "stack_size": 20,
+    "durability": null,
+    "variants": [],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Metal_Pipe"
+  },
+  "hydro_pipe": {
+    "id": "hydro_pipe",
+    "name": "Hydro Pipe",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_hydropipe.png",
+    "category": "Resources and Sub-components",
+    "weight": 1,
+    "stack_size": 20,
+    "durability": null,
+    "variants": [],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Hydro_Pipe"
+  },
+  "metal_scrap": {
+    "id": "metal_scrap",
+    "name": "Metal Scrap",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_metalscrap.png",
+    "category": "Resources and Sub-components",
+    "weight": 0.5,
+    "stack_size": 50,
+    "durability": null,
+    "variants": [],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Metal_Scrap"
+  }
+}

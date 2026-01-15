@@ -1,0 +1,203 @@
+import { useState } from "react";
+import type { Recipe, DependencyNode, ResourceCalculation } from "@/types";
+import type { RecipeSearchResult } from "@/types";
+import { getRecipe, getDependencies, getResources } from "@/services/api";
+import { RecipeSearch } from "@/components/RecipeSearch";
+import { DependencyTree } from "@/components/DependencyTree";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ExternalLink, Package, Hammer } from "lucide-react";
+
+export function RecipesPage() {
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [dependencies, setDependencies] = useState<DependencyNode | null>(null);
+  const [resources, setResources] = useState<ResourceCalculation[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleSelect = async (recipe: RecipeSearchResult) => {
+    setLoading(true);
+    try {
+      const [recipeData, deps, res] = await Promise.all([
+        getRecipe(recipe.id),
+        getDependencies(recipe.id),
+        getResources(recipe.id),
+      ]);
+      setSelectedRecipe(recipeData);
+      setDependencies(deps);
+      setResources(res);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      {/* Search panel */}
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">Recherche de recettes</h1>
+        <RecipeSearch onSelect={(recipe) => handleSelect(recipe)} />
+      </div>
+
+      {/* Detail panel */}
+      <div className="space-y-4">
+        {loading && (
+          <Card>
+            <CardContent className="p-6 text-center text-muted-foreground">
+              Chargement...
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && !selectedRecipe && (
+          <Card>
+            <CardContent className="p-6 text-center text-muted-foreground">
+              Selectionnez une recette pour voir les details
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && selectedRecipe && (
+          <>
+            {/* Recipe info */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-start gap-4">
+                  {selectedRecipe.icon_url && (
+                    <img
+                      src={selectedRecipe.icon_url}
+                      alt={selectedRecipe.name}
+                      className="h-16 w-16 object-contain"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <CardTitle className="flex items-center gap-2">
+                      {selectedRecipe.name}
+                      {selectedRecipe.wiki_url && (
+                        <a
+                          href={selectedRecipe.wiki_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                    </CardTitle>
+                    <Badge variant="secondary" className="mt-1">
+                      {selectedRecipe.category}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  {selectedRecipe.weight && (
+                    <div>
+                      <p className="text-muted-foreground">Poids</p>
+                      <p>{selectedRecipe.weight}</p>
+                    </div>
+                  )}
+                  {selectedRecipe.stack_size && (
+                    <div>
+                      <p className="text-muted-foreground">Taille pile</p>
+                      <p>{selectedRecipe.stack_size}</p>
+                    </div>
+                  )}
+                  {selectedRecipe.durability && (
+                    <div>
+                      <p className="text-muted-foreground">Durabilite</p>
+                      <p>{selectedRecipe.durability}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Crafting info */}
+            {selectedRecipe.variants.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Hammer className="h-4 w-4" />
+                    Recette de craft
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="recipe">
+                    <TabsList>
+                      <TabsTrigger value="recipe">Ingredients</TabsTrigger>
+                      <TabsTrigger value="tree">Arbre</TabsTrigger>
+                      <TabsTrigger value="total">Total</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="recipe" className="space-y-4">
+                      {selectedRecipe.variants.map((variant, i) => (
+                        <div key={i} className="space-y-2">
+                          {variant.station && (
+                            <p className="text-xs text-muted-foreground">
+                              Station: {variant.station}
+                            </p>
+                          )}
+                          <div className="space-y-1">
+                            {variant.ingredients.map((ing, j) => (
+                              <div
+                                key={j}
+                                className="flex items-center justify-between text-sm"
+                              >
+                                <span>{ing.item_name}</span>
+                                <span className="text-muted-foreground">
+                                  x{ing.quantity}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                          {i < selectedRecipe.variants.length - 1 && (
+                            <div className="text-center text-xs text-muted-foreground">
+                              - ou -
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </TabsContent>
+
+                    <TabsContent value="tree">
+                      {dependencies && <DependencyTree node={dependencies} />}
+                    </TabsContent>
+
+                    <TabsContent value="total" className="space-y-2">
+                      <p className="text-xs text-muted-foreground">
+                        Ressources de base necessaires:
+                      </p>
+                      {resources.map((res) => (
+                        <div
+                          key={res.item_id}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="flex items-center gap-2">
+                            <Package className="h-3 w-3 text-muted-foreground" />
+                            {res.item_name}
+                          </span>
+                          <span className="font-mono text-primary">
+                            x{res.total_quantity}
+                          </span>
+                        </div>
+                      ))}
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
