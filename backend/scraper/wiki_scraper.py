@@ -74,15 +74,26 @@ def slugify(name: str) -> str:
     return re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')
 
 
-def fetch_page(url: str) -> BeautifulSoup | None:
-    """Fetch and parse a wiki page."""
-    try:
-        response = httpx.get(url, timeout=30, follow_redirects=True)
-        response.raise_for_status()
-        return BeautifulSoup(response.text, 'lxml')
-    except Exception as e:
-        print(f"Error fetching {url}: {e}")
-        return None
+def fetch_page(url: str, retries: int = 3) -> BeautifulSoup | None:
+    """Fetch and parse a wiki page with retry on rate limit."""
+    for attempt in range(retries):
+        try:
+            response = httpx.get(url, timeout=30, follow_redirects=True)
+            response.raise_for_status()
+            return BeautifulSoup(response.text, 'lxml')
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 429:
+                wait_time = 5 * (attempt + 1)
+                print(f"Rate limited, waiting {wait_time}s...")
+                time.sleep(wait_time)
+                continue
+            print(f"Error fetching {url}: {e}")
+            return None
+        except Exception as e:
+            print(f"Error fetching {url}: {e}")
+            return None
+    print(f"Failed after {retries} retries: {url}")
+    return None
 
 
 def get_items_from_category(category: str) -> list[tuple[str, str, str]]:
@@ -204,7 +215,7 @@ def scrape_all() -> dict[str, dict]:
                 all_recipes[recipe.id] = asdict(recipe)
 
             # Rate limiting
-            time.sleep(0.5)
+            time.sleep(1.5)  # Rate limiting - be nice to the wiki
 
     return all_recipes
 

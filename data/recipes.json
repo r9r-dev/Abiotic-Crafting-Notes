@@ -1,97 +1,443 @@
 {
-  "crafting_bench": {
-    "id": "crafting_bench",
-    "name": "Crafting Bench",
-    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_craftingbench.png",
-    "category": "Furniture and Benches",
-    "weight": 30,
-    "stack_size": 1,
-    "durability": 1500,
+  "glass_scrap": {
+    "id": "glass_scrap",
+    "name": "Glass Scrap",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_scrap_glass.png/24px-Itemicon_scrap_glass.png?907eba",
+    "category": "Resources and Sub-components",
+    "weight": 0.2,
+    "stack_size": 64,
+    "durability": null,
     "variants": [
       {
         "ingredients": [
-          {"item_id": "duct_tape", "item_name": "Duct Tape", "quantity": 4},
-          {"item_id": "power_supply_unit", "item_name": "Power Supply Unit", "quantity": 1},
-          {"item_id": "metal_pipe", "item_name": "Metal Pipe", "quantity": 2}
-        ],
-        "station": null
-      },
-      {
-        "ingredients": [
-          {"item_id": "duct_tape", "item_name": "Duct Tape", "quantity": 4},
-          {"item_id": "power_supply_unit", "item_name": "Power Supply Unit", "quantity": 1},
-          {"item_id": "hydro_pipe", "item_name": "Hydro Pipe", "quantity": 2}
+          {
+            "item_id": "carbon_plating",
+            "item_name": "Carbon Plating",
+            "quantity": 1
+          },
+          {
+            "item_id": "sow_skull",
+            "item_name": "Sow Skull",
+            "quantity": 1
+          },
+          {
+            "item_id": "metal_scrap",
+            "item_name": "Metal Scrap",
+            "quantity": 1
+          },
+          {
+            "item_id": "carapace_helm",
+            "item_name": "Carapace Helm",
+            "quantity": 1
+          }
         ],
         "station": null
       }
     ],
-    "repair_material": "Metal Scrap",
-    "repair_quantity": 1,
-    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Crafting_Bench"
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Glass_Scrap"
   },
-  "duct_tape": {
-    "id": "duct_tape",
-    "name": "Duct Tape",
-    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_ducttape.png",
+  "air_compressor": {
+    "id": "air_compressor",
+    "name": "Air Compressor",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_aircompressor.png/24px-Itemicon_aircompressor.png?8eb939",
+    "category": "Resources and Sub-components",
+    "weight": 2.0,
+    "stack_size": 1,
+    "durability": null,
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "canister",
+            "item_name": "Canister",
+            "quantity": 1
+          },
+          {
+            "item_id": "pressure_gauge",
+            "item_name": "Pressure Gauge",
+            "quantity": 1
+          },
+          {
+            "item_id": "reinforced_hose",
+            "item_name": "Reinforced Hose",
+            "quantity": 1
+          },
+          {
+            "item_id": "chain",
+            "item_name": "Chain",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Air_Compressor"
+  },
+  "agents_of_the_deceiver": {
+    "id": "agents_of_the_deceiver",
+    "name": "Agents of the Deceiver",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_book_SalemTome.png/128px-Itemicon_book_SalemTome.png?d18179",
+    "category": "Resources and Sub-components",
+    "weight": 0.25,
+    "stack_size": 1,
+    "durability": null,
+    "variants": [],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Agents_of_the_Deceiver"
+  },
+  "aloe": {
+    "id": "aloe",
+    "name": "Aloe",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_aloe.png/128px-Itemicon_aloe.png?2100b8",
     "category": "Resources and Sub-components",
     "weight": 0.1,
-    "stack_size": 50,
+    "stack_size": 64,
     "durability": null,
-    "variants": [],
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "beeswax",
+            "item_name": "Beeswax",
+            "quantity": 1
+          },
+          {
+            "item_id": "silky_bait",
+            "item_name": "Silky Bait",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
     "repair_material": null,
     "repair_quantity": null,
-    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Duct_Tape"
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Aloe"
   },
-  "power_supply_unit": {
-    "id": "power_supply_unit",
-    "name": "Power Supply Unit",
-    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_psu.png",
+  "anomaly": {
+    "id": "anomaly",
+    "name": "Anomaly",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_anomaly.png/128px-Itemicon_anomaly.png?730c0a",
     "category": "Resources and Sub-components",
-    "weight": 2,
-    "stack_size": 10,
+    "weight": 0.2,
+    "stack_size": 32,
     "durability": null,
-    "variants": [],
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "bio_scrap",
+            "item_name": "Bio Scrap",
+            "quantity": 1
+          },
+          {
+            "item_id": "anomalous_compost_t1",
+            "item_name": "Anomalous Compost (T1)",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
     "repair_material": null,
     "repair_quantity": null,
-    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Power_Supply_Unit"
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Anomaly"
   },
-  "metal_pipe": {
-    "id": "metal_pipe",
-    "name": "Metal Pipe",
-    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_metalpipe.png",
-    "category": "Resources and Sub-components",
-    "weight": 1,
-    "stack_size": 20,
-    "durability": null,
-    "variants": [],
-    "repair_material": null,
-    "repair_quantity": null,
-    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Metal_Pipe"
-  },
-  "hydro_pipe": {
-    "id": "hydro_pipe",
-    "name": "Hydro Pipe",
-    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_hydropipe.png",
-    "category": "Resources and Sub-components",
-    "weight": 1,
-    "stack_size": 20,
-    "durability": null,
-    "variants": [],
-    "repair_material": null,
-    "repair_quantity": null,
-    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Hydro_Pipe"
-  },
-  "metal_scrap": {
-    "id": "metal_scrap",
-    "name": "Metal Scrap",
-    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_metalscrap.png",
+  "anteverse_gel": {
+    "id": "anteverse_gel",
+    "name": "Anteverse Gel",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_anteverse_gel.png/128px-Itemicon_anteverse_gel.png?5639fb",
     "category": "Resources and Sub-components",
     "weight": 0.5,
-    "stack_size": 50,
+    "stack_size": 64,
+    "durability": null,
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "powdered_crystal",
+            "item_name": "Powdered Crystal",
+            "quantity": 1
+          },
+          {
+            "item_id": "anomaly",
+            "item_name": "Anomaly",
+            "quantity": 1
+          },
+          {
+            "item_id": "anomalous_fertilizer_t2",
+            "item_name": "Anomalous Fertilizer (T2)",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Anteverse_Gel"
+  },
+  "anteverse_gem": {
+    "id": "anteverse_gem",
+    "name": "Anteverse Gem",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_crystal.png/128px-Itemicon_crystal.png?ae5b95",
+    "category": "Resources and Sub-components",
+    "weight": 0.6,
+    "stack_size": 32,
+    "durability": null,
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "optic_lens",
+            "item_name": "Optic Lens",
+            "quantity": 1
+          },
+          {
+            "item_id": "stapler",
+            "item_name": "Stapler",
+            "quantity": 1
+          },
+          {
+            "item_id": "liquid_crystal",
+            "item_name": "Liquid Crystal",
+            "quantity": 1
+          },
+          {
+            "item_id": "projection_matrix",
+            "item_name": "Projection Matrix",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Anteverse_Gem"
+  },
+  "anvil": {
+    "id": "anvil",
+    "name": "Anvil",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_anvil.png/128px-Itemicon_anvil.png?4fa083",
+    "category": "Resources and Sub-components",
+    "weight": 6.0,
+    "stack_size": 1,
+    "durability": null,
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "duct_tape",
+            "item_name": "Duct Tape",
+            "quantity": 1
+          },
+          {
+            "item_id": "coil",
+            "item_name": "Coil",
+            "quantity": 1
+          },
+          {
+            "item_id": "metal_pipe",
+            "item_name": "Metal Pipe",
+            "quantity": 1
+          },
+          {
+            "item_id": "repair_and_salvage_station",
+            "item_name": "Repair and Salvage Station",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Anvil"
+  },
+  "arcane_scrap": {
+    "id": "arcane_scrap",
+    "name": "Arcane Scrap",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_scrap_arcane.png/128px-Itemicon_scrap_arcane.png?cb7601",
+    "category": "Resources and Sub-components",
+    "weight": 0.2,
+    "stack_size": 64,
+    "durability": null,
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "bio_mimic_armwraps",
+            "item_name": "Bio-Mimic Armwraps",
+            "quantity": 1
+          },
+          {
+            "item_id": "heart_of_corruption",
+            "item_name": "Heart of Corruption",
+            "quantity": 1
+          },
+          {
+            "item_id": "flickering_eye",
+            "item_name": "Flickering Eye",
+            "quantity": 1
+          },
+          {
+            "item_id": "bio_fusion_imitator",
+            "item_name": "Bio-Fusion Imitator",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Arcane_Scrap"
+  },
+  "axle_grease": {
+    "id": "axle_grease",
+    "name": "Axle Grease",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_grease.png/128px-Itemicon_grease.png?62446b",
+    "category": "Resources and Sub-components",
+    "weight": 0.3,
+    "stack_size": 64,
     "durability": null,
     "variants": [],
     "repair_material": null,
     "repair_quantity": null,
-    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Metal_Scrap"
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Axle_Grease"
+  },
+  "bag_of_feces": {
+    "id": "bag_of_feces",
+    "name": "Bag of Feces",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_baggedpoop.png/128px-Itemicon_baggedpoop.png?dc87e3",
+    "category": "Resources and Sub-components",
+    "weight": 1.0,
+    "stack_size": 16,
+    "durability": null,
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "giga_glue",
+            "item_name": "Giga Glue",
+            "quantity": 1
+          },
+          {
+            "item_id": "solder_material",
+            "item_name": "Solder (Material)",
+            "quantity": 1
+          },
+          {
+            "item_id": "brown_paint",
+            "item_name": "Brown Paint",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Bag_of_Feces"
+  },
+  "quantum_glass": {
+    "id": "quantum_glass",
+    "name": "Quantum Glass",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_quantumglass.png/128px-Itemicon_quantumglass.png?893358",
+    "category": "Resources and Sub-components",
+    "weight": 1.0,
+    "stack_size": 32,
+    "durability": null,
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "anteverse_gem",
+            "item_name": "Anteverse Gem",
+            "quantity": 1
+          },
+          {
+            "item_id": "glass_scrap",
+            "item_name": "Glass Scrap",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Quantum_Glass"
+  },
+  "salt_rock": {
+    "id": "salt_rock",
+    "name": "Salt Rock",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_saltrock1.png/128px-Itemicon_saltrock1.png?bf26c2",
+    "category": "Resources and Sub-components",
+    "weight": 0.25,
+    "stack_size": 16,
+    "durability": null,
+    "variants": [],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Salt_Rock"
+  },
+  "the_diary_of_niketas_1": {
+    "id": "the_diary_of_niketas_1",
+    "name": "The Diary of Niketas - 1",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_book_SalemTome.png/128px-Itemicon_book_SalemTome.png?d18179",
+    "category": "Resources and Sub-components",
+    "weight": 0.25,
+    "stack_size": 1,
+    "durability": null,
+    "variants": [],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/The_Diary_of_Niketas_-_1"
+  },
+  "yeti_fur": {
+    "id": "yeti_fur",
+    "name": "Yeti Fur",
+    "icon_url": "https://abioticfactor.wiki.gg/images/thumb/Itemicon_yetifur.png/128px-Itemicon_yetifur.png?f5a425",
+    "category": "Resources and Sub-components",
+    "weight": 0.2,
+    "stack_size": 32,
+    "durability": null,
+    "variants": [
+      {
+        "ingredients": [
+          {
+            "item_id": "refrigerator",
+            "item_name": "Refrigerator",
+            "quantity": 1
+          },
+          {
+            "item_id": "transformer_bushing",
+            "item_name": "Transformer Bushing",
+            "quantity": 1
+          },
+          {
+            "item_id": "coil_winding",
+            "item_name": "Coil Winding",
+            "quantity": 1
+          },
+          {
+            "item_id": "freezer",
+            "item_name": "Freezer",
+            "quantity": 1
+          }
+        ],
+        "station": null
+      }
+    ],
+    "repair_material": null,
+    "repair_quantity": null,
+    "wiki_url": "https://abioticfactor.wiki.gg/wiki/Yeti_Fur"
   }
 }
