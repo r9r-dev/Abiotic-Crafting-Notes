@@ -163,4 +163,4 @@ Configurer Pangolin pour abiotic.hellonowork.com -> abiotic-frontend:80
 
 ## Version actuelle
 
-v1.0.1 - Corrections accents et responsive mobile
+v1.0.2 - Ajout logo et amélioration scraper

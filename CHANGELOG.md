@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.2] - 2025-01-15
+
+### Added
+- Logo Abiotic Factor dans le header (cliquable vers l'accueil)
+- Favicon avec le logo du jeu
+
+### Changed
+- Augmenter le délai du scraper à 5s pour éviter le rate limiting
+
 ## [v1.0.1] - 2025-01-15
 
 ### Fixed
