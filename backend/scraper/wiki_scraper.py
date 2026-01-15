@@ -74,8 +74,8 @@ def slugify(name: str) -> str:
     return re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')
 
 
-def fetch_page(url: str, retries: int = 3) -> BeautifulSoup | None:
-    """Fetch and parse a wiki page with retry on rate limit."""
+def fetch_page(url: str, retries: int = 5) -> BeautifulSoup | None:
+    """Fetch and parse a wiki page with retry on all errors."""
     for attempt in range(retries):
         try:
             response = httpx.get(url, timeout=30, follow_redirects=True)
@@ -83,16 +83,17 @@ def fetch_page(url: str, retries: int = 3) -> BeautifulSoup | None:
             return BeautifulSoup(response.text, 'lxml')
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 429:
+                wait_time = 10 * (attempt + 1)
+                print(f"  Rate limited, waiting {wait_time}s...")
+            else:
                 wait_time = 5 * (attempt + 1)
-                print(f"Rate limited, waiting {wait_time}s...")
-                time.sleep(wait_time)
-                continue
-            print(f"Error fetching {url}: {e}")
-            return None
+                print(f"  HTTP error {e.response.status_code}, retry {attempt + 1}/{retries} in {wait_time}s...")
+            time.sleep(wait_time)
         except Exception as e:
-            print(f"Error fetching {url}: {e}")
-            return None
-    print(f"Failed after {retries} retries: {url}")
+            wait_time = 5 * (attempt + 1)
+            print(f"  Error: {e}, retry {attempt + 1}/{retries} in {wait_time}s...")
+            time.sleep(wait_time)
+    print(f"  FAILED after {retries} retries: {url}")
     return None
 
 
@@ -199,9 +200,23 @@ def parse_item_page(name: str, icon_url: str, wiki_url: str, category: str) -> R
     return recipe
 
 
+def load_existing_recipes() -> dict[str, dict]:
+    """Load existing recipes from file if it exists."""
+    if OUTPUT_PATH.exists():
+        try:
+            with open(OUTPUT_PATH, 'r', encoding='utf-8') as f:
+                recipes = json.load(f)
+                print(f"Loaded {len(recipes)} existing recipes")
+                return recipes
+        except Exception as e:
+            print(f"Could not load existing recipes: {e}")
+    return {}
+
+
 def scrape_all() -> dict[str, dict]:
     """Scrape all items from the wiki."""
-    all_recipes = {}
+    # Load existing recipes to resume if interrupted
+    all_recipes = load_existing_recipes()
 
     for category in CATEGORIES:
         print(f"\n=== Scraping {category} ===")
@@ -209,6 +224,12 @@ def scrape_all() -> dict[str, dict]:
         print(f"Found {len(items)} items")
 
         for i, (name, icon_url, wiki_url) in enumerate(items):
+            item_id = slugify(name)
+            # Skip if already scraped
+            if item_id in all_recipes:
+                print(f"  [{i+1}/{len(items)}] {name} (already scraped)")
+                continue
+
             print(f"  [{i+1}/{len(items)}] {name}...")
             recipe = parse_item_page(name, icon_url, wiki_url, category)
             if recipe:
@@ -216,6 +237,10 @@ def scrape_all() -> dict[str, dict]:
 
             # Rate limiting
             time.sleep(5)  # Rate limiting - be nice to the wiki
+
+        # Save after each category
+        save_recipes(all_recipes)
+        print(f"Progress saved: {len(all_recipes)} recipes total")
 
     return all_recipes
 
