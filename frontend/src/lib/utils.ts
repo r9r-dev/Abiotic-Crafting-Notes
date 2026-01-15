@@ -37,15 +37,15 @@ export function getStatusLabel(status: string): string {
     case "pending":
       return "En attente";
     case "accepted":
-      return "Acceptee";
+      return "Acceptée";
     case "in_progress":
       return "En cours";
     case "completed":
-      return "Terminee";
+      return "Terminée";
     case "missing_resources":
       return "Ressources manquantes";
     case "cancelled":
-      return "Annulee";
+      return "Annulée";
     default:
       return status;
   }

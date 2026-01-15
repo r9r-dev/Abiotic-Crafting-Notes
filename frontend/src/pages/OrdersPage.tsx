@@ -124,9 +124,9 @@ export function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Carnet de commandes</h1>
-        <Button onClick={() => setShowNewOrder(!showNewOrder)}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-bold sm:text-2xl">Carnet de commandes</h1>
+        <Button onClick={() => setShowNewOrder(!showNewOrder)} className="w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           Nouvelle commande
         </Button>
@@ -147,7 +147,7 @@ export function OrdersPage() {
             {selectedItems.size > 0 && (
               <div className="space-y-4 border-t pt-4">
                 <div>
-                  <p className="mb-2 text-sm font-medium">Items selectionnes:</p>
+                  <p className="mb-2 text-sm font-medium">Items sélectionnés :</p>
                   <div className="space-y-1">
                     {Array.from(selectedItems.entries()).map(([id, qty]) => {
                       const recipe = recipes.get(id);
@@ -171,7 +171,7 @@ export function OrdersPage() {
                   <Input
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Instructions speciales..."
+                    placeholder="Instructions spéciales..."
                   />
                 </div>
 
@@ -187,15 +187,21 @@ export function OrdersPage() {
 
       {/* Orders tabs */}
       <Tabs defaultValue="pending">
-        <TabsList>
-          <TabsTrigger value="pending">
-            En attente ({pendingOrders.length})
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="pending" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">En attente</span>
+            <span className="sm:hidden">Attente</span>
+            <span className="ml-1">({pendingOrders.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="active">
-            En cours ({activeOrders.length})
+          <TabsTrigger value="active" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">En cours</span>
+            <span className="sm:hidden">Cours</span>
+            <span className="ml-1">({activeOrders.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="completed">
-            Terminees ({completedOrders.length})
+          <TabsTrigger value="completed" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Terminées</span>
+            <span className="sm:hidden">Fini</span>
+            <span className="ml-1">({completedOrders.length})</span>
           </TabsTrigger>
         </TabsList>
 
@@ -243,7 +249,7 @@ export function OrdersPage() {
         <TabsContent value="completed" className="space-y-4">
           {completedOrders.length === 0 ? (
             <p className="text-center text-muted-foreground">
-              Aucune commande terminee
+              Aucune commande terminée
             </p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">

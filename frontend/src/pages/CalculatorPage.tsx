@@ -79,10 +79,10 @@ export function CalculatorPage() {
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2">
       {/* Selection panel */}
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Calculateur de ressources</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Calculateur de ressources</h1>
         <RecipeSearch
           onSelect={handleSelect}
           selectedItems={selectedQuantities}
@@ -97,7 +97,7 @@ export function CalculatorPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Calculator className="h-4 w-4" />
-                Items a calculer
+                Items à calculer
               </CardTitle>
               {selectedItems.size > 0 && (
                 <Button variant="ghost" size="sm" onClick={handleClear}>
@@ -109,7 +109,7 @@ export function CalculatorPage() {
           <CardContent>
             {selectedItems.size === 0 ? (
               <p className="text-center text-sm text-muted-foreground">
-                Selectionnez des items a gauche
+                Sélectionnez des items à gauche
               </p>
             ) : (
               <div className="space-y-4">
@@ -148,7 +148,7 @@ export function CalculatorPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Package className="h-4 w-4" />
-                Ressources necessaires
+                Ressources nécessaires
               </CardTitle>
             </CardHeader>
             <CardContent>

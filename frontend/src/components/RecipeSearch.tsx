@@ -60,10 +60,11 @@ export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
       </div>
 
       {/* Categories */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2">
         <Button
           variant={category === undefined ? "default" : "outline"}
           size="sm"
+          className="text-xs sm:text-sm"
           onClick={() => setCategory(undefined)}
         >
           Toutes
@@ -73,6 +74,7 @@ export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
             key={cat}
             variant={category === cat ? "default" : "outline"}
             size="sm"
+            className="text-xs sm:text-sm"
             onClick={() => setCategory(cat)}
           >
             {cat}
@@ -90,7 +92,7 @@ export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
 
         {!loading && results.length === 0 && (
           <p className="text-center text-sm text-muted-foreground">
-            Aucune recette trouvee
+            Aucune recette trouvée
           </p>
         )}
 
@@ -99,24 +101,24 @@ export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
           return (
             <div
               key={recipe.id}
-              className="flex items-center justify-between rounded-md border p-3"
+              className="flex items-center justify-between gap-2 rounded-md border p-2 sm:p-3"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                 {recipe.icon_url && (
                   <img
                     src={recipe.icon_url}
                     alt={recipe.name}
-                    className="h-8 w-8 object-contain"
+                    className="h-6 w-6 flex-shrink-0 object-contain sm:h-8 sm:w-8"
                   />
                 )}
-                <div>
-                  <p className="text-sm font-medium">{recipe.name}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium sm:text-sm">{recipe.name}</p>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="truncate text-xs text-muted-foreground">
                       {recipe.category}
                     </span>
                     {recipe.craftable && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="flex-shrink-0 text-xs">
                         Craftable
                       </Badge>
                     )}
@@ -125,21 +127,21 @@ export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
               </div>
 
               {onSelect && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
                   <Button
                     size="icon"
                     variant="outline"
-                    className="h-8 w-8"
+                    className="h-7 w-7 sm:h-8 sm:w-8"
                     onClick={() => handleQuantityChange(recipe, -1)}
                     disabled={quantity === 0}
                   >
                     <Minus className="h-3 w-3" />
                   </Button>
-                  <span className="w-8 text-center text-sm">{quantity}</span>
+                  <span className="w-6 text-center text-xs sm:w-8 sm:text-sm">{quantity}</span>
                   <Button
                     size="icon"
                     variant="outline"
-                    className="h-8 w-8"
+                    className="h-7 w-7 sm:h-8 sm:w-8"
                     onClick={() => handleQuantityChange(recipe, 1)}
                   >
                     <Plus className="h-3 w-3" />

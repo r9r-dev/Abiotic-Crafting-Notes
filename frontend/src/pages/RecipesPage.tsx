@@ -39,10 +39,10 @@ export function RecipesPage() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2">
       {/* Search panel */}
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Recherche de recettes</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Recherche de recettes</h1>
         <RecipeSearch onSelect={(recipe) => handleSelect(recipe)} />
       </div>
 
@@ -59,7 +59,7 @@ export function RecipesPage() {
         {!loading && !selectedRecipe && (
           <Card>
             <CardContent className="p-6 text-center text-muted-foreground">
-              Selectionnez une recette pour voir les details
+              Sélectionnez une recette pour voir les détails
             </CardContent>
           </Card>
         )}
@@ -113,7 +113,7 @@ export function RecipesPage() {
                   )}
                   {selectedRecipe.durability && (
                     <div>
-                      <p className="text-muted-foreground">Durabilite</p>
+                      <p className="text-muted-foreground">Durabilité</p>
                       <p>{selectedRecipe.durability}</p>
                     </div>
                   )}
@@ -133,7 +133,7 @@ export function RecipesPage() {
                 <CardContent>
                   <Tabs defaultValue="recipe">
                     <TabsList>
-                      <TabsTrigger value="recipe">Ingredients</TabsTrigger>
+                      <TabsTrigger value="recipe">Ingrédients</TabsTrigger>
                       <TabsTrigger value="tree">Arbre</TabsTrigger>
                       <TabsTrigger value="total">Total</TabsTrigger>
                     </TabsList>
@@ -174,7 +174,7 @@ export function RecipesPage() {
 
                     <TabsContent value="total" className="space-y-2">
                       <p className="text-xs text-muted-foreground">
-                        Ressources de base necessaires:
+                        Ressources de base nécessaires :
                       </p>
                       {resources.map((res) => (
                         <div
