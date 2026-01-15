@@ -215,7 +215,7 @@ def scrape_all() -> dict[str, dict]:
                 all_recipes[recipe.id] = asdict(recipe)
 
             # Rate limiting
-            time.sleep(1.5)  # Rate limiting - be nice to the wiki
+            time.sleep(5)  # Rate limiting - be nice to the wiki
 
     return all_recipes
 

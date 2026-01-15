@@ -16,12 +16,12 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-14 items-center px-4">
-        <div className="mr-4 flex items-center gap-2">
-          <span className="text-xl font-bold text-primary glow">ACN</span>
+        <Link to="/" className="mr-4 flex items-center gap-2">
+          <img src="/logo.png" alt="Abiotic Factor" className="h-8" />
           <span className="hidden text-sm text-muted-foreground sm:inline">
-            Abiotic Crafting Notes
+            Crafting Notes
           </span>
-        </div>
+        </Link>
 
         <nav className="flex flex-1 items-center gap-1">
           {links.map(({ to, label, icon: Icon }) => (

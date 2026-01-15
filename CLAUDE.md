@@ -1,13 +1,14 @@
 # Abiotic Crafting Notes
 
 Carnet de commandes collaboratif pour le jeu Abiotic Factor.
+Domaine: `abiotic.hellonowork.com`
 
 ## Stack technique
 
-- **Frontend**: React 19, Vite, shadcn/ui, TailwindCSS, TypeScript
+- **Frontend**: React 19, Vite, shadcn/ui, TailwindCSS, TypeScript, Bun
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy, Pydantic
-- **Database**: PostgreSQL (externe)
-- **Auth**: Pangolin SSO via headers HTTP
+- **Database**: PostgreSQL (externe sur `sql:5432`)
+- **Auth**: Pangolin SSO via headers HTTP (Remote-User, Remote-Email, Remote-Name)
 
 ## Structure du projet
 
@@ -15,102 +16,141 @@ Carnet de commandes collaboratif pour le jeu Abiotic Factor.
 .
 ├── frontend/               # Application React
 │   ├── src/
-│   │   ├── components/     # Composants React (Header, OrderCard, etc.)
+│   │   ├── components/     # Header, OrderCard, RecipeSearch, DependencyTree
 │   │   ├── contexts/       # AuthContext
 │   │   ├── pages/          # OrdersPage, RecipesPage, CalculatorPage
-│   │   ├── services/       # Client API
+│   │   ├── services/       # Client API (api.ts)
 │   │   ├── types/          # Types TypeScript
-│   │   └── lib/            # Utilitaires (cn, formatDate)
+│   │   └── lib/            # Utilitaires (cn, formatDate, getStatusLabel)
 │   ├── Dockerfile          # Build multi-stage (bun -> nginx)
-│   └── nginx.conf          # Config nginx avec proxy API
+│   └── nginx.conf          # Config nginx avec proxy /api -> backend
 ├── backend/
 │   ├── app/
-│   │   ├── api/            # Routes FastAPI (auth, orders, recipes)
-│   │   ├── models/         # SQLAlchemy models (User, Order, OrderItem)
-│   │   ├── services/       # Logique metier
-│   │   ├── schemas/        # Schemas Pydantic
-│   │   ├── auth.py         # Authentification Pangolin
-│   │   ├── config.py       # Configuration
-│   │   ├── database.py     # Session SQLAlchemy
-│   │   └── main.py         # Point d'entree FastAPI
-│   ├── scraper/            # Scraper du wiki
-│   └── Dockerfile
-├── data/                   # Fichier recipes.json
-├── docs/                   # Documentation
-├── docker-compose.yml      # Production
-└── docker-compose.dev.yml  # Developpement
+│   │   ├── api/            # Routes (auth, orders, recipes)
+│   │   ├── models/         # User, Order, OrderItem
+│   │   ├── services/       # recipe_service, order_service
+│   │   ├── schemas/        # Pydantic schemas
+│   │   ├── auth.py         # Auth Pangolin (headers)
+│   │   ├── config.py       # Settings avec pydantic-settings
+│   │   ├── database.py     # SQLAlchemy session
+│   │   └── main.py         # FastAPI app
+│   ├── scraper/            # Wiki scraper (wiki_scraper.py)
+│   ├── Dockerfile
+│   └── requirements.txt
+├── data/                   # recipes.json (monte en volume)
+├── docs/                   # USER_MANUAL, DEPLOYMENT, API
+├── .agent/                 # Documentation systeme
+├── .github/workflows/      # CI Docker (docker.yml)
+├── docker-compose.yml      # Production (images ghcr.io)
+└── docker-compose.dev.yml  # Dev local (PostgreSQL inclus)
+```
+
+## Variables d'environnement
+
+```bash
+POSTGRES_USER=...
+POSTGRES_PASSWORD=...
+POSTGRES_HOST=sql          # ou localhost en dev
+POSTGRES_PORT=5432
+POSTGRES_DB=abiotic
+DEV_MODE=false             # true pour auth fictive
+RECIPES_DATA_PATH=/app/data/recipes.json  # chemin des recettes
 ```
 
 ## Modeles de donnees
 
-### User
-- id (string, depuis Pangolin)
-- email
-- name
+### User (depuis Pangolin SSO)
+- id (string PK)
+- email, name
 - created_at, updated_at
 
 ### Order
-- id (auto)
+- id (serial PK)
 - requester_id -> User
 - crafter_id -> User (nullable)
 - status: pending | accepted | in_progress | missing_resources | completed | cancelled
-- notes
-- missing_resources (JSON)
+- notes, missing_resources (JSON)
 - items -> OrderItem[]
 
 ### OrderItem
-- id (auto)
-- order_id -> Order
-- item_id (reference au JSON recipes)
-- quantity
+- id, order_id -> Order
+- item_id (ref JSON), quantity
 
-### Recipe (JSON, non en DB)
+### Recipe (JSON, pas en DB)
 - id, name, icon_url, category
-- variants: [{ingredients, station}]
-- weight, stack_size, durability
+- variants: [{ingredients: [{item_id, item_name, quantity}], station}]
+- weight, stack_size, durability, wiki_url
 
 ## API Endpoints
 
-- `GET /api/auth/me` - Utilisateur courant
-- `GET /api/recipes` - Recherche recettes
-- `GET /api/recipes/categories` - Categories
-- `GET /api/recipes/{id}` - Detail recette
-- `GET /api/recipes/{id}/dependencies` - Arbre dependances
-- `GET /api/recipes/{id}/resources` - Ressources totales
-- `GET /api/orders` - Liste commandes
-- `POST /api/orders` - Creer commande
-- `PATCH /api/orders/{id}` - Modifier commande
-- `POST /api/orders/{id}/accept` - Accepter
-- `POST /api/orders/{id}/complete` - Terminer
-- `POST /api/orders/{id}/cancel` - Annuler
-
-## Authentification
-
-Pangolin envoie ces headers:
-- `Remote-User`: ID unique
-- `Remote-Email`: Email
-- `Remote-Name`: Nom affiche
-
-En dev, `DEV_MODE=true` utilise un utilisateur fictif.
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /api/health | Health check |
+| GET | /api/auth/me | Utilisateur courant |
+| GET | /api/recipes | Recherche (q=, category=) |
+| GET | /api/recipes/categories | Liste categories |
+| GET | /api/recipes/{id} | Detail recette |
+| GET | /api/recipes/{id}/dependencies | Arbre (quantity=) |
+| GET | /api/recipes/{id}/resources | Ressources totales |
+| GET | /api/orders | Liste (status=, mine=, assigned=) |
+| POST | /api/orders | Creer {items, notes} |
+| PATCH | /api/orders/{id} | Modifier |
+| POST | /api/orders/{id}/accept | Accepter |
+| POST | /api/orders/{id}/complete | Terminer |
+| POST | /api/orders/{id}/cancel | Annuler |
 
 ## CI/CD
 
-GitHub Actions workflow (`.github/workflows/docker.yml`):
-- Declenche sur push de tag `v*`
-- Build et push des images sur ghcr.io
-- Cree une release GitHub
+GitHub Actions (`.github/workflows/docker.yml`):
+- Trigger: push tag `v*`
+- Build frontend et backend en parallele
+- Push sur ghcr.io
+- Cree release GitHub
 
 Images:
 - `ghcr.io/r9r-dev/abiotic-crafting-notes-frontend:latest`
 - `ghcr.io/r9r-dev/abiotic-crafting-notes-backend:latest`
 
-Release:
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+# Creer une release
+git tag v1.0.2
+git push origin v1.0.2
 ```
 
-## Deploiement
+## Developpement local
+
+```bash
+# 1. Demarrer PostgreSQL
+docker compose -f docker-compose.dev.yml up -d postgres
+
+# 2. Backend
+cd backend
+source .venv/bin/activate  # ou: python -m venv .venv && source...
+pip install -r requirements.txt
+DEV_MODE=true POSTGRES_HOST=localhost POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_DB=abiotic uvicorn app.main:app --reload --port 8080
+
+# 3. Frontend (autre terminal)
+cd frontend
+bun install
+bun dev  # http://localhost:3000
+```
+
+## Scraper Wiki
+
+Le scraper recupere les recettes depuis https://abioticfactor.wiki.gg
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m scraper.wiki_scraper
+```
+
+- Delai 1.5s entre requetes (rate limiting)
+- Retry auto sur 429
+- Sauvegarde dans data/recipes.json
+- Duree: ~15-20 minutes
+
+## Deploiement production
 
 ```bash
 cp .env.example .env
@@ -118,15 +158,9 @@ cp .env.example .env
 docker compose up -d
 ```
 
-## Commandes utiles
+Le frontend nginx proxy /api vers le backend.
+Configurer Pangolin pour abiotic.hellonowork.com -> abiotic-frontend:80
 
-```bash
-# Scraper le wiki
-cd backend && python -m scraper.wiki_scraper
+## Version actuelle
 
-# Dev frontend
-cd frontend && bun dev
-
-# Dev backend
-cd backend && DEV_MODE=true uvicorn app.main:app --reload
-```
+v1.0.1 - Corrections accents et responsive mobile
