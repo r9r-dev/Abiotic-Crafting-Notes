@@ -9,10 +9,11 @@ import { Search, Plus, Minus } from "lucide-react";
 
 interface RecipeSearchProps {
   onSelect?: (recipe: RecipeSearchResult, quantity: number) => void;
+  onItemClick?: (recipe: RecipeSearchResult) => void;
   selectedItems?: Map<string, number>;
 }
 
-export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
+export function RecipeSearch({ onSelect, onItemClick, selectedItems }: RecipeSearchProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | undefined>();
   const [categories, setCategories] = useState<string[]>([]);
@@ -106,7 +107,12 @@ export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
               key={recipe.id}
               className="flex items-center justify-between gap-2 rounded-md border p-2 sm:p-3"
             >
-              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+              <div
+                className={`flex min-w-0 flex-1 items-center gap-2 sm:gap-3 ${
+                  onItemClick ? "cursor-pointer rounded-md p-1 -m-1 hover:bg-accent/50" : ""
+                }`}
+                onClick={() => onItemClick?.(recipe)}
+              >
                 {iconUrl && (
                   <img
                     src={iconUrl}
@@ -120,11 +126,6 @@ export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
                     <span className="truncate text-xs text-muted-foreground">
                       {recipe.category}
                     </span>
-                    {recipe.craftable && (
-                      <Badge variant="secondary" className="flex-shrink-0 text-xs">
-                        Craftable
-                      </Badge>
-                    )}
                   </div>
                 </div>
               </div>

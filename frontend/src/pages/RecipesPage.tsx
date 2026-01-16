@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Recipe, DependencyNode, ResourceCalculation } from "@/types";
 import type { RecipeSearchResult } from "@/types";
+import { useCart } from "@/contexts/CartContext";
 import { getRecipe, getDependencies, getResources } from "@/services/api";
 import { getIconUrl, getDisplayName } from "@/lib/utils";
 import { RecipeSearch } from "@/components/RecipeSearch";
@@ -16,12 +17,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExternalLink, Package, Hammer } from "lucide-react";
 
 export function RecipesPage() {
+  const { items: cartItems, addItem, removeItem } = useCart();
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [dependencies, setDependencies] = useState<DependencyNode | null>(null);
   const [resources, setResources] = useState<ResourceCalculation[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSelect = async (recipe: RecipeSearchResult) => {
+  const handleItemClick = async (recipe: RecipeSearchResult) => {
     setLoading(true);
     try {
       const [recipeData, deps, res] = await Promise.all([
@@ -39,12 +41,29 @@ export function RecipesPage() {
     }
   };
 
+  const handleCartChange = (recipe: RecipeSearchResult, quantity: number) => {
+    const currentQty = cartItems.get(recipe.id)?.quantity || 0;
+    if (quantity > currentQty) {
+      addItem(recipe);
+    } else if (quantity < currentQty) {
+      removeItem(recipe.id);
+    }
+  };
+
+  const cartQuantities = new Map(
+    Array.from(cartItems.entries()).map(([id, item]) => [id, item.quantity])
+  );
+
   return (
     <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2">
       {/* Search panel */}
       <div className="space-y-4">
         <h1 className="text-xl font-bold sm:text-2xl">Recherche de recettes</h1>
-        <RecipeSearch onSelect={(recipe) => handleSelect(recipe)} />
+        <RecipeSearch
+          onItemClick={handleItemClick}
+          onSelect={handleCartChange}
+          selectedItems={cartQuantities}
+        />
       </div>
 
       {/* Detail panel */}

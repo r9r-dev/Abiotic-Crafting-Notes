@@ -1,10 +1,12 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Package, Search, ClipboardList, User } from "lucide-react";
+import { Package, Search, ClipboardList, User, ShoppingCart } from "lucide-react";
 
 export function Header() {
   const { user } = useAuth();
+  const { totalCount } = useCart();
   const location = useLocation();
 
   const links = [
@@ -41,12 +43,31 @@ export function Header() {
           ))}
         </nav>
 
-        {user && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline">{user.name}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          <Link
+            to="/cart"
+            className={cn(
+              "relative flex items-center rounded-md p-2 transition-colors",
+              location.pathname === "/cart"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            )}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {totalCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                {totalCount > 99 ? "99+" : totalCount}
+              </span>
+            )}
+          </Link>
+
+          {user && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">{user.name}</span>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

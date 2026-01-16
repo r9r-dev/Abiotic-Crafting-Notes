@@ -53,11 +53,13 @@ export async function getCurrentUser(): Promise<User> {
 // Recipes
 export async function searchRecipes(
   query: string = "",
-  category?: string
+  category?: string,
+  craftableOnly: boolean = true
 ): Promise<RecipeSearchResult[]> {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
   if (category) params.set("category", category);
+  if (!craftableOnly) params.set("craftable_only", "false");
   return request<RecipeSearchResult[]>(`/recipes?${params}`);
 }
 

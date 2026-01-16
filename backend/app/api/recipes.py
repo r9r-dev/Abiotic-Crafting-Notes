@@ -24,6 +24,7 @@ ICONS_DIR = Path(os.environ.get("ICONS_PATH", str(_default_icons)))
 def list_recipes(
     q: str = Query(default="", description="Search query (FR/EN, accent-insensitive)"),
     category: str | None = Query(default=None, description="Filter by category"),
+    craftable_only: bool = Query(default=True, description="Only return craftable items"),
     db: Session = Depends(get_db),
 ):
     """Search and list recipes.
@@ -32,8 +33,10 @@ def list_recipes(
     - English name
     - French name (accent-insensitive)
     - French description (accent-insensitive)
+
+    By default, only craftable items are returned.
     """
-    return search_recipes(db, q if q else None, category)
+    return search_recipes(db, q if q else None, category, craftable_only)
 
 
 @router.get("/categories", response_model=list[str])

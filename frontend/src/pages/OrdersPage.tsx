@@ -6,20 +6,9 @@ import {
   acceptOrder,
   completeOrder,
   cancelOrder,
-  createOrder,
 } from "@/services/api";
 import { OrderCard } from "@/components/OrderCard";
-import { RecipeSearch } from "@/components/RecipeSearch";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Plus, Send } from "lucide-react";
 
 export function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -27,11 +16,6 @@ export function OrdersPage() {
     new Map()
   );
   const [loading, setLoading] = useState(true);
-  const [showNewOrder, setShowNewOrder] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<Map<string, number>>(
-    new Map()
-  );
-  const [notes, setNotes] = useState("");
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -81,36 +65,6 @@ export function OrdersPage() {
     }
   };
 
-  const handleCreateOrder = async () => {
-    const items = Array.from(selectedItems.entries())
-      .filter(([, qty]) => qty > 0)
-      .map(([item_id, quantity]) => ({ item_id, quantity }));
-
-    if (items.length === 0) return;
-
-    try {
-      await createOrder({ items, notes: notes || undefined });
-      setSelectedItems(new Map());
-      setNotes("");
-      setShowNewOrder(false);
-      fetchOrders();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSelectItem = (recipe: RecipeSearchResult, quantity: number) => {
-    setSelectedItems((prev) => {
-      const next = new Map(prev);
-      if (quantity === 0) {
-        next.delete(recipe.id);
-      } else {
-        next.set(recipe.id, quantity);
-      }
-      return next;
-    });
-  };
-
   const pendingOrders = orders.filter((o) => o.status === "pending");
   const activeOrders = orders.filter(
     (o) =>
@@ -124,66 +78,7 @@ export function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-bold sm:text-2xl">Carnet de commandes</h1>
-        <Button onClick={() => setShowNewOrder(!showNewOrder)} className="w-full sm:w-auto">
-          <Plus className="h-4 w-4" />
-          Nouvelle commande
-        </Button>
-      </div>
-
-      {/* New order form */}
-      {showNewOrder && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Nouvelle commande</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <RecipeSearch
-              onSelect={handleSelectItem}
-              selectedItems={selectedItems}
-            />
-
-            {selectedItems.size > 0 && (
-              <div className="space-y-4 border-t pt-4">
-                <div>
-                  <p className="mb-2 text-sm font-medium">Items sélectionnés :</p>
-                  <div className="space-y-1">
-                    {Array.from(selectedItems.entries()).map(([id, qty]) => {
-                      const recipe = recipes.get(id);
-                      return (
-                        <div
-                          key={id}
-                          className="flex justify-between text-sm"
-                        >
-                          <span>{recipe?.name || id}</span>
-                          <span className="text-muted-foreground">x{qty}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Notes (optionnel)
-                  </label>
-                  <Input
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Instructions spéciales..."
-                  />
-                </div>
-
-                <Button onClick={handleCreateOrder} className="w-full">
-                  <Send className="h-4 w-4" />
-                  Envoyer la commande
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      <h1 className="text-xl font-bold sm:text-2xl">Carnet de commandes</h1>
 
       {/* Orders tabs */}
       <Tabs defaultValue="pending">

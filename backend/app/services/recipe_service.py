@@ -52,13 +52,21 @@ def get_recipe(db: Session, item_id: str) -> Recipe | None:
 
 
 def search_recipes(
-    db: Session, query: str | None = None, category: str | None = None
+    db: Session,
+    query: str | None = None,
+    category: str | None = None,
+    craftable_only: bool = True,
 ) -> list[RecipeSearchResult]:
     """Search recipes by name (FR/EN), description, or category.
 
     Search is case-insensitive and accent-insensitive.
+    By default, only returns craftable items (with variants).
     """
     q = db.query(Item)
+
+    # Filter craftable items only
+    if craftable_only:
+        q = q.filter(Item.variants != None, func.jsonb_array_length(Item.variants) > 0)
 
     # Filter by category
     if category:

@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import { Header } from "@/components/Header";
 import { OrdersPage } from "@/pages/OrdersPage";
 import { RecipesPage } from "@/pages/RecipesPage";
 import { CalculatorPage } from "@/pages/CalculatorPage";
+import { CartPage } from "@/pages/CartPage";
 
 function AppContent() {
   const { loading, error } = useAuth();
@@ -38,6 +40,7 @@ function AppContent() {
           <Route path="/" element={<OrdersPage />} />
           <Route path="/recipes" element={<RecipesPage />} />
           <Route path="/calculator" element={<CalculatorPage />} />
+          <Route path="/cart" element={<CartPage />} />
         </Routes>
       </main>
     </div>
@@ -48,7 +51,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );
