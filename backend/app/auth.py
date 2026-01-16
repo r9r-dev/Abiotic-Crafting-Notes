@@ -67,10 +67,9 @@ def get_current_user(
         db.commit()
         db.refresh(user)
     else:
-        # Update user info if changed
-        if user.email != current.email or user.name != current.name:
+        # Only update email if changed (name is user-editable, don't overwrite)
+        if user.email != current.email:
             user.email = current.email
-            user.name = current.name
             db.commit()
             db.refresh(user)
 
