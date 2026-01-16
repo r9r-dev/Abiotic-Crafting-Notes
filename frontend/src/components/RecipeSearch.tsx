@@ -4,7 +4,6 @@ import { searchRecipes, getCategories } from "@/services/api";
 import { getIconUrl, getDisplayName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Minus } from "lucide-react";
 
 interface RecipeSearchProps {
