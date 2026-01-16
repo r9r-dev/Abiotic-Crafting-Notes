@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { RecipeSearchResult } from "@/types";
 import { searchRecipes, getCategories } from "@/services/api";
+import { getIconUrl, getDisplayName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,21 +99,23 @@ export function RecipeSearch({ onSelect, selectedItems }: RecipeSearchProps) {
 
         {results.map((recipe) => {
           const quantity = selectedItems?.get(recipe.id) || 0;
+          const iconUrl = getIconUrl(recipe.icon_local, recipe.icon_url);
+          const displayName = getDisplayName(recipe.name_fr, recipe.name);
           return (
             <div
               key={recipe.id}
               className="flex items-center justify-between gap-2 rounded-md border p-2 sm:p-3"
             >
               <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                {recipe.icon_url && (
+                {iconUrl && (
                   <img
-                    src={recipe.icon_url}
-                    alt={recipe.name}
+                    src={iconUrl}
+                    alt={displayName}
                     className="h-6 w-6 flex-shrink-0 object-contain sm:h-8 sm:w-8"
                   />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium sm:text-sm">{recipe.name}</p>
+                  <p className="truncate text-xs font-medium sm:text-sm">{displayName}</p>
                   <div className="flex items-center gap-1 sm:gap-2">
                     <span className="truncate text-xs text-muted-foreground">
                       {recipe.category}

@@ -16,7 +16,10 @@ class RecipeVariant(BaseModel):
 class Recipe(BaseModel):
     id: str
     name: str
+    name_fr: Optional[str] = None
+    description_fr: Optional[str] = None
     icon_url: Optional[str] = None
+    icon_local: Optional[str] = None
     category: str
     weight: Optional[float] = None
     stack_size: Optional[int] = None
@@ -30,7 +33,9 @@ class Recipe(BaseModel):
 class RecipeSearchResult(BaseModel):
     id: str
     name: str
+    name_fr: Optional[str] = None
     icon_url: Optional[str] = None
+    icon_local: Optional[str] = None
     category: str
     craftable: bool
 
@@ -38,6 +43,7 @@ class RecipeSearchResult(BaseModel):
 class DependencyNode(BaseModel):
     item_id: str
     item_name: str
+    item_name_fr: Optional[str] = None
     quantity: int
     craftable: bool
     children: list["DependencyNode"] = []
@@ -46,5 +52,6 @@ class DependencyNode(BaseModel):
 class ResourceCalculation(BaseModel):
     item_id: str
     item_name: str
+    item_name_fr: Optional[str] = None
     total_quantity: int
     is_base_resource: bool

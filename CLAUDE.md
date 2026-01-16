@@ -7,7 +7,7 @@ Domaine: `abiotic.hellonowork.com`
 
 - **Frontend**: React 19, Vite, shadcn/ui, TailwindCSS, TypeScript, Bun
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy, Pydantic
-- **Database**: PostgreSQL (externe sur `sql:5432`)
+- **Database**: PostgreSQL 18+ (externe sur `sql:5432`)
 - **Auth**: Pangolin SSO via headers HTTP (Remote-User, Remote-Email, Remote-Name)
 
 ## Structure du projet
@@ -21,13 +21,13 @@ Domaine: `abiotic.hellonowork.com`
 │   │   ├── pages/          # OrdersPage, RecipesPage, CalculatorPage
 │   │   ├── services/       # Client API (api.ts)
 │   │   ├── types/          # Types TypeScript
-│   │   └── lib/            # Utilitaires (cn, formatDate, getStatusLabel)
+│   │   └── lib/            # Utilitaires (cn, formatDate, getDisplayName, getIconUrl)
 │   ├── Dockerfile          # Build multi-stage (bun -> nginx)
 │   └── nginx.conf          # Config nginx avec proxy /api -> backend
 ├── backend/
 │   ├── app/
-│   │   ├── api/            # Routes (auth, orders, recipes)
-│   │   ├── models/         # User, Order, OrderItem
+│   │   ├── api/            # Routes (auth, orders, recipes, icons)
+│   │   ├── models/         # User, Order, OrderItem, Item
 │   │   ├── services/       # recipe_service, order_service
 │   │   ├── schemas/        # Pydantic schemas
 │   │   ├── auth.py         # Auth Pangolin (headers)
@@ -37,9 +37,14 @@ Domaine: `abiotic.hellonowork.com`
 │   ├── scraper/            # Wiki scraper (wiki_scraper.py)
 │   ├── Dockerfile
 │   └── requirements.txt
-├── data/                   # recipes.json (monte en volume)
+├── data/
+│   ├── icons/              # Icones des items (760 fichiers PNG)
+│   ├── recipes.json        # Donnees brutes du scraper
+│   ├── item_names_fr.json  # Traductions FR des noms
+│   ├── item_descriptions_fr.json  # Descriptions FR
+│   ├── en.json             # Export localisation EN du jeu
+│   └── fr.json             # Export localisation FR du jeu
 ├── docs/                   # USER_MANUAL, DEPLOYMENT, API
-├── .agent/                 # Documentation systeme
 ├── .github/workflows/      # CI Docker (docker.yml)
 ├── docker-compose.yml      # Production (images ghcr.io)
 └── docker-compose.dev.yml  # Dev local (PostgreSQL inclus)
@@ -52,9 +57,8 @@ POSTGRES_USER=...
 POSTGRES_PASSWORD=...
 POSTGRES_HOST=sql          # ou localhost en dev
 POSTGRES_PORT=5432
-POSTGRES_DB=abiotic
+POSTGRES_DB=abiotic-factor
 DEV_MODE=false             # true pour auth fictive
-RECIPES_DATA_PATH=/app/data/recipes.json  # chemin des recettes
 ```
 
 ## Modeles de donnees
@@ -63,6 +67,19 @@ RECIPES_DATA_PATH=/app/data/recipes.json  # chemin des recettes
 - id (string PK)
 - email, name
 - created_at, updated_at
+
+### Item (table PostgreSQL)
+- id (varchar PK) - ex: "air_compressor"
+- name (varchar) - nom anglais
+- name_fr (varchar) - nom francais
+- description_fr (text) - description francaise
+- icon_url (varchar) - URL wiki originale
+- icon_local (varchar) - chemin local "/api/icons/{id}.png"
+- category (varchar)
+- weight, stack_size, durability
+- repair_material, repair_quantity
+- wiki_url
+- variants (JSONB) - recettes de craft
 
 ### Order
 - id (serial PK)
@@ -74,12 +91,19 @@ RECIPES_DATA_PATH=/app/data/recipes.json  # chemin des recettes
 
 ### OrderItem
 - id, order_id -> Order
-- item_id (ref JSON), quantity
+- item_id -> Item, quantity
 
-### Recipe (JSON, pas en DB)
-- id, name, icon_url, category
-- variants: [{ingredients: [{item_id, item_name, quantity}], station}]
-- weight, stack_size, durability, wiki_url
+## Extensions PostgreSQL
+
+```sql
+CREATE EXTENSION IF NOT EXISTS unaccent;  -- Recherche sans accents
+CREATE EXTENSION IF NOT EXISTS pg_trgm;   -- Recherche fuzzy
+
+-- Fonction pour index de recherche
+CREATE FUNCTION f_unaccent(text) RETURNS text AS $$
+SELECT public.unaccent($1)
+$$ LANGUAGE SQL IMMUTABLE;
+```
 
 ## API Endpoints
 
@@ -87,17 +111,25 @@ RECIPES_DATA_PATH=/app/data/recipes.json  # chemin des recettes
 |---------|----------|-------------|
 | GET | /api/health | Health check |
 | GET | /api/auth/me | Utilisateur courant |
-| GET | /api/recipes | Recherche (q=, category=) |
+| GET | /api/recipes | Recherche (q=, category=) - FR/EN sans accents |
 | GET | /api/recipes/categories | Liste categories |
-| GET | /api/recipes/{id} | Detail recette |
+| GET | /api/recipes/{id} | Detail recette avec name_fr, description_fr |
 | GET | /api/recipes/{id}/dependencies | Arbre (quantity=) |
 | GET | /api/recipes/{id}/resources | Ressources totales |
+| GET | /api/icons/{id}.png | Icone d'un item |
 | GET | /api/orders | Liste (status=, mine=, assigned=) |
 | POST | /api/orders | Creer {items, notes} |
 | PATCH | /api/orders/{id} | Modifier |
 | POST | /api/orders/{id}/accept | Accepter |
 | POST | /api/orders/{id}/complete | Terminer |
 | POST | /api/orders/{id}/cancel | Annuler |
+
+## Recherche
+
+La recherche `/api/recipes?q=` est:
+- Insensible a la casse
+- Insensible aux accents (ex: "gelee" trouve "Gelée")
+- Multi-champs: name (EN), name_fr (FR), description_fr
 
 ## CI/CD
 
@@ -113,8 +145,8 @@ Images:
 
 ```bash
 # Creer une release
-git tag v1.0.2
-git push origin v1.0.2
+git tag v1.0.3
+git push origin v1.0.3
 ```
 
 ## Developpement local
@@ -125,14 +157,27 @@ docker compose -f docker-compose.dev.yml up -d postgres
 
 # 2. Backend
 cd backend
-source .venv/bin/activate  # ou: python -m venv .venv && source...
+source .venv/bin/activate
 pip install -r requirements.txt
-DEV_MODE=true POSTGRES_HOST=localhost POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_DB=abiotic uvicorn app.main:app --reload --port 8080
+DEV_MODE=true POSTGRES_HOST=localhost POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_DB=abiotic-factor uvicorn app.main:app --reload --port 8080
 
 # 3. Frontend (autre terminal)
 cd frontend
 bun install
 bun dev  # http://localhost:3000
+```
+
+## Import des donnees
+
+Les items sont stockes en PostgreSQL. Pour reimporter:
+
+```bash
+cd backend
+source .venv/bin/activate
+python -c "
+from app.database import SessionLocal
+# ... script d'import depuis data/*.json
+"
 ```
 
 ## Scraper Wiki
@@ -150,6 +195,8 @@ python -m scraper.wiki_scraper
 - Sauvegarde dans data/recipes.json
 - Duree: ~15-20 minutes
 
+Apres le scraping, reimporter les donnees en DB.
+
 ## Deploiement production
 
 ```bash
@@ -161,6 +208,8 @@ docker compose up -d
 Le frontend nginx proxy /api vers le backend.
 Configurer Pangolin pour abiotic.hellonowork.com -> abiotic-frontend:80
 
+Note: Monter data/icons/ en volume pour les icones.
+
 ## Version actuelle
 
-v1.0.2 - Ajout logo et amélioration scraper
+v1.0.3 - Items en PostgreSQL, traductions FR, icones locales

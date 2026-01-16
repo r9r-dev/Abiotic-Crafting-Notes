@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Recipe, DependencyNode, ResourceCalculation } from "@/types";
 import type { RecipeSearchResult } from "@/types";
 import { getRecipe, getDependencies, getResources } from "@/services/api";
+import { getIconUrl, getDisplayName } from "@/lib/utils";
 import { RecipeSearch } from "@/components/RecipeSearch";
 import { DependencyTree } from "@/components/DependencyTree";
 import {
@@ -70,16 +71,16 @@ export function RecipesPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-start gap-4">
-                  {selectedRecipe.icon_url && (
+                  {getIconUrl(selectedRecipe.icon_local, selectedRecipe.icon_url) && (
                     <img
-                      src={selectedRecipe.icon_url}
-                      alt={selectedRecipe.name}
+                      src={getIconUrl(selectedRecipe.icon_local, selectedRecipe.icon_url)!}
+                      alt={getDisplayName(selectedRecipe.name_fr, selectedRecipe.name)}
                       className="h-16 w-16 object-contain"
                     />
                   )}
                   <div className="flex-1">
                     <CardTitle className="flex items-center gap-2">
-                      {selectedRecipe.name}
+                      {getDisplayName(selectedRecipe.name_fr, selectedRecipe.name)}
                       {selectedRecipe.wiki_url && (
                         <a
                           href={selectedRecipe.wiki_url}
@@ -94,6 +95,11 @@ export function RecipesPage() {
                     <Badge variant="secondary" className="mt-1">
                       {selectedRecipe.category}
                     </Badge>
+                    {selectedRecipe.description_fr && (
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {selectedRecipe.description_fr}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -183,7 +189,7 @@ export function RecipesPage() {
                         >
                           <span className="flex items-center gap-2">
                             <Package className="h-3 w-3 text-muted-foreground" />
-                            {res.item_name}
+                            {getDisplayName(res.item_name_fr, res.item_name)}
                           </span>
                           <span className="font-mono text-primary">
                             x{res.total_quantity}

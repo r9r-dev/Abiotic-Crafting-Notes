@@ -50,3 +50,17 @@ export function getStatusLabel(status: string): string {
       return status;
   }
 }
+
+/**
+ * Get the icon URL for an item, preferring local icons.
+ */
+export function getIconUrl(iconLocal: string | null, iconUrl: string | null): string | null {
+  return iconLocal || iconUrl;
+}
+
+/**
+ * Get the display name for an item, preferring French.
+ */
+export function getDisplayName(nameFr: string | null, name: string): string {
+  return nameFr || name;
+}

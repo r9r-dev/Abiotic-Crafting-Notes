@@ -1,5 +1,5 @@
 import type { DependencyNode } from "@/types";
-import { cn } from "@/lib/utils";
+import { cn, getDisplayName } from "@/lib/utils";
 import { ChevronRight, Package, Hammer } from "lucide-react";
 
 interface DependencyTreeProps {
@@ -9,6 +9,7 @@ interface DependencyTreeProps {
 
 export function DependencyTree({ node, depth = 0 }: DependencyTreeProps) {
   const hasChildren = node.children.length > 0;
+  const displayName = getDisplayName(node.item_name_fr, node.item_name);
 
   return (
     <div className={cn("space-y-1", depth > 0 && "ml-4 border-l pl-4")}>
@@ -20,7 +21,7 @@ export function DependencyTree({ node, depth = 0 }: DependencyTreeProps) {
           <Package className="h-4 w-4 text-muted-foreground" />
         )}
         <span className={cn("text-sm", !node.craftable && "text-muted-foreground")}>
-          {node.item_name}
+          {displayName}
         </span>
         <span className="text-xs text-muted-foreground">x{node.quantity}</span>
       </div>

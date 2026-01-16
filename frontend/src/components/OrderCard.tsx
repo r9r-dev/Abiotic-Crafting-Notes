@@ -2,7 +2,7 @@ import type { Order, RecipeSearchResult } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDate, getStatusLabel } from "@/lib/utils";
+import { formatDate, getStatusLabel, getDisplayName } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Check, X, AlertTriangle, Clock } from "lucide-react";
 
@@ -65,12 +65,15 @@ export function OrderCard({
           <div className="space-y-1">
             {order.items.map((item) => {
               const recipe = recipes.get(item.item_id);
+              const displayName = recipe
+                ? getDisplayName(recipe.name_fr, recipe.name)
+                : item.item_id;
               return (
                 <div
                   key={item.id}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span>{recipe?.name || item.item_id}</span>
+                  <span>{displayName}</span>
                   <span className="text-muted-foreground">x{item.quantity}</span>
                 </div>
               );

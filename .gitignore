@@ -56,3 +56,6 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+# Data files (icons, translations, game exports)
+data/

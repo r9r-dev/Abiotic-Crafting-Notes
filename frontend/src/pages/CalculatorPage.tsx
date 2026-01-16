@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { RecipeSearchResult, ResourceCalculation } from "@/types";
 import { getResources } from "@/services/api";
+import { getDisplayName } from "@/lib/utils";
 import { RecipeSearch } from "@/components/RecipeSearch";
 import { Button } from "@/components/ui/button";
 import {
@@ -120,7 +121,7 @@ export function CalculatorPage() {
                         key={recipe.id}
                         className="flex items-center justify-between text-sm"
                       >
-                        <span>{recipe.name}</span>
+                        <span>{getDisplayName(recipe.name_fr, recipe.name)}</span>
                         <span className="text-muted-foreground">
                           x{quantity}
                         </span>
@@ -158,7 +159,7 @@ export function CalculatorPage() {
                     key={res.item_id}
                     className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
                   >
-                    <span>{res.item_name}</span>
+                    <span>{getDisplayName(res.item_name_fr, res.item_name)}</span>
                     <span className="font-mono text-primary">
                       x{res.total_quantity}
                     </span>

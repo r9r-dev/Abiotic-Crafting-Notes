@@ -53,7 +53,10 @@ export interface RecipeVariant {
 export interface Recipe {
   id: string;
   name: string;
+  name_fr: string | null;
+  description_fr: string | null;
   icon_url: string | null;
+  icon_local: string | null;
   category: string;
   weight: number | null;
   stack_size: number | null;
@@ -67,7 +70,9 @@ export interface Recipe {
 export interface RecipeSearchResult {
   id: string;
   name: string;
+  name_fr: string | null;
   icon_url: string | null;
+  icon_local: string | null;
   category: string;
   craftable: boolean;
 }
@@ -75,6 +80,7 @@ export interface RecipeSearchResult {
 export interface DependencyNode {
   item_id: string;
   item_name: string;
+  item_name_fr: string | null;
   quantity: number;
   craftable: boolean;
   children: DependencyNode[];
@@ -83,6 +89,7 @@ export interface DependencyNode {
 export interface ResourceCalculation {
   item_id: string;
   item_name: string;
+  item_name_fr: string | null;
   total_quantity: number;
   is_base_resource: boolean;
 }
