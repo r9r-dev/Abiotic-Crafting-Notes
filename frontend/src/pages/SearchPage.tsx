@@ -404,7 +404,7 @@ export function SearchPage() {
                                     </div>
                                   ))}
                                 </div>
-                                {i < selectedItem.upgrade_from.length - 1 && (
+                                {i < (selectedItem.upgrade_from?.length ?? 0) - 1 && (
                                   <div className="text-center text-xs text-muted-foreground">
                                     - ou -
                                   </div>
