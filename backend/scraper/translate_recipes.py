@@ -41,6 +41,33 @@ FORCE_BAKING_ITEMS = {
     "boiled_crab_sushi",
     "shadefish_nigiri",
     "simple_shadefish_maki",
+    # Items dont le scraper n'a pas détecté les recettes
+    "lunar_bisque",
+    # Soupes/items cuits avec suffixe différent de leur version non cuite
+    "glue_soup",              # uncooked_glue -> glue_soup
+    "solder_soup",            # uncooked_solder -> solder_soup
+    "fisherman_s_glue_soup",  # uncooked_fisherman_s_glue -> fisherman_s_glue_soup
+    "pot_of_xanterium_rice",  # Riz xanterium cuit
+    "anteverse_cheese",       # Fromage (résultat de cuisson du lait)
+}
+
+# Corrections manuelles pour les items mal scrapés (source_types manquants)
+# Format: item_id -> liste de source_types à ajouter
+MANUAL_SOURCE_TYPES = {
+    "sconce_lamp": [{"type": "World", "location": "The Train"}],
+    "holiday_sconce": [{"type": "World", "location": "North Pole"}],
+}
+
+# Catégories d'items qui sont de la cuisine (Baking) par défaut
+BAKING_CATEGORIES = {
+    "Aliments et cuisine",
+    "Food and Cooking",
+}
+
+# Préfixes d'ID qui indiquent un item de cuisine (Baking)
+BAKING_ID_PREFIXES = {
+    "uncooked_",  # Items non cuits (soupes, ragoûts, etc.)
+    "raw_",       # Items crus (pâtisseries, etc.)
 }
 
 
@@ -210,6 +237,124 @@ def translate_list(arr: list, translations: dict[str, str], stats: dict) -> list
     return result
 
 
+def filter_invalid_items(recipes: dict) -> tuple[dict, int]:
+    """
+    Filtre les items invalides (pages de catégorie, non implémentés).
+
+    Supprime :
+    - Items sans catégorie (category: None) - pages de catégorie wiki
+    - Items avec category: "Unimplemented"
+
+    Retourne le dict filtré et le nombre d'items supprimés.
+    """
+    filtered = {}
+    removed_count = 0
+
+    for item_id, item in recipes.items():
+        if not isinstance(item, dict):
+            filtered[item_id] = item
+            continue
+
+        category = item.get('category')
+
+        # Supprimer les items sans catégorie (pages de catégorie wiki)
+        if category is None:
+            removed_count += 1
+            continue
+
+        # Supprimer les items non implémentés
+        if category == 'Unimplemented':
+            removed_count += 1
+            continue
+
+        filtered[item_id] = item
+
+    return filtered, removed_count
+
+
+def add_missing_source_types(recipes: dict, translations: dict[str, str]) -> int:
+    """
+    Ajoute les source_types manquants basés sur les données existantes.
+
+    Corrections appliquées :
+    - Corrections manuelles (MANUAL_SOURCE_TYPES)
+    - Items forcés en Baking (FORCE_BAKING_ITEMS) sans source_types
+    - Items avec variants mais sans source_types : ajoute Crafting ou Baking
+    - Items avec upgrade_from mais sans Upgrading : ajoute Upgrading
+
+    Retourne le nombre d'items modifiés.
+    """
+    modified_count = 0
+
+    for item_id, item in recipes.items():
+        if not isinstance(item, dict):
+            continue
+
+        source_types = item.get('source_types') or []
+        existing_types = {s.get('type') for s in source_types if isinstance(s, dict)}
+
+        modified = False
+
+        # 1. Corrections manuelles (MANUAL_SOURCE_TYPES)
+        if item_id in MANUAL_SOURCE_TYPES and not source_types:
+            # Traduire les locations si nécessaire
+            for src in MANUAL_SOURCE_TYPES[item_id]:
+                src_copy = src.copy()
+                if 'location' in src_copy:
+                    src_copy['location'] = translate_value(src_copy['location'], translations)
+                source_types.append(src_copy)
+            modified = True
+            existing_types = {s.get('type') for s in source_types}
+
+        # 2. Items de cuisine sans source_types (détection automatique)
+        category = item.get('category', '')
+        is_food_category = category in BAKING_CATEGORIES
+        has_baking_prefix = any(item_id.startswith(prefix) for prefix in BAKING_ID_PREFIXES)
+        # Vérifier si une version non cuite existe (= cet item est le résultat de cuisson)
+        has_uncooked_version = f'uncooked_{item_id}' in recipes or f'raw_{item_id}' in recipes
+
+        if 'Baking' not in existing_types:
+            # Items forcés en Baking
+            if item_id in FORCE_BAKING_ITEMS:
+                source_types.append({'type': 'Baking'})
+                modified = True
+            # Items non cuits/crus dans la catégorie aliments sans source_types
+            elif is_food_category and has_baking_prefix and not source_types:
+                source_types.append({'type': 'Baking'})
+                modified = True
+            # Items cuits qui ont une version non cuite correspondante
+            elif is_food_category and has_uncooked_version and not source_types:
+                source_types.append({'type': 'Baking'})
+                modified = True
+
+        # 3. Items avec variants mais sans source_type Crafting/Baking
+        variants = item.get('variants', [])
+        if variants and 'Crafting' not in existing_types and 'Baking' not in existing_types:
+            # Déterminer si c'est Baking ou Crafting
+            is_baking = item_id in FORCE_BAKING_ITEMS
+            if not is_baking:
+                for variant in variants:
+                    station = variant.get('station', '')
+                    if station in BAKING_STATIONS:
+                        is_baking = True
+                        break
+
+            source_type = 'Baking' if is_baking else 'Crafting'
+            source_types.append({'type': source_type})
+            modified = True
+
+        # 4. Items avec upgrade_from mais sans Upgrading
+        if item.get('upgrade_from') and 'Upgrading' not in existing_types:
+            source_types.append({'type': 'Upgrading'})
+            modified = True
+
+        if modified:
+            item['source_types'] = source_types
+            modified_count += 1
+
+    return modified_count
+
+
 def post_process_items(recipes: dict) -> int:
     """
     Post-traitement des items pour corriger les source_types.
@@ -312,13 +457,21 @@ def main():
     stats = {'translated': 0, 'untranslated': set()}
     recipes_fr = translate_dict(recipes, translations, stats)
 
-    print("Post-traitement des items...")
+    print("Filtrage des items invalides...")
+    recipes_fr, removed = filter_invalid_items(recipes_fr)
+    print(f"  {removed} items supprimés (catégorie None ou Unimplemented)")
+
+    print("Post-traitement des items (Crafting -> Baking)...")
     modified = post_process_items(recipes_fr)
-    print(f"  {modified} items corrigés (Crafting -> Baking pour stations de cuisine)")
+    print(f"  {modified} items corrigés")
 
     print("Construction des recettes d'amélioration inversées...")
     upgrade_count = build_upgrade_from(recipes_fr)
     print(f"  {upgrade_count} items avec upgrade_from ajouté")
+
+    print("Ajout des source_types manquants...")
+    source_types_added = add_missing_source_types(recipes_fr, translations)
+    print(f"  {source_types_added} items avec source_types ajoutés")
 
     print("Sauvegarde de recipes_fr.json...")
     save_json(output_path, recipes_fr)

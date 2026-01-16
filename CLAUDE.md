@@ -178,6 +178,28 @@ python -m scraper.wiki_scraper
 
 Sauvegarde dans `data/recipes_fr.json` avec noms et descriptions en francais.
 
+## Traduction et nettoyage des donnees
+
+Le script `backend/scraper/translate_recipes.py` effectue le post-traitement des donnees scrapees :
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m scraper.translate_recipes
+```
+
+Fonctionnalites :
+- `filter_invalid_items()` : supprime les items sans categorie ou "Unimplemented"
+- `add_missing_source_types()` : ajoute automatiquement les source_types manquants
+- Normalisation des acronymes (A.E.G.I.S vs A.E.G.I.S.)
+- Detection automatique des items cuisine (prefixes `uncooked_*`, `raw_*`)
+
+Constantes de configuration :
+- `FORCE_BAKING_ITEMS` : items forces en Baking
+- `MANUAL_SOURCE_TYPES` : source_types manuels par item
+- `BAKING_CATEGORIES` : categories considerees comme Baking
+- `BAKING_ID_PREFIXES` : prefixes d'ID pour detection automatique Baking
+
 ## CI/CD
 
 GitHub Actions: push tag `v*` -> build images -> push ghcr.io -> release GitHub
@@ -189,4 +211,4 @@ git push origin v1.1.0
 
 ## Version actuelle
 
-v1.1.0 - Nouveau format JSONB, magasins Cuisine/Assemblage, panier separe
+v1.3.2

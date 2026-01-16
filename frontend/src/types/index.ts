@@ -41,8 +41,8 @@ export interface Order {
 
 // Types de sources d'obtention
 export type SourceType =
-  | "Baking"     // Cuisson
-  | "Burning"    // Brûlage
+  | "Baking"     // Cuisine
+  | "Burning"    // Cuisine Cramée
   | "Crafting"   // Assemblage
   | "Fishing"    // Pêche
   | "Killing"    // Combat

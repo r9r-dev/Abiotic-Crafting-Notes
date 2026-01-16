@@ -51,8 +51,8 @@ const sourceIcons: Record<string, React.ElementType> = {
 
 // Labels français pour les types de sources
 const sourceLabels: Record<string, string> = {
-  Baking: "Cuisson",
-  Burning: "Combustion",
+  Baking: "Cuisine",
+  Burning: "Cuisine Cramée",
   Crafting: "Assemblage",
   Fishing: "Pêche",
   Killing: "Combat",
