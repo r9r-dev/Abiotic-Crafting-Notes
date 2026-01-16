@@ -177,7 +177,7 @@ export function RecipesPage() {
                                 key={j}
                                 className="flex items-center justify-between text-sm"
                               >
-                                <span>{ing.item_name}</span>
+                                <span>{getDisplayName(ing.item_name_fr, ing.item_name)}</span>
                                 <span className="text-muted-foreground">
                                   x{ing.quantity}
                                 </span>

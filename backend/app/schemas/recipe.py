@@ -5,6 +5,7 @@ from typing import Optional
 class Ingredient(BaseModel):
     item_id: str
     item_name: str
+    item_name_fr: Optional[str] = None
     quantity: int
 
 

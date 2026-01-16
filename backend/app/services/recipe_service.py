@@ -11,14 +11,27 @@ from app.schemas.recipe import (
 )
 
 
-def _item_to_recipe(item: Item) -> Recipe:
+def _item_to_recipe(item: Item, db: Session) -> Recipe:
     """Convert SQLAlchemy Item to Pydantic Recipe."""
+    # Collect all ingredient IDs to fetch translations in one query
+    ingredient_ids = set()
+    for v in item.variants or []:
+        for ing in v.get("ingredients", []):
+            ingredient_ids.add(ing["item_id"])
+
+    # Fetch all ingredient items to get French names
+    ingredient_items = {}
+    if ingredient_ids:
+        items = db.query(Item).filter(Item.id.in_(ingredient_ids)).all()
+        ingredient_items = {i.id: i for i in items}
+
     variants = []
     for v in item.variants or []:
         ingredients = [
             Ingredient(
                 item_id=ing["item_id"],
                 item_name=ing["item_name"],
+                item_name_fr=ingredient_items.get(ing["item_id"], Item()).name_fr,
                 quantity=ing["quantity"],
             )
             for ing in v.get("ingredients", [])
@@ -48,7 +61,7 @@ def get_recipe(db: Session, item_id: str) -> Recipe | None:
     item = db.query(Item).filter(Item.id == item_id).first()
     if not item:
         return None
-    return _item_to_recipe(item)
+    return _item_to_recipe(item, db)
 
 
 def search_recipes(

@@ -42,6 +42,7 @@ export interface Order {
 export interface Ingredient {
   item_id: string;
   item_name: string;
+  item_name_fr: string | null;
   quantity: number;
 }
 
