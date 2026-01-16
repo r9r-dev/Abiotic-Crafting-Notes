@@ -59,9 +59,11 @@ export function CalculatorPage() {
       }
 
       setTotalResources(
-        Array.from(allResources.values()).sort(
-          (a, b) => b.total_quantity - a.total_quantity
-        )
+        Array.from(allResources.values()).sort((a, b) => {
+          const nameA = getDisplayName(a.item_name_fr, a.item_name);
+          const nameB = getDisplayName(b.item_name_fr, b.item_name);
+          return nameA.localeCompare(nameB, 'fr');
+        })
       );
     } catch (err) {
       console.error(err);
@@ -115,8 +117,13 @@ export function CalculatorPage() {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  {Array.from(selectedItems.values()).map(
-                    ({ recipe, quantity }) => (
+                  {Array.from(selectedItems.values())
+                    .sort((a, b) => {
+                      const nameA = getDisplayName(a.recipe.name_fr, a.recipe.name);
+                      const nameB = getDisplayName(b.recipe.name_fr, b.recipe.name);
+                      return nameA.localeCompare(nameB, 'fr');
+                    })
+                    .map(({ recipe, quantity }) => (
                       <div
                         key={recipe.id}
                         className="flex items-center justify-between text-sm"

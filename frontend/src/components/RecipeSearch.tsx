@@ -28,7 +28,13 @@ export function RecipeSearch({ onSelect, onItemClick, selectedItems }: RecipeSea
       setLoading(true);
       try {
         const data = await searchRecipes(query, category);
-        setResults(data);
+        // Trier par ordre alphabétique (nom FR si dispo, sinon EN)
+        const sorted = data.sort((a, b) => {
+          const nameA = getDisplayName(a.name_fr, a.name);
+          const nameB = getDisplayName(b.name_fr, b.name);
+          return nameA.localeCompare(nameB, 'fr');
+        });
+        setResults(sorted);
       } catch (err) {
         console.error(err);
       } finally {

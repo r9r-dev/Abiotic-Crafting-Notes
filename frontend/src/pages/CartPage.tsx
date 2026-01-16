@@ -47,9 +47,11 @@ export function CartPage() {
         }
 
         setTotalResources(
-          Array.from(allResources.values()).sort(
-            (a, b) => b.total_quantity - a.total_quantity
-          )
+          Array.from(allResources.values()).sort((a, b) => {
+            const nameA = getDisplayName(a.item_name_fr, a.item_name);
+            const nameB = getDisplayName(b.item_name_fr, b.item_name);
+            return nameA.localeCompare(nameB, 'fr');
+          })
         );
       } catch (err) {
         console.error(err);
@@ -131,7 +133,13 @@ export function CartPage() {
           </Card>
         ) : (
           <div className="space-y-2">
-            {Array.from(items.values()).map(({ recipe, quantity }) => {
+            {Array.from(items.values())
+              .sort((a, b) => {
+                const nameA = getDisplayName(a.recipe.name_fr, a.recipe.name);
+                const nameB = getDisplayName(b.recipe.name_fr, b.recipe.name);
+                return nameA.localeCompare(nameB, 'fr');
+              })
+              .map(({ recipe, quantity }) => {
               const iconUrl = getIconUrl(recipe.icon_local, recipe.icon_url);
               const displayName = getDisplayName(recipe.name_fr, recipe.name);
               return (
