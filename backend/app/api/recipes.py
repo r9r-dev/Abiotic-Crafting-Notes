@@ -14,8 +14,10 @@ from app.schemas.recipe import Recipe, RecipeSearchResult, DependencyNode, Resou
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 
-# Icons directory
-ICONS_DIR = Path(__file__).parent.parent.parent.parent / "data" / "icons"
+# Icons directory - configurable via env or default to /app/data/icons (Docker)
+import os
+_default_icons = Path("/app/data/icons") if Path("/app/data").exists() else Path(__file__).parent.parent.parent.parent / "data" / "icons"
+ICONS_DIR = Path(os.environ.get("ICONS_PATH", str(_default_icons)))
 
 
 @router.get("", response_model=list[RecipeSearchResult])
