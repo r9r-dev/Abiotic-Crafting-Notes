@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Package, Search, ClipboardList, User, ShoppingCart } from "lucide-react";
+import { ClipboardList, Search, ChefHat, Hammer, User, ShoppingCart } from "lucide-react";
 
 export function Header() {
   const { user } = useAuth();
@@ -11,8 +11,9 @@ export function Header() {
 
   const links = [
     { to: "/", label: "Commandes", icon: ClipboardList },
-    { to: "/recipes", label: "Recettes", icon: Search },
-    { to: "/calculator", label: "Calculateur", icon: Package },
+    { to: "/search", label: "Recherche", icon: Search },
+    { to: "/kitchen", label: "Cuisine", icon: ChefHat },
+    { to: "/workshop", label: "Assemblage", icon: Hammer },
   ];
 
   return (

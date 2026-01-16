@@ -4,6 +4,8 @@ import type {
   OrderStatus,
   Recipe,
   RecipeSearchResult,
+  ItemDetail,
+  ItemSearchResult,
   DependencyNode,
   ResourceCalculation,
 } from "@/types";
@@ -50,21 +52,70 @@ export async function getCurrentUser(): Promise<User> {
   return request<User>("/auth/me");
 }
 
-// Recipes
+// Items (nouveau format)
+export async function searchItems(
+  query: string = "",
+  category?: string,
+  source?: string,
+  limit: number = 100
+): Promise<ItemSearchResult[]> {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (category) params.set("category", category);
+  if (source) params.set("source", source);
+  if (limit !== 100) params.set("limit", String(limit));
+  return request<ItemSearchResult[]>(`/items?${params}`);
+}
+
+export async function getItem(itemId: string): Promise<ItemDetail> {
+  return request<ItemDetail>(`/items/${itemId}`);
+}
+
+export async function getBakingItems(
+  query: string = "",
+  category?: string
+): Promise<ItemSearchResult[]> {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (category) params.set("category", category);
+  return request<ItemSearchResult[]>(`/items/baking?${params}`);
+}
+
+export async function getCraftingItems(
+  query: string = "",
+  category?: string
+): Promise<ItemSearchResult[]> {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (category) params.set("category", category);
+  return request<ItemSearchResult[]>(`/items/crafting?${params}`);
+}
+
+export async function getItemCategories(source?: string): Promise<string[]> {
+  const params = new URLSearchParams();
+  if (source) params.set("source", source);
+  return request<string[]>(`/items/categories?${params}`);
+}
+
+// Recipes (compatibilité)
 export async function searchRecipes(
   query: string = "",
   category?: string,
-  craftableOnly: boolean = true
+  craftableOnly: boolean = true,
+  source?: string
 ): Promise<RecipeSearchResult[]> {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
   if (category) params.set("category", category);
   if (!craftableOnly) params.set("craftable_only", "false");
+  if (source) params.set("source", source);
   return request<RecipeSearchResult[]>(`/recipes?${params}`);
 }
 
-export async function getCategories(): Promise<string[]> {
-  return request<string[]>("/recipes/categories");
+export async function getCategories(source?: string): Promise<string[]> {
+  const params = new URLSearchParams();
+  if (source) params.set("source", source);
+  return request<string[]>(`/recipes/categories?${params}`);
 }
 
 export async function getRecipe(itemId: string): Promise<Recipe> {

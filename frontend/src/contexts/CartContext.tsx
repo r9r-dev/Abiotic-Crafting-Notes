@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   type ReactNode,
 } from "react";
 import type { RecipeSearchResult } from "@/types";
@@ -18,14 +19,28 @@ export interface CartItem {
 interface CartContextType {
   items: Map<string, CartItem>;
   totalCount: number;
+  bakingItems: CartItem[];
+  craftingItems: CartItem[];
+  bakingCount: number;
+  craftingCount: number;
   addItem: (recipe: RecipeSearchResult) => void;
   removeItem: (recipeId: string) => void;
   setItemQuantity: (recipeId: string, quantity: number) => void;
   clearCart: () => void;
+  clearBaking: () => void;
+  clearCrafting: () => void;
   getItemQuantity: (recipeId: string) => number;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
+
+// Détermine le type principal d'un item
+function getItemType(recipe: RecipeSearchResult): "Baking" | "Crafting" | "Other" {
+  const sources = recipe.source_types || [];
+  if (sources.includes("Baking")) return "Baking";
+  if (sources.includes("Crafting")) return "Crafting";
+  return "Other";
+}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Map<string, CartItem>>(new Map());
@@ -52,10 +67,40 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items]);
 
+  // Séparer les items par type
+  const { bakingItems, craftingItems } = useMemo(() => {
+    const baking: CartItem[] = [];
+    const crafting: CartItem[] = [];
+
+    for (const item of items.values()) {
+      const type = getItemType(item.recipe);
+      if (type === "Baking") {
+        baking.push(item);
+      } else if (type === "Crafting") {
+        crafting.push(item);
+      } else {
+        // Les items "Other" vont dans crafting par défaut
+        crafting.push(item);
+      }
+    }
+
+    // Tri alphabétique
+    const sortFn = (a: CartItem, b: CartItem) =>
+      (a.recipe.name_fr || a.recipe.name).localeCompare(b.recipe.name_fr || b.recipe.name, 'fr');
+
+    return {
+      bakingItems: baking.sort(sortFn),
+      craftingItems: crafting.sort(sortFn),
+    };
+  }, [items]);
+
   const totalCount = Array.from(items.values()).reduce(
     (sum, item) => sum + item.quantity,
     0
   );
+
+  const bakingCount = bakingItems.reduce((sum, item) => sum + item.quantity, 0);
+  const craftingCount = craftingItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const addItem = useCallback((recipe: RecipeSearchResult) => {
     setItems((prev) => {
@@ -102,6 +147,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems(new Map());
   }, []);
 
+  const clearBaking = useCallback(() => {
+    setItems((prev) => {
+      const next = new Map(prev);
+      for (const [id, item] of prev) {
+        if (getItemType(item.recipe) === "Baking") {
+          next.delete(id);
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  const clearCrafting = useCallback(() => {
+    setItems((prev) => {
+      const next = new Map(prev);
+      for (const [id, item] of prev) {
+        const type = getItemType(item.recipe);
+        if (type === "Crafting" || type === "Other") {
+          next.delete(id);
+        }
+      }
+      return next;
+    });
+  }, []);
+
   const getItemQuantity = useCallback(
     (recipeId: string) => {
       return items.get(recipeId)?.quantity || 0;
@@ -114,10 +184,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         items,
         totalCount,
+        bakingItems,
+        craftingItems,
+        bakingCount,
+        craftingCount,
         addItem,
         removeItem,
         setItemQuantity,
         clearCart,
+        clearBaking,
+        clearCrafting,
         getItemQuantity,
       }}
     >

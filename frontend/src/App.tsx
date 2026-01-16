@@ -3,8 +3,9 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Header } from "@/components/Header";
 import { OrdersPage } from "@/pages/OrdersPage";
-import { RecipesPage } from "@/pages/RecipesPage";
-import { CalculatorPage } from "@/pages/CalculatorPage";
+import { SearchPage } from "@/pages/SearchPage";
+import { KitchenPage } from "@/pages/KitchenPage";
+import { WorkshopPage } from "@/pages/WorkshopPage";
 import { CartPage } from "@/pages/CartPage";
 
 function AppContent() {
@@ -38,8 +39,9 @@ function AppContent() {
       <main className="container mx-auto px-4 py-6">
         <Routes>
           <Route path="/" element={<OrdersPage />} />
-          <Route path="/recipes" element={<RecipesPage />} />
-          <Route path="/calculator" element={<CalculatorPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/kitchen" element={<KitchenPage />} />
+          <Route path="/workshop" element={<WorkshopPage />} />
           <Route path="/cart" element={<CartPage />} />
         </Routes>
       </main>
