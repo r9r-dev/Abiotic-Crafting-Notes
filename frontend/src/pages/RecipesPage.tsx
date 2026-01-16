@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExternalLink, Hammer } from "lucide-react";
+import { ExternalLink, Hammer, Gem, Package } from "lucide-react";
 
 export function RecipesPage() {
   const { items: cartItems, addItem, removeItem } = useCart();
@@ -178,14 +178,7 @@ export function RecipesPage() {
                                 className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
                               >
                                 <span className="flex items-center gap-2">
-                                  <img
-                                    src={`/api/icons/${ing.item_id}.png`}
-                                    alt=""
-                                    className="h-5 w-5 object-contain"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).style.display = 'none';
-                                    }}
-                                  />
+                                  <Package className="h-4 w-4 text-muted-foreground" />
                                   {getDisplayName(ing.item_name_fr, ing.item_name)}
                                 </span>
                                 <span className="font-mono text-primary">
@@ -217,14 +210,7 @@ export function RecipesPage() {
                           className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
                         >
                           <span className="flex items-center gap-2">
-                            <img
-                              src={`/api/icons/${res.item_id}.png`}
-                              alt=""
-                              className="h-5 w-5 object-contain"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
+                            <Gem className="h-4 w-4 text-muted-foreground" />
                             {getDisplayName(res.item_name_fr, res.item_name)}
                           </span>
                           <span className="font-mono text-primary">
