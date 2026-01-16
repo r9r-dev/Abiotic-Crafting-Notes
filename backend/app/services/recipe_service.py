@@ -113,9 +113,14 @@ def search_recipes(
 
 
 def get_categories(db: Session) -> list[str]:
-    """Get all unique categories."""
-    categories = db.query(Item.category).distinct().all()
-    return sorted([c[0] for c in categories])
+    """Get all unique categories that have craftable items."""
+    categories = (
+        db.query(Item.category)
+        .filter(Item.variants != None, func.jsonb_array_length(Item.variants) > 0)
+        .distinct()
+        .all()
+    )
+    return sorted([c[0] for c in categories if c[0]])
 
 
 def build_dependency_tree(
