@@ -3,7 +3,7 @@ import type { Recipe, DependencyNode, ResourceCalculation } from "@/types";
 import type { RecipeSearchResult } from "@/types";
 import { useCart } from "@/contexts/CartContext";
 import { getRecipe, getDependencies, getResources } from "@/services/api";
-import { getIconUrl, getDisplayName } from "@/lib/utils";
+import { getIconUrl, getDisplayName, getCategoryLabel } from "@/lib/utils";
 import { RecipeSearch } from "@/components/RecipeSearch";
 import { DependencyTree } from "@/components/DependencyTree";
 import {
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExternalLink, Package, Hammer } from "lucide-react";
+import { ExternalLink, Hammer } from "lucide-react";
 
 export function RecipesPage() {
   const { items: cartItems, addItem, removeItem } = useCart();
@@ -112,7 +112,7 @@ export function RecipesPage() {
                       )}
                     </CardTitle>
                     <Badge variant="secondary" className="mt-1">
-                      {selectedRecipe.category}
+                      {getCategoryLabel(selectedRecipe.category)}
                     </Badge>
                     {selectedRecipe.description_fr && (
                       <p className="mt-2 text-sm text-muted-foreground">
@@ -168,17 +168,27 @@ export function RecipesPage() {
                         <div key={i} className="space-y-2">
                           {variant.station && (
                             <p className="text-xs text-muted-foreground">
-                              Station: {variant.station}
+                              Station : {variant.station}
                             </p>
                           )}
-                          <div className="space-y-1">
+                          <div className="space-y-2">
                             {variant.ingredients.map((ing, j) => (
                               <div
                                 key={j}
-                                className="flex items-center justify-between text-sm"
+                                className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
                               >
-                                <span>{getDisplayName(ing.item_name_fr, ing.item_name)}</span>
-                                <span className="text-muted-foreground">
+                                <span className="flex items-center gap-2">
+                                  <img
+                                    src={`/api/icons/${ing.item_id}.png`}
+                                    alt=""
+                                    className="h-5 w-5 object-contain"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                  {getDisplayName(ing.item_name_fr, ing.item_name)}
+                                </span>
+                                <span className="font-mono text-primary">
                                   x{ing.quantity}
                                 </span>
                               </div>
@@ -204,10 +214,17 @@ export function RecipesPage() {
                       {resources.map((res) => (
                         <div
                           key={res.item_id}
-                          className="flex items-center justify-between text-sm"
+                          className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
                         >
                           <span className="flex items-center gap-2">
-                            <Package className="h-3 w-3 text-muted-foreground" />
+                            <img
+                              src={`/api/icons/${res.item_id}.png`}
+                              alt=""
+                              className="h-5 w-5 object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
                             {getDisplayName(res.item_name_fr, res.item_name)}
                           </span>
                           <span className="font-mono text-primary">

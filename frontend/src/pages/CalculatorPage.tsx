@@ -159,7 +159,17 @@ export function CalculatorPage() {
                     key={res.item_id}
                     className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
                   >
-                    <span>{getDisplayName(res.item_name_fr, res.item_name)}</span>
+                    <span className="flex items-center gap-2">
+                      <img
+                        src={`/api/icons/${res.item_id}.png`}
+                        alt=""
+                        className="h-5 w-5 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      {getDisplayName(res.item_name_fr, res.item_name)}
+                    </span>
                     <span className="font-mono text-primary">
                       x{res.total_quantity}
                     </span>

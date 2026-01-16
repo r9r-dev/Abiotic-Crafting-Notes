@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { ResourceCalculation } from "@/types";
 import { useCart } from "@/contexts/CartContext";
 import { getResources, createOrder } from "@/services/api";
-import { getDisplayName, getIconUrl } from "@/lib/utils";
+import { getDisplayName, getIconUrl, getCategoryLabel } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -147,7 +147,7 @@ export function CartPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{displayName}</p>
                       <p className="text-sm text-muted-foreground">
-                        {recipe.category}
+                        {getCategoryLabel(recipe.category)}
                       </p>
                     </div>
                     <div className="flex flex-shrink-0 items-center gap-2">
@@ -196,46 +196,6 @@ export function CartPage() {
 
       {/* Summary panel */}
       <div className="space-y-4">
-        {/* Resources needed */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Package className="h-4 w-4" />
-              Ressources nécessaires
-              {loading && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  (calcul...)
-                </span>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {items.size === 0 ? (
-              <p className="text-center text-sm text-muted-foreground">
-                Ajoutez des items au panier
-              </p>
-            ) : totalResources.length === 0 && !loading ? (
-              <p className="text-center text-sm text-muted-foreground">
-                Aucune ressource de base requise
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {totalResources.map((res) => (
-                  <div
-                    key={res.item_id}
-                    className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
-                  >
-                    <span>{getDisplayName(res.item_name_fr, res.item_name)}</span>
-                    <span className="font-mono text-primary">
-                      x{res.total_quantity}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Order form */}
         {items.size > 0 && (
           <Card>
@@ -273,6 +233,54 @@ export function CartPage() {
                 <Send className="h-4 w-4" />
                 {submitting ? "Envoi en cours..." : "Envoyer la commande"}
               </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Resources needed */}
+        {items.size > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Package className="h-4 w-4" />
+                Ressources nécessaires
+                {loading && (
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    (calcul...)
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {totalResources.length === 0 && !loading ? (
+                <p className="text-center text-sm text-muted-foreground">
+                  Aucune ressource de base requise
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {totalResources.map((res) => (
+                    <div
+                      key={res.item_id}
+                      className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
+                    >
+                      <span className="flex items-center gap-2">
+                        <img
+                          src={`/api/icons/${res.item_id}.png`}
+                          alt=""
+                          className="h-5 w-5 object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        {getDisplayName(res.item_name_fr, res.item_name)}
+                      </span>
+                      <span className="font-mono text-primary">
+                        x{res.total_quantity}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

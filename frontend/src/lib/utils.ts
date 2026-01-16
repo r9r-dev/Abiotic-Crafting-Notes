@@ -64,3 +64,27 @@ export function getIconUrl(iconLocal: string | null, iconUrl: string | null): st
 export function getDisplayName(nameFr: string | null, name: string): string {
   return nameFr || name;
 }
+
+/**
+ * Category translations from English to French.
+ */
+const categoryTranslations: Record<string, string> = {
+  "Armor and Gear": "Armure et équipement",
+  "Base Defense": "Défense de base",
+  "Farming": "Agriculture",
+  "Food and Cooking": "Nourriture et cuisine",
+  "Furniture and Benches": "Mobilier et établis",
+  "Health and Medical": "Santé et médical",
+  "Light and Power": "Lumière et énergie",
+  "Resources and Sub-components": "Ressources et composants",
+  "Tools": "Outils",
+  "Travel and Vehicles": "Transport et véhicules",
+  "Weapons and Ammo": "Armes et munitions",
+};
+
+/**
+ * Get the French translation of a category.
+ */
+export function getCategoryLabel(category: string): string {
+  return categoryTranslations[category] || category;
+}

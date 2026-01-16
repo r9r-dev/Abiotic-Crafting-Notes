@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { RecipeSearchResult } from "@/types";
 import { searchRecipes, getCategories } from "@/services/api";
-import { getIconUrl, getDisplayName } from "@/lib/utils";
+import { getIconUrl, getDisplayName, getCategoryLabel } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Plus, Minus } from "lucide-react";
@@ -78,7 +78,7 @@ export function RecipeSearch({ onSelect, onItemClick, selectedItems }: RecipeSea
             className="text-xs sm:text-sm"
             onClick={() => setCategory(cat)}
           >
-            {cat}
+            {getCategoryLabel(cat)}
           </Button>
         ))}
       </div>
@@ -123,7 +123,7 @@ export function RecipeSearch({ onSelect, onItemClick, selectedItems }: RecipeSea
                   <p className="truncate text-xs font-medium sm:text-sm">{displayName}</p>
                   <div className="flex items-center gap-1 sm:gap-2">
                     <span className="truncate text-xs text-muted-foreground">
-                      {recipe.category}
+                      {getCategoryLabel(recipe.category)}
                     </span>
                   </div>
                 </div>
