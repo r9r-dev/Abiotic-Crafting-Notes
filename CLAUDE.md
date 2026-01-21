@@ -88,12 +88,24 @@ bun install
 bun dev  # http://localhost:3000
 ```
 
+## Acces Base de donnees
+
+**IMPORTANT** : L'acces a PostgreSQL est preconfigure via les variables d'environnement du systeme. La commande `psql` fonctionne directement sans arguments.
+
+```bash
+# Connexion directe (fonctionne tel quel, ne pas chercher a configurer)
+psql
+
+# Exemples de requetes
+psql -c "SELECT COUNT(*) FROM items;"
+psql -c "\dt"  # Lister les tables
+```
+
+Ne jamais supposer que l'acces est impossible. Si une erreur survient, verifier d'abord avec `psql -c "\conninfo"`.
+
 ## Acces Production
 
 ```bash
-# Base de donnees (variables d'env configurees)
-psql
-
 # Serveur de production
 ssh cadence
 ```

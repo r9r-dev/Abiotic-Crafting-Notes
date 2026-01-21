@@ -10,11 +10,11 @@ interface GalleryItemCardProps {
 
 const categoryLabels: Record<string, string> = {
   weapon: "Arme",
-  equipment: "Equipement",
+  equipment: "Équipement",
   consumable: "Consommable",
-  deployable: "Deployable",
-  deployable_small: "Petit deployable",
-  crafting_bench: "Etabli",
+  deployable: "Déployable",
+  deployable_small: "Petit déployable",
+  crafting_bench: "Établi",
   pickup: "Ramassable",
   plant: "Plante",
   pet: "Familier",

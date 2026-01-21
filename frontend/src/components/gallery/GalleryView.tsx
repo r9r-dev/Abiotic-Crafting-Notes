@@ -14,10 +14,10 @@ const ITEMS_PER_PAGE = 24;
 const categories = [
   { value: "", label: "Tous" },
   { value: "weapon", label: "Armes" },
-  { value: "equipment", label: "Equipements" },
+  { value: "equipment", label: "Équipements" },
   { value: "consumable", label: "Consommables" },
-  { value: "deployable", label: "Deployables" },
-  { value: "crafting_bench", label: "Etablis" },
+  { value: "deployable", label: "Déployables" },
+  { value: "crafting_bench", label: "Établis" },
   { value: "pickup", label: "Ramassables" },
 ] as const;
 
@@ -136,7 +136,7 @@ export function GalleryView() {
 
       {/* Compteur */}
       <div className="mt-4 text-sm text-muted-foreground">
-        {total} item{total > 1 ? "s" : ""} trouve{total > 1 ? "s" : ""}
+        {total} item{total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
       </div>
 
       {/* Grille */}
@@ -146,7 +146,7 @@ export function GalleryView() {
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
-          Aucun item trouve
+          Aucun item trouvé
         </div>
       ) : (
         <>

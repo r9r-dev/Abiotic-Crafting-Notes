@@ -12,11 +12,11 @@ import type { ItemSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
   weapon: "Arme",
-  equipment: "Equipement",
+  equipment: "Équipement",
   consumable: "Consommable",
-  deployable: "Deployable",
-  deployable_small: "Petit deployable",
-  crafting_bench: "Etabli",
+  deployable: "Déployable",
+  deployable_small: "Petit déployable",
+  crafting_bench: "Établi",
   pickup: "Ramassable",
   plant: "Plante",
   pet: "Familier",
@@ -144,7 +144,7 @@ function SearchView() {
               showResults ? "text-2xl" : "text-4xl"
             }`}
           >
-            Abiotic Science Database
+            Abiotic Factor Database
           </h1>
 
           {/* Champ de recherche */}
@@ -170,7 +170,7 @@ function SearchView() {
 
             {!loading && hasSearched && results.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
-                Aucun resultat pour "{query}"
+                Aucun résultat pour "{query}"
               </div>
             )}
 
