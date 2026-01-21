@@ -125,6 +125,7 @@ def _build_recipe_response(
         category=recipe.category,
         subcategory=recipe.subcategory,
         craft_time=recipe.craft_time,
+        recipe_tags=recipe.recipe_tags,
         name=recipe.name,
         ingredients=enriched_ingredients,
         bench=bench_response,
