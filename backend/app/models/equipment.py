@@ -7,6 +7,7 @@ import enum
 class EquipSlot(str, enum.Enum):
     HEAD = "Head"
     TORSO = "Torso"
+    SUIT = "Suit"  # Combinaisons (corps entier)
     LEGS = "Legs"
     FEET = "Feet"
     HANDS = "Hands"

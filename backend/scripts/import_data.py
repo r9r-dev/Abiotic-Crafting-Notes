@@ -197,8 +197,8 @@ class DataImporter:
             "NewEnumerator6": EquipSlot.LEGS,      # Jambes
             "NewEnumerator7": EquipSlot.BACK,      # Sacs à dos
             "NewEnumerator12": EquipSlot.HANDS,    # Bras/Mains
-            "NewEnumerator13": EquipSlot.TORSO,    # Combinaisons (corps entier)
-            "NewEnumerator14": EquipSlot.TORSO,    # Torse
+            "NewEnumerator13": EquipSlot.SUIT,     # Combinaisons (corps entier)
+            "NewEnumerator14": EquipSlot.TORSO,    # Torse (plastrons)
             "NewEnumerator15": EquipSlot.FACE,     # Visage (lampes, lunettes)
             "NewEnumerator16": EquipSlot.ACCESSORY,  # Accessoires/Gadgets
         }

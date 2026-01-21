@@ -37,6 +37,7 @@ export type ReleaseGroup = "Core" | "DarkEnergy" | "Community";
 export type EquipSlot =
   | "Head"
   | "Torso"
+  | "Suit"
   | "Legs"
   | "Feet"
   | "Hands"

@@ -35,6 +35,7 @@ function StatRow({ label, value, unit, highlight = "neutral" }: StatRowProps) {
 const slotLabels: Record<EquipSlot, string> = {
   Head: "Tête",
   Torso: "Torse",
+  Suit: "Combinaison",
   Legs: "Jambes",
   Feet: "Pieds",
   Hands: "Mains",
@@ -46,6 +47,7 @@ const slotLabels: Record<EquipSlot, string> = {
 const slotIcons: Record<EquipSlot, string> = {
   Head: "/icons/icon_helmet.png",
   Torso: "/icons/icon_armor.png",
+  Suit: "/icons/icon_suit.png",
   Legs: "/icons/icon_pants.png",
   Feet: "/icons/icon_pants.png",
   Hands: "/icons/icon_arm.png",
