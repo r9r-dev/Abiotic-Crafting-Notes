@@ -7,8 +7,8 @@ class ItemSearchResult(BaseModel):
     """Résultat de recherche simplifié."""
     row_id: str
     category: str
-    name_fr: Optional[str] = None
-    description_fr: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
     icon_path: Optional[str] = None
 
     class Config:
@@ -154,7 +154,7 @@ class DeployableResponse(BaseModel):
 class IngredientItemResponse(BaseModel):
     """Info minimale d'un item pour affichage dans une recette."""
     row_id: str
-    name_fr: Optional[str] = None
+    name: Optional[str] = None
     icon_path: Optional[str] = None
 
     class Config:
@@ -176,7 +176,7 @@ class RecipeIngredientResponse(BaseModel):
 class BenchMinimalResponse(BaseModel):
     """Info minimale d'un etabli."""
     row_id: str
-    name_fr: Optional[str] = None
+    name: Optional[str] = None
     item_row_id: Optional[str] = None
     tier: int
 
@@ -194,7 +194,7 @@ class RecipeResponse(BaseModel):
     category: Optional[str] = None
     subcategory: Optional[str] = None
     craft_time: float
-    name_fr: Optional[str] = None
+    name: Optional[str] = None
     ingredients: List[RecipeIngredientResponse] = []
     bench: Optional[BenchMinimalResponse] = None
 
@@ -209,9 +209,9 @@ class ItemResponse(BaseModel):
     row_id: str
     category: ItemCategory
     release_group: Optional[ReleaseGroup] = None
-    name_fr: Optional[str] = None
-    description_fr: Optional[str] = None
-    flavor_text_fr: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    flavor_text: Optional[str] = None
     stack_size: int
     weight: float
     max_durability: float

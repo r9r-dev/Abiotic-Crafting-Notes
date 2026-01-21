@@ -10,8 +10,8 @@ class Projectile(Base):
     row_id = Column(String(255), unique=True, nullable=False, index=True)
 
     # Traductions
-    name_fr = Column(String(255))
-    description_fr = Column(Text)
+    name = Column(String(255))
+    description = Column(Text)
 
     # Dégâts
     base_damage = Column(Float, default=0.0)

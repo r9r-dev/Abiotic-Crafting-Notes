@@ -30,7 +30,7 @@ function SearchResult({ item, query }: { item: ItemSearchResult; query: string }
         {iconUrl ? (
           <img
             src={iconUrl}
-            alt={item.name_fr || item.row_id}
+            alt={item.name || item.row_id}
             className="w-10 h-10 object-contain"
           />
         ) : (
@@ -40,15 +40,15 @@ function SearchResult({ item, query }: { item: ItemSearchResult; query: string }
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium truncate">
-            {item.name_fr || item.row_id}
+            {item.name || item.row_id}
           </span>
           <Badge variant="outline" className="text-xs flex-shrink-0">
             {categoryLabels[item.category] || item.category}
           </Badge>
         </div>
-        {item.description_fr && (
+        {item.description && (
           <p className="text-sm text-muted-foreground truncate">
-            {item.description_fr}
+            {item.description}
           </p>
         )}
       </div>

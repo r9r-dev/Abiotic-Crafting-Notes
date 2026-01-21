@@ -9,8 +9,8 @@ export interface User {
 export interface ItemSearchResult {
   row_id: string;
   category: string;
-  name_fr: string | null;
-  description_fr: string | null;
+  name: string | null;
+  description: string | null;
   icon_path: string | null;
 }
 
@@ -127,7 +127,7 @@ export interface Deployable {
 // Recettes
 export interface IngredientItem {
   row_id: string;
-  name_fr: string | null;
+  name: string | null;
   icon_path: string | null;
 }
 
@@ -142,7 +142,7 @@ export interface RecipeIngredient {
 
 export interface BenchMinimal {
   row_id: string;
-  name_fr: string | null;
+  name: string | null;
   item_row_id: string | null;
   tier: number;
 }
@@ -157,7 +157,7 @@ export interface Recipe {
   category: string | null;
   subcategory: string | null;
   craft_time: number;
-  name_fr: string | null;
+  name: string | null;
   ingredients: RecipeIngredient[];
   bench: BenchMinimal | null;
 }
@@ -168,9 +168,9 @@ export interface Item {
   row_id: string;
   category: ItemCategory;
   release_group: ReleaseGroup | null;
-  name_fr: string | null;
-  description_fr: string | null;
-  flavor_text_fr: string | null;
+  name: string | null;
+  description: string | null;
+  flavor_text: string | null;
   stack_size: number;
   weight: number;
   max_durability: number;

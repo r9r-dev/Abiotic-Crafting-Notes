@@ -10,8 +10,8 @@ class NPC(Base):
     row_id = Column(String(255), unique=True, nullable=False, index=True)
 
     # Traductions
-    name_fr = Column(String(255))
-    description_fr = Column(Text)
+    name = Column(String(255))
+    description = Column(Text)
 
     # Points de vie par zone
     hp_head = Column(Float, default=100.0)
@@ -46,4 +46,4 @@ class NPC(Base):
     category = Column(String(100))
 
     def __repr__(self):
-        return f"<NPC(row_id='{self.row_id}', name='{self.name_fr}')>"
+        return f"<NPC(row_id='{self.row_id}', name='{self.name}')>"

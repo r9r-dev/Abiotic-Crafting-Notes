@@ -10,8 +10,8 @@ class Plant(Base):
     row_id = Column(String(255), unique=True, nullable=False, index=True)
 
     # Traductions
-    name_fr = Column(String(255))
-    description_fr = Column(Text)
+    name = Column(String(255))
+    description = Column(Text)
 
     # Items liés
     seed_item_row_id = Column(String(255))  # Graine pour planter
@@ -40,4 +40,4 @@ class Plant(Base):
     icon_path = Column(String(512))
 
     def __repr__(self):
-        return f"<Plant(row_id='{self.row_id}', name='{self.name_fr}')>"
+        return f"<Plant(row_id='{self.row_id}', name='{self.name}')>"

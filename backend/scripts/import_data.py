@@ -32,7 +32,8 @@ from app.models import (
 DATA_DIR = Path(__file__).parent.parent.parent / "data"
 ITEMS_DIR = DATA_DIR / "Items"
 DATATABLES_DIR = DATA_DIR / "DataTables"
-TRANSLATIONS_FILE = DATA_DIR / "fr.json"
+TRANSLATIONS_FR_FILE = DATA_DIR / "fr.json"
+TRANSLATIONS_EN_FILE = DATA_DIR / "en.json"
 
 
 class DataImporter:
@@ -40,22 +41,43 @@ class DataImporter:
 
     def __init__(self, session: Session):
         self.session = session
-        self.translations: dict = {}
+        self.translations_fr: dict = {}
+        self.translations_en: dict = {}
         self.items_cache: dict[str, dict] = {}  # Cache des items par row_id
 
     def load_translations(self) -> None:
-        """Charge les traductions françaises."""
+        """Charge les traductions françaises et anglaises (fallback)."""
         print("Chargement des traductions...")
-        with open(TRANSLATIONS_FILE, "r", encoding="utf-8") as f:
-            self.translations = json.load(f)
-        print(f"  {sum(len(v) for v in self.translations.values())} traductions chargées")
+
+        # Charger les traductions françaises
+        with open(TRANSLATIONS_FR_FILE, "r", encoding="utf-8") as f:
+            self.translations_fr = json.load(f)
+        fr_count = sum(len(v) for v in self.translations_fr.values())
+        print(f"  {fr_count} traductions FR chargées")
+
+        # Charger les traductions anglaises (fallback)
+        with open(TRANSLATIONS_EN_FILE, "r", encoding="utf-8") as f:
+            self.translations_en = json.load(f)
+        en_count = sum(len(v) for v in self.translations_en.values())
+        print(f"  {en_count} traductions EN chargées (fallback)")
 
     def get_translation(self, table_name: str, row_id: str, field: str) -> str | None:
-        """Récupère une traduction."""
-        if table_name not in self.translations:
-            return None
+        """Récupère une traduction FR, avec fallback sur EN si absente."""
         key = f"{row_id}_{field}"
-        return self.translations[table_name].get(key)
+
+        # Essayer d'abord en français
+        if table_name in self.translations_fr:
+            value = self.translations_fr[table_name].get(key)
+            if value:
+                return value
+
+        # Fallback sur l'anglais
+        if table_name in self.translations_en:
+            value = self.translations_en[table_name].get(key)
+            if value:
+                return value
+
+        return None
 
     def load_json_file(self, filepath: Path) -> list[dict]:
         """Charge un fichier JSON Unreal Engine."""
@@ -93,6 +115,24 @@ class DataImporter:
             return asset
         if isinstance(asset, dict):
             return asset.get("AssetPathName") or asset.get("ObjectPath")
+        return None
+
+    def parse_icon_path(self, asset: dict | str | None) -> str | None:
+        """Extrait le nom du fichier icône depuis un chemin Unreal.
+
+        Ex: /Game/Textures/GUI/ItemIcons/itemicon_xxx.itemicon_xxx -> itemicon_xxx.png
+        """
+        path = self.parse_asset_path(asset)
+        if not path:
+            return None
+
+        # Extraire le nom du fichier (dernière partie du chemin, avant le point)
+        # Format: /Game/.../itemicon_xxx.itemicon_xxx
+        parts = path.split("/")
+        if parts:
+            filename = parts[-1].split(".")[0]  # itemicon_xxx
+            if filename and filename != "None":
+                return f"{filename}.png"
         return None
 
     def safe_str(self, value: Any) -> str | None:
@@ -187,15 +227,15 @@ class DataImporter:
                 release_group=self.parse_release_group(
                     self.find_property(row_data, "ReleaseGroup")
                 ),
-                name_fr=self.get_translation(table_name, row_id, "ItemName"),
-                description_fr=self.get_translation(table_name, row_id, "ItemDescription"),
-                flavor_text_fr=self.get_translation(table_name, row_id, "ItemFlavorText"),
+                name=self.get_translation(table_name, row_id, "ItemName"),
+                description=self.get_translation(table_name, row_id, "ItemDescription"),
+                flavor_text=self.get_translation(table_name, row_id, "ItemFlavorText"),
                 stack_size=self.find_property(row_data, "StackSize") or 1,
                 weight=self.find_property(row_data, "Weight") or 0.0,
                 max_durability=self.find_property(row_data, "MaxItemDurability") or 0.0,
                 can_lose_durability=self.find_property(row_data, "CanLoseDurability") or False,
                 chance_to_lose_durability=self.find_property(row_data, "ChanceToLoseDurability") or 0.0,
-                icon_path=self.parse_asset_path(self.find_property(row_data, "InventoryIcon")),
+                icon_path=self.parse_icon_path(self.find_property(row_data, "InventoryIcon")),
                 mesh_path=self.parse_asset_path(self.find_property(row_data, "WorldStaticMesh")),
                 gameplay_tags=json.dumps(self.find_property(row_data, "GameplayTags") or []),
             )
@@ -499,8 +539,8 @@ class DataImporter:
 
             npc = NPC(
                 row_id=row_id,
-                name_fr=self.get_translation("DT_NPCList", row_id, "DisplayName"),
-                description_fr=self.get_translation("DT_NPCList", row_id, "Description"),
+                name=self.get_translation("DT_NPCList", row_id, "DisplayName"),
+                description=self.get_translation("DT_NPCList", row_id, "Description"),
                 hp_head=self.find_property(row_data, "HP_Head") or 100.0,
                 hp_body=self.find_property(row_data, "HP_Torso") or 100.0,  # Correction: HP_Torso dans les données
                 hp_limbs=self.find_property(row_data, "HP_LeftArm") or 100.0,  # Approximation avec un membre
@@ -535,8 +575,8 @@ class DataImporter:
         for row_id, row_data in rows.items():
             plant = Plant(
                 row_id=row_id,
-                name_fr=self.get_translation("DT_Plants", row_id, "DisplayName"),
-                description_fr=self.get_translation("DT_Plants", row_id, "Description"),
+                name=self.get_translation("DT_Plants", row_id, "DisplayName"),
+                description=self.get_translation("DT_Plants", row_id, "Description"),
                 seed_item_row_id=self.parse_data_table_ref(self.find_property(row_data, "SeedItem")),
                 harvest_item_row_id=self.parse_data_table_ref(self.find_property(row_data, "HarvestItem")),
                 grow_time=self.find_property(row_data, "GrowTime") or 0.0,
@@ -566,8 +606,8 @@ class DataImporter:
         for row_id, row_data in rows.items():
             projectile = Projectile(
                 row_id=row_id,
-                name_fr=self.get_translation("DT_Projectiles", row_id, "ProjectileName"),
-                description_fr=self.get_translation("DT_Projectiles", row_id, "ProjectileDescription"),
+                name=self.get_translation("DT_Projectiles", row_id, "ProjectileName"),
+                description=self.get_translation("DT_Projectiles", row_id, "ProjectileDescription"),
                 base_damage=self.find_property(row_data, "BaseDamage") or 0.0,
                 damage_type=self.parse_asset_path(self.find_property(row_data, "DamageType")),
                 initial_speed=self.find_property(row_data, "InitialSpeed") or 0.0,
@@ -599,9 +639,9 @@ class DataImporter:
         for row_id, row_data in rows.items():
             substitute = RecipeSubstitute(
                 row_id=row_id,
-                name_fr=self.get_translation("ItemTable_RecipeSubstitutes", row_id, "ItemTypeName"),
-                description_fr=self.get_translation("ItemTable_RecipeSubstitutes", row_id, "ItemTypeDescription"),
-                icon_path=self.parse_asset_path(self.find_property(row_data, "ItemTypeIcon")),
+                name=self.get_translation("ItemTable_RecipeSubstitutes", row_id, "ItemTypeName"),
+                description=self.get_translation("ItemTable_RecipeSubstitutes", row_id, "ItemTypeDescription"),
+                icon_path=self.parse_icon_path(self.find_property(row_data, "ItemTypeIcon")),
             )
             self.session.add(substitute)
             self.session.flush()
@@ -642,8 +682,8 @@ class DataImporter:
             bench = Bench(
                 row_id=item.row_id,
                 item_row_id=item.row_id,
-                name_fr=item.name_fr,
-                description_fr=item.description_fr,
+                name=item.name,
+                description=item.description,
                 tier=1,
             )
             self.session.add(bench)
@@ -663,8 +703,8 @@ class DataImporter:
                 row_id=row_id,
                 bench_id=bench.id if bench else None,
                 upgrade_from_row_id=self.parse_data_table_ref(self.find_property(row_data, "UpgradeFrom")),
-                name_fr=self.get_translation("DT_BenchUpgrades", row_id, "UpgradeName"),
-                description_fr=self.get_translation("DT_BenchUpgrades", row_id, "UpgradeDescription"),
+                name=self.get_translation("DT_BenchUpgrades", row_id, "UpgradeName"),
+                description=self.get_translation("DT_BenchUpgrades", row_id, "UpgradeDescription"),
                 tier=self.find_property(row_data, "Tier") or 1,
                 recipe_row_id=self.parse_data_table_ref(self.find_property(row_data, "UpgradeRecipe")),
             )

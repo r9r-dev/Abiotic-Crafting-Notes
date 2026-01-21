@@ -14,8 +14,8 @@ class Bench(Base):
     item_row_id = Column(String(255), index=True)
 
     # Traductions
-    name_fr = Column(String(255))
-    description_fr = Column(Text)
+    name = Column(String(255))
+    description = Column(Text)
 
     # Tier de l'établi
     tier = Column(Integer, default=1)
@@ -39,8 +39,8 @@ class BenchUpgrade(Base):
     upgrade_from_row_id = Column(String(255))  # Upgrade précédent (si applicable)
 
     # Traductions
-    name_fr = Column(String(255))
-    description_fr = Column(Text)
+    name = Column(String(255))
+    description = Column(Text)
 
     # Tier atteint après upgrade
     tier = Column(Integer, default=1)

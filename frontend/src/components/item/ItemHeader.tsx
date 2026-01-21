@@ -33,7 +33,7 @@ export function ItemHeader({ item }: ItemHeaderProps) {
         {iconUrl ? (
           <img
             src={iconUrl}
-            alt={item.name_fr || item.row_id}
+            alt={item.name || item.row_id}
             className="w-20 h-20 object-contain"
           />
         ) : (
@@ -44,7 +44,7 @@ export function ItemHeader({ item }: ItemHeaderProps) {
       {/* Infos */}
       <div className="flex-1 min-w-0">
         <h1 className="text-2xl font-bold truncate">
-          {item.name_fr || item.row_id}
+          {item.name || item.row_id}
         </h1>
 
         {/* Badges */}
@@ -60,14 +60,14 @@ export function ItemHeader({ item }: ItemHeaderProps) {
         </div>
 
         {/* Description */}
-        {item.description_fr && (
-          <p className="mt-3 text-muted-foreground">{item.description_fr}</p>
+        {item.description && (
+          <p className="mt-3 text-muted-foreground">{item.description}</p>
         )}
 
         {/* Flavor text */}
-        {item.flavor_text_fr && (
+        {item.flavor_text && (
           <p className="mt-2 text-sm italic text-muted-foreground/70">
-            "{item.flavor_text_fr}"
+            "{item.flavor_text}"
           </p>
         )}
       </div>

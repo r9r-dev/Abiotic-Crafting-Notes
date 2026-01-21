@@ -5,7 +5,7 @@ from typing import Optional, List
 class IngredientItemMinimal(BaseModel):
     """Info minimale d'un item pour affichage."""
     row_id: str
-    name_fr: Optional[str] = None
+    name: Optional[str] = None
     icon_path: Optional[str] = None
 
     class Config:
@@ -27,7 +27,7 @@ class RecipeIngredientSchema(BaseModel):
 class BenchMinimal(BaseModel):
     """Info minimale d'un etabli."""
     row_id: str
-    name_fr: Optional[str] = None
+    name: Optional[str] = None
     item_row_id: Optional[str] = None
     tier: int
 
@@ -45,7 +45,7 @@ class RecipeSchema(BaseModel):
     category: Optional[str] = None
     subcategory: Optional[str] = None
     craft_time: float
-    name_fr: Optional[str] = None
+    name: Optional[str] = None
     ingredients: List[RecipeIngredientSchema] = []
     bench: Optional[BenchMinimal] = None
 
@@ -55,8 +55,8 @@ class RecipeSchema(BaseModel):
 
 class RecipeSubstituteSchema(BaseModel):
     row_id: str
-    name_fr: Optional[str] = None
-    description_fr: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
     icon_path: Optional[str] = None
 
     class Config:

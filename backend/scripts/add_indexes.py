@@ -24,13 +24,13 @@ INDEXES = [
     # Extension pg_trgm pour recherche fuzzy (LIKE '%xxx%')
     "CREATE EXTENSION IF NOT EXISTS pg_trgm",
 
-    # Index trigram sur items.name_fr pour recherche partielle
-    """CREATE INDEX IF NOT EXISTS ix_items_name_fr_trgm
-       ON items USING gin (name_fr gin_trgm_ops)""",
+    # Index trigram sur items.name pour recherche partielle
+    """CREATE INDEX IF NOT EXISTS ix_items_name_trgm
+       ON items USING gin (name gin_trgm_ops)""",
 
-    # Index trigram sur npcs.name_fr
-    """CREATE INDEX IF NOT EXISTS ix_npcs_name_fr_trgm
-       ON npcs USING gin (name_fr gin_trgm_ops)""",
+    # Index trigram sur npcs.name
+    """CREATE INDEX IF NOT EXISTS ix_npcs_name_trgm
+       ON npcs USING gin (name gin_trgm_ops)""",
 
     # ============================================
     # INDEX COMPOSITES pour requêtes fréquentes
@@ -38,7 +38,7 @@ INDEXES = [
 
     # Items par catégorie + nom (pour listing triés)
     """CREATE INDEX IF NOT EXISTS ix_items_category_name
-       ON items (category, name_fr)""",
+       ON items (category, name)""",
 
     # Recettes par établi + output (pour afficher recettes d'un bench)
     """CREATE INDEX IF NOT EXISTS ix_recipes_bench_output

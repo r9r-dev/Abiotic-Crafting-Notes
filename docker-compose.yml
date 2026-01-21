@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     depends_on:
       - abiotic-backend
+    volumes:
+      - ./icons:/app/data/icons:ro
     networks:
       - cadence
     logging:

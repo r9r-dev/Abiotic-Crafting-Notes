@@ -30,7 +30,7 @@ class Recipe(Base):
     craft_time = Column(Float, default=0.0)
 
     # Traductions
-    name_fr = Column(String(255))
+    name = Column(String(255))
 
     # Relations
     bench = relationship("Bench", back_populates="recipes")
@@ -73,14 +73,14 @@ class RecipeSubstitute(Base):
     row_id = Column(String(255), unique=True, nullable=False, index=True)
 
     # Traductions
-    name_fr = Column(String(255))
-    description_fr = Column(Text)
+    name = Column(String(255))
+    description = Column(Text)
 
     # Icône
     icon_path = Column(String(512))
 
     def __repr__(self):
-        return f"<RecipeSubstitute(row_id='{self.row_id}', name='{self.name_fr}')>"
+        return f"<RecipeSubstitute(row_id='{self.row_id}', name='{self.name}')>"
 
 
 class RecipeSubstituteItem(Base):

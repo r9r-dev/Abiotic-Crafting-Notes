@@ -31,10 +31,10 @@ class Item(Base):
     category = Column(SQLEnum(ItemCategory), nullable=False, index=True)
     release_group = Column(SQLEnum(ReleaseGroup), default=ReleaseGroup.CORE)
 
-    # Traductions FR
-    name_fr = Column(String(255))
-    description_fr = Column(Text)
-    flavor_text_fr = Column(Text)
+    # Traductions
+    name = Column(String(255))
+    description = Column(Text)
+    flavor_text = Column(Text)
 
     # Propriétés de base
     stack_size = Column(Integer, default=1)
@@ -65,4 +65,4 @@ class Item(Base):
     salvage_row_id = Column(String(255))  # Référence vers la table salvage
 
     def __repr__(self):
-        return f"<Item(row_id='{self.row_id}', name='{self.name_fr}')>"
+        return f"<Item(row_id='{self.row_id}', name='{self.name}')>"

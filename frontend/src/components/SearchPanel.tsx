@@ -42,7 +42,7 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
         {iconUrl ? (
           <img
             src={iconUrl}
-            alt={item.name_fr || item.row_id}
+            alt={item.name || item.row_id}
             className="w-8 h-8 object-contain"
           />
         ) : (
@@ -51,7 +51,7 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm truncate">
-          {item.name_fr || item.row_id}
+          {item.name || item.row_id}
         </div>
         <Badge variant="outline" className="text-xs mt-0.5">
           {categoryLabels[item.category] || item.category}

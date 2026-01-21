@@ -49,13 +49,13 @@ def search_items(
 
     results = db.query(Item).filter(
         or_(
-            normalize_column(Item.name_fr).like(search_normalized),
-            normalize_column(Item.description_fr).like(search_normalized),
+            normalize_column(Item.name).like(search_normalized),
+            normalize_column(Item.description).like(search_normalized),
         )
     ).order_by(
         # Prioriser les correspondances sur le nom
-        normalize_column(Item.name_fr).like(search_normalized).desc(),
-        Item.name_fr,
+        normalize_column(Item.name).like(search_normalized).desc(),
+        Item.name,
     ).limit(20).all()
 
     return ItemSearchResponse(
@@ -65,8 +65,8 @@ def search_items(
             ItemSearchResult(
                 row_id=item.row_id,
                 category=item.category.value,
-                name_fr=item.name_fr,
-                description_fr=item.description_fr,
+                name=item.name,
+                description=item.description,
                 icon_path=item.icon_path,
             )
             for item in results
@@ -106,7 +106,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         # Charger les infos des items ingredients en une seule query
         ingredient_items = {}
         if ingredient_row_ids:
-            items_query = db.query(Item.row_id, Item.name_fr, Item.icon_path).filter(
+            items_query = db.query(Item.row_id, Item.name, Item.icon_path).filter(
                 Item.row_id.in_(ingredient_row_ids)
             ).all()
             ingredient_items = {i.row_id: i for i in items_query}
@@ -123,7 +123,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
                 position=ing.position,
                 item=IngredientItemResponse(
                     row_id=ing.item_row_id,
-                    name_fr=item_info.name_fr if item_info else None,
+                    name=item_info.name if item_info else None,
                     icon_path=item_info.icon_path if item_info else None,
                 ) if item_info else None
             ))
@@ -133,7 +133,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         if recipe.bench:
             bench_response = BenchMinimalResponse(
                 row_id=recipe.bench.row_id,
-                name_fr=recipe.bench.name_fr,
+                name=recipe.bench.name,
                 item_row_id=recipe.bench.item_row_id,
                 tier=recipe.bench.tier,
             )
@@ -148,7 +148,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
             category=recipe.category,
             subcategory=recipe.subcategory,
             craft_time=recipe.craft_time,
-            name_fr=recipe.name_fr,
+            name=recipe.name,
             ingredients=enriched_ingredients,
             bench=bench_response,
         ))
@@ -159,9 +159,9 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         row_id=item.row_id,
         category=item.category,
         release_group=item.release_group,
-        name_fr=item.name_fr,
-        description_fr=item.description_fr,
-        flavor_text_fr=item.flavor_text_fr,
+        name=item.name,
+        description=item.description,
+        flavor_text=item.flavor_text,
         stack_size=item.stack_size,
         weight=item.weight,
         max_durability=item.max_durability,
