@@ -66,6 +66,7 @@ class LinkedItemResponse(BaseModel):
     row_id: str
     name: Optional[str] = None
     icon_path: Optional[str] = None
+    requires_baking: Optional[bool] = None  # Utilise pour les sources de transformation
 
     class Config:
         from_attributes = True
@@ -146,6 +147,10 @@ class ConsumableResponse(BaseModel):
     decay_to_item: Optional[LinkedItemResponse] = None
     max_liquid: int
     allowed_liquids: Optional[str] = None
+    # Relations inverses de transformation
+    cooked_from: List[LinkedItemResponse] = []
+    burned_from: List[LinkedItemResponse] = []
+    decayed_from: List[LinkedItemResponse] = []
 
     class Config:
         from_attributes = True

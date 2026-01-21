@@ -15,9 +15,9 @@ import {
   ItemUsedInRecipes,
   ItemUsedInUpgrades,
   ItemUpgradedFrom,
+  TransformationChain,
 } from "@/components/item";
 import { ItemSalvage } from "@/components/item/ItemSalvage";
-import { ItemCooking } from "@/components/item/ItemCooking";
 import { ItemUpgrades } from "@/components/item/ItemUpgrades";
 
 function ItemContent({ item }: { item: Item }) {
@@ -28,7 +28,14 @@ function ItemContent({ item }: { item: Item }) {
       {item.weapon && <WeaponStats weapon={item.weapon} />}
       {item.equipment && <EquipmentStats equipment={item.equipment} />}
       {item.consumable && <ConsumableStats consumable={item.consumable} />}
-      {item.consumable && <ItemCooking consumable={item.consumable} />}
+      <TransformationChain
+        consumable={item.consumable}
+        upgrades={item.upgrades}
+        upgradedFrom={item.upgraded_from}
+        currentItemRowId={item.row_id}
+        currentItemName={item.name}
+        currentItemIconPath={item.icon_path}
+      />
       {item.deployable && <DeployableStats deployable={item.deployable} />}
       {item.recipes.length > 0 && (
         <div className="space-y-4">

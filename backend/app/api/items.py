@@ -9,6 +9,7 @@ from app.database import get_db
 from app.models import Item, Recipe, RecipeIngredient, Bench, RecipeSubstitute, RecipeSubstituteItem
 from app.models.salvage import Salvage, SalvageDrop
 from app.models.item_upgrade import ItemUpgrade, ItemUpgradeIngredient
+from app.models.consumable import Consumable
 from app.schemas.item import (
     ItemResponse,
     RecipeResponse,
@@ -67,6 +68,52 @@ def _get_linked_item(db: Session, row_id: str | None, items_cache: dict) -> Link
             icon_path=item.icon_path,
         )
     return None
+
+
+def _get_transformation_sources(
+    db: Session,
+    row_id: str,
+    transformation_type: str
+) -> list[LinkedItemResponse]:
+    """Recupere les items qui se transforment en cet item.
+
+    Args:
+        db: Session de base de donnees
+        row_id: ID de l'item cible
+        transformation_type: 'cooked', 'burned' ou 'decayed'
+
+    Returns:
+        Liste des items sources
+    """
+    column_map = {
+        'cooked': Consumable.cooked_item_row_id,
+        'burned': Consumable.burned_item_row_id,
+        'decayed': Consumable.decay_to_item_row_id,
+    }
+
+    column = column_map.get(transformation_type)
+    if not column:
+        return []
+
+    # Trouver les consumables qui ont cet item comme cible de transformation
+    # Inclure requires_baking pour les sources de cuisson
+    sources = db.query(
+        Item.row_id, Item.name, Item.icon_path, Consumable.requires_baking
+    ).join(
+        Consumable, Consumable.item_id == Item.id
+    ).filter(
+        column == row_id
+    ).all()
+
+    return [
+        LinkedItemResponse(
+            row_id=source.row_id,
+            name=source.name,
+            icon_path=source.icon_path,
+            requires_baking=source.requires_baking if transformation_type == 'cooked' else None,
+        )
+        for source in sources
+    ]
 
 
 def _build_recipe_response(
@@ -620,6 +667,11 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
 
     consumable_response = None
     if item.consumable:
+        # Recuperer les relations inverses de transformation
+        cooked_from = _get_transformation_sources(db, row_id, 'cooked')
+        burned_from = _get_transformation_sources(db, row_id, 'burned')
+        decayed_from = _get_transformation_sources(db, row_id, 'decayed')
+
         consumable_response = ConsumableResponse(
             time_to_consume=item.consumable.time_to_consume,
             hunger_fill=item.consumable.hunger_fill,
@@ -652,6 +704,9 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
             decay_to_item=_get_linked_item(db, item.consumable.decay_to_item_row_id, items_cache),
             max_liquid=item.consumable.max_liquid,
             allowed_liquids=item.consumable.allowed_liquids,
+            cooked_from=cooked_from,
+            burned_from=burned_from,
+            decayed_from=decayed_from,
         )
 
     # Charger l'item de reparation

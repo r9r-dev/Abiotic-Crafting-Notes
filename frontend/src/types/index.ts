@@ -52,6 +52,7 @@ export interface LinkedItem {
   row_id: string;
   name: string | null;
   icon_path: string | null;
+  requires_baking?: boolean | null;  // Pour les sources de transformation
 }
 
 // Sous-types
@@ -124,6 +125,10 @@ export interface Consumable {
   decay_to_item: LinkedItem | null;
   max_liquid: number;
   allowed_liquids: string | null;
+  // Relations inverses de transformation
+  cooked_from: LinkedItem[];
+  burned_from: LinkedItem[];
+  decayed_from: LinkedItem[];
 }
 
 export interface Deployable {
