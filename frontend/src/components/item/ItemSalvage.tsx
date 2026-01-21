@@ -2,12 +2,14 @@ import { Link } from "react-router-dom";
 import type { Salvage } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useItemLink } from "@/hooks/useItemLink";
 
 interface ItemSalvageProps {
   salvage: Salvage;
 }
 
 export function ItemSalvage({ salvage }: ItemSalvageProps) {
+  const { getItemLink } = useItemLink();
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -46,7 +48,7 @@ export function ItemSalvage({ salvage }: ItemSalvageProps) {
             return (
               <Link
                 key={`${drop.item_row_id}-${idx}`}
-                to={`/item/${drop.item_row_id}`}
+                to={getItemLink(drop.item_row_id)}
                 className="flex items-center gap-2 bg-muted/50 hover:bg-muted rounded-md px-2 py-1.5 transition-colors"
               >
                 {iconUrl ? (

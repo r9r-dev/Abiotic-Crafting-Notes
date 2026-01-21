@@ -2,12 +2,15 @@ import { Link } from "react-router-dom";
 import type { UsedInUpgrade } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useItemLink } from "@/hooks/useItemLink";
 
 interface ItemUsedInUpgradesProps {
   usedInUpgrades: UsedInUpgrade[];
 }
 
 export function ItemUsedInUpgrades({ usedInUpgrades }: ItemUsedInUpgradesProps) {
+  const { getItemLink } = useItemLink();
+
   if (usedInUpgrades.length === 0) {
     return null;
   }
@@ -28,7 +31,7 @@ export function ItemUsedInUpgrades({ usedInUpgrades }: ItemUsedInUpgradesProps) 
               <div className="flex items-center gap-2 flex-wrap">
                 {/* Source item */}
                 <Link
-                  to={`/item/${upgrade.source_item_row_id}`}
+                  to={getItemLink(upgrade.source_item_row_id)}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
                   {sourceIconUrl ? (
@@ -51,7 +54,7 @@ export function ItemUsedInUpgrades({ usedInUpgrades }: ItemUsedInUpgradesProps) 
 
                 {/* Output item */}
                 <Link
-                  to={`/item/${upgrade.output_item_row_id}`}
+                  to={getItemLink(upgrade.output_item_row_id)}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
                   {outputIconUrl ? (

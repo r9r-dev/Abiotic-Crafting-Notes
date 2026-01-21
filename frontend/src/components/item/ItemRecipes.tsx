@@ -2,20 +2,21 @@ import { Link } from "react-router-dom";
 import type { Recipe } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useItemLink } from "@/hooks/useItemLink";
 
 interface ItemRecipesProps {
   recipes: Recipe[];
 }
 
 interface IngredientBadgeProps {
-  itemRowId: string;
+  linkTo: string;
   name: string | null;
   iconPath: string | null;
   quantity: number;
 }
 
 function IngredientBadge({
-  itemRowId,
+  linkTo,
   name,
   iconPath,
   quantity,
@@ -24,17 +25,17 @@ function IngredientBadge({
 
   return (
     <Link
-      to={`/item/${itemRowId}`}
+      to={linkTo}
       className="flex items-center gap-2 bg-muted/50 hover:bg-muted rounded-md px-2 py-1.5 transition-colors"
     >
       {iconUrl ? (
-        <img src={iconUrl} alt={name || itemRowId} className="w-6 h-6 object-contain" />
+        <img src={iconUrl} alt={name || "item"} className="w-6 h-6 object-contain" />
       ) : (
         <div className="w-6 h-6 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">
           ?
         </div>
       )}
-      <span className="text-sm">{name || itemRowId}</span>
+      <span className="text-sm">{name || "Inconnu"}</span>
       <Badge variant="outline" className="ml-auto text-xs">
         x{quantity}
       </Badge>
@@ -42,7 +43,7 @@ function IngredientBadge({
   );
 }
 
-function RecipeCard({ recipe }: { recipe: Recipe }) {
+function RecipeCard({ recipe, getItemLink }: { recipe: Recipe; getItemLink: (rowId: string) => string }) {
   // Déterminer le nom de l'établi/station
   const isCooking = recipe.recipe_tags?.includes("Recipe.Soup");
   const benchName = isCooking
@@ -79,7 +80,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           {recipe.ingredients.map((ing, idx) => (
             <IngredientBadge
               key={`${ing.item_row_id}-${idx}`}
-              itemRowId={ing.item_row_id}
+              linkTo={getItemLink(ing.item_row_id)}
               name={ing.item?.name || null}
               iconPath={ing.item?.icon_path || null}
               quantity={ing.quantity}
@@ -99,6 +100,8 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
 }
 
 export function ItemRecipes({ recipes }: ItemRecipesProps) {
+  const { getItemLink } = useItemLink();
+
   if (recipes.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -110,7 +113,7 @@ export function ItemRecipes({ recipes }: ItemRecipesProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {recipes.map((recipe) => (
-        <RecipeCard key={recipe.row_id} recipe={recipe} />
+        <RecipeCard key={recipe.row_id} recipe={recipe} getItemLink={getItemLink} />
       ))}
     </div>
   );

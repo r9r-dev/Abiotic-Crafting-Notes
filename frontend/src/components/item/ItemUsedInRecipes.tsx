@@ -2,12 +2,15 @@ import { Link } from "react-router-dom";
 import type { UsedInRecipe } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useItemLink } from "@/hooks/useItemLink";
 
 interface ItemUsedInRecipesProps {
   usedInRecipes: UsedInRecipe[];
 }
 
 export function ItemUsedInRecipes({ usedInRecipes }: ItemUsedInRecipesProps) {
+  const { getItemLink } = useItemLink();
+
   if (usedInRecipes.length === 0) {
     return null;
   }
@@ -24,7 +27,7 @@ export function ItemUsedInRecipes({ usedInRecipes }: ItemUsedInRecipesProps) {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <Link
-                  to={`/item/${recipe.output_item_row_id}`}
+                  to={getItemLink(recipe.output_item_row_id)}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
                   {outputIconUrl ? (

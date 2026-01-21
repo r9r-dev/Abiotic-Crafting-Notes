@@ -7,6 +7,7 @@ import {
   getSecondaryAttackTypeLabel,
   getDamageTypeLabel,
 } from "@/lib/enumLabels";
+import { useItemLink } from "@/hooks/useItemLink";
 
 interface WeaponStatsProps {
   weapon: Weapon;
@@ -38,6 +39,7 @@ function StatRow({ label, value, unit, highlight = "neutral" }: StatRowProps) {
 }
 
 export function WeaponStats({ weapon }: WeaponStatsProps) {
+  const { getItemLink } = useItemLink();
   const dps =
     weapon.time_between_shots > 0
       ? weapon.damage_per_hit / weapon.time_between_shots
@@ -92,7 +94,7 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
               <div className="flex justify-between py-1.5 border-b border-border/50 last:border-0">
                 <span className="text-muted-foreground">Type</span>
                 <Link
-                  to={`/item/${weapon.ammo_item.row_id}`}
+                  to={getItemLink(weapon.ammo_item.row_id)}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
                   {weapon.ammo_item.icon_path && (

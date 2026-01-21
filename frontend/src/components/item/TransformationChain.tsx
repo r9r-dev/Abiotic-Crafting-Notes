@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import type { Consumable, LinkedItem } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useItemLink } from "@/hooks/useItemLink";
 
 interface TransformationChainProps {
   consumable?: Consumable | null;
@@ -18,9 +19,11 @@ const TRANSFORMATION_LABELS = {
 function ItemIcon({
   item,
   isCurrent,
+  linkTo,
 }: {
   item: LinkedItem;
   isCurrent: boolean;
+  linkTo: string;
 }) {
   const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
 
@@ -57,7 +60,7 @@ function ItemIcon({
   }
 
   return (
-    <Link to={`/item/${item.row_id}`} className="block">
+    <Link to={linkTo} className="block">
       {content}
     </Link>
   );
@@ -89,10 +92,12 @@ function ChainDisplay({
   chain,
   currentItemRowId,
   label,
+  getItemLink,
 }: {
   chain: LinkedItem[];
   currentItemRowId: string;
   label: string;
+  getItemLink: (rowId: string) => string;
 }) {
   if (chain.length === 0) return null;
 
@@ -103,6 +108,7 @@ function ChainDisplay({
           <ItemIcon
             item={item}
             isCurrent={item.row_id === currentItemRowId}
+            linkTo={getItemLink(item.row_id)}
           />
           {index < chain.length - 1 && <Arrow label={label} />}
         </div>
@@ -117,6 +123,7 @@ export function TransformationChain({
   cookingChain = [],
   currentItemRowId,
 }: TransformationChainProps) {
+  const { getItemLink } = useItemLink();
   const hasUpgradeChain = upgradeChain.length > 1;
   const hasCookingChain = cookingChain.length > 1;
 
@@ -143,6 +150,7 @@ export function TransformationChain({
             chain={upgradeChain}
             currentItemRowId={currentItemRowId}
             label={TRANSFORMATION_LABELS.upgraded}
+            getItemLink={getItemLink}
           />
         )}
 
@@ -152,6 +160,7 @@ export function TransformationChain({
             chain={cookingChain}
             currentItemRowId={currentItemRowId}
             label={TRANSFORMATION_LABELS.cooked}
+            getItemLink={getItemLink}
           />
         )}
 

@@ -2,12 +2,15 @@ import { Link } from "react-router-dom";
 import type { ItemUpgrade } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useItemLink } from "@/hooks/useItemLink";
 
 interface ItemUpgradesProps {
   upgrades: ItemUpgrade[];
 }
 
 export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
+  const { getItemLink } = useItemLink();
+
   if (upgrades.length === 0) {
     return null;
   }
@@ -25,7 +28,7 @@ export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
               <div className="flex items-center gap-3">
                 <span className="text-muted-foreground text-sm">Améliorer en</span>
                 <Link
-                  to={`/item/${upgrade.output_item_row_id}`}
+                  to={getItemLink(upgrade.output_item_row_id)}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
                   {outputIconUrl ? (
@@ -56,7 +59,7 @@ export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
                   return (
                     <Link
                       key={`${ing.item_row_id}-${idx}`}
-                      to={`/item/${ing.item_row_id}`}
+                      to={getItemLink(ing.item_row_id)}
                       className="flex items-center gap-2 bg-muted/50 hover:bg-muted rounded-md px-2 py-1.5 transition-colors"
                     >
                       {iconUrl ? (

@@ -140,10 +140,10 @@ export function ItemPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="gap-2"
         >
-          <span>&larr;</span> {hasSearchContext ? "Nouvelle recherche" : "Retour"}
+          <span>&larr;</span> Retour
         </Button>
       </div>
 
