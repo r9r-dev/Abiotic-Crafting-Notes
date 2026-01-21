@@ -1,4 +1,4 @@
-import type { User } from "@/types";
+import type { User, Item, ItemSearchResponse } from "@/types";
 
 const API_BASE = "/api";
 
@@ -40,6 +40,15 @@ async function request<T>(
 // Auth
 export async function getCurrentUser(): Promise<User> {
   return request<User>("/auth/me");
+}
+
+// Items
+export async function getItem(rowId: string): Promise<Item> {
+  return request<Item>(`/items/${encodeURIComponent(rowId)}`);
+}
+
+export async function searchItems(query: string): Promise<ItemSearchResponse> {
+  return request<ItemSearchResponse>(`/items/search?q=${encodeURIComponent(query)}`);
 }
 
 export { ApiError };

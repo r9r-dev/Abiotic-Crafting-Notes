@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { HomePage } from "@/pages/HomePage";
+import { ItemPage } from "@/pages/ItemPage";
 
 function AppContent() {
   const { loading, error } = useAuth();
@@ -34,6 +35,7 @@ function AppContent() {
       <main className="container mx-auto px-4 py-6">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/item/:rowId" element={<ItemPage />} />
         </Routes>
       </main>
     </div>
