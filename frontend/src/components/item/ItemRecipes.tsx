@@ -43,33 +43,25 @@ function IngredientBadge({
 }
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
+  const benchName = recipe.bench?.name || recipe.bench?.row_id || "Fabrication";
+  const timeStr = recipe.craft_time > 0 ? `(${recipe.craft_time.toFixed(1)}s)` : "";
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">
-            {recipe.bench?.name || recipe.bench?.row_id || "Fabrication"}
+          <CardTitle className="text-base flex items-center gap-2">
+            {benchName} {timeStr}
+            {recipe.bench && recipe.bench.tier > 1 && (
+              <Badge variant="outline" className="text-xs">
+                T{recipe.bench.tier}
+              </Badge>
+            )}
           </CardTitle>
           {recipe.count_to_create > 1 && (
             <Badge variant="secondary">x{recipe.count_to_create}</Badge>
           )}
         </div>
-
-        {/* Tier de l'établi */}
-        {recipe.bench && recipe.bench.tier > 1 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Badge variant="outline" className="text-xs">
-              Tier {recipe.bench.tier}
-            </Badge>
-          </div>
-        )}
-
-        {/* Temps de craft */}
-        {recipe.craft_time > 0 && (
-          <div className="text-sm text-muted-foreground">
-            Temps: {recipe.craft_time.toFixed(1)}s
-          </div>
-        )}
       </CardHeader>
 
       <CardContent>
