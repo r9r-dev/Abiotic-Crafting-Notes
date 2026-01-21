@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
 settings = get_settings()
 
 app = FastAPI(
-    title="Abiotic Science Database",
+    title="Abiotic Factor Database",
     description="Carnet de commandes collaboratif pour Abiotic Factor",
     version="1.0.0",
     lifespan=lifespan
