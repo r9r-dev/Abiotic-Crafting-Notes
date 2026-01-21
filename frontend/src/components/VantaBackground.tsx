@@ -34,9 +34,9 @@ export function VantaBackground({ children, className = "" }: VantaBackgroundPro
         const effect = VANTA.default({
           el: vantaRef.current,
           THREE,
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
+          mouseControls: false,
+          touchControls: false,
+          gyroControls: true,
           minHeight: 200.0,
           minWidth: 200.0,
           scale: 1.0,
