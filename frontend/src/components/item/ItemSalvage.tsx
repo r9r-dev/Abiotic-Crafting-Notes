@@ -13,7 +13,7 @@ export function ItemSalvage({ salvage }: ItemSalvageProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">
-            {salvage.bench?.name || "Desassemblage"}
+            {salvage.bench?.name || "Désassemblage"}
           </CardTitle>
           {salvage.bench && salvage.bench.tier > 1 && (
             <Badge variant="outline" className="text-xs">

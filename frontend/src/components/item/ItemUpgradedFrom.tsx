@@ -1,37 +1,37 @@
 import { Link } from "react-router-dom";
-import type { ItemUpgrade } from "@/types";
+import type { UpgradedFrom } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-interface ItemUpgradesProps {
-  upgrades: ItemUpgrade[];
+interface ItemUpgradedFromProps {
+  upgradedFrom: UpgradedFrom[];
 }
 
-export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
-  if (upgrades.length === 0) {
+export function ItemUpgradedFrom({ upgradedFrom }: ItemUpgradedFromProps) {
+  if (upgradedFrom.length === 0) {
     return null;
   }
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {upgrades.map((upgrade) => {
-        const outputIconUrl = upgrade.output_item?.icon_path
-          ? `/icons/${upgrade.output_item.icon_path}`
+      {upgradedFrom.map((upgrade) => {
+        const sourceIconUrl = upgrade.source_item?.icon_path
+          ? `/icons/${upgrade.source_item.icon_path}`
           : null;
 
         return (
           <Card key={upgrade.id}>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <span className="text-muted-foreground text-sm">Améliorer en</span>
+                <span className="text-muted-foreground text-sm">Depuis</span>
                 <Link
-                  to={`/item/${upgrade.output_item_row_id}`}
+                  to={`/item/${upgrade.source_item_row_id}`}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
-                  {outputIconUrl ? (
+                  {sourceIconUrl ? (
                     <img
-                      src={outputIconUrl}
-                      alt={upgrade.output_item?.name || upgrade.output_item_row_id}
+                      src={sourceIconUrl}
+                      alt={upgrade.source_item?.name || upgrade.source_item_row_id}
                       className="w-8 h-8 object-contain"
                     />
                   ) : (
@@ -40,7 +40,7 @@ export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
                     </div>
                   )}
                   <CardTitle className="text-base">
-                    {upgrade.output_item?.name || upgrade.output_item_row_id}
+                    {upgrade.source_item?.name || upgrade.source_item_row_id}
                   </CardTitle>
                 </Link>
               </div>

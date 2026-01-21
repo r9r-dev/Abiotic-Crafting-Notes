@@ -12,6 +12,9 @@ import {
   EquipmentStats,
   ConsumableStats,
   DeployableStats,
+  ItemUsedInRecipes,
+  ItemUsedInUpgrades,
+  ItemUpgradedFrom,
 } from "@/components/item";
 import { ItemSalvage } from "@/components/item/ItemSalvage";
 import { ItemCooking } from "@/components/item/ItemCooking";
@@ -35,14 +38,32 @@ function ItemContent({ item }: { item: Item }) {
       )}
       {item.salvage && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Desassemblage</h2>
+          <h2 className="text-xl font-semibold">Désassemblage</h2>
           <ItemSalvage salvage={item.salvage} />
         </div>
       )}
       {item.upgrades && item.upgrades.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Ameliorations</h2>
+          <h2 className="text-xl font-semibold">Améliorations</h2>
           <ItemUpgrades upgrades={item.upgrades} />
+        </div>
+      )}
+      {item.used_in_recipes && item.used_in_recipes.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Utilisé dans (recettes)</h2>
+          <ItemUsedInRecipes usedInRecipes={item.used_in_recipes} />
+        </div>
+      )}
+      {item.used_in_upgrades && item.used_in_upgrades.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Utilisé dans (améliorations)</h2>
+          <ItemUsedInUpgrades usedInUpgrades={item.used_in_upgrades} />
+        </div>
+      )}
+      {item.upgraded_from && item.upgraded_from.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Améliorable depuis</h2>
+          <ItemUpgradedFrom upgradedFrom={item.upgraded_from} />
         </div>
       )}
     </div>

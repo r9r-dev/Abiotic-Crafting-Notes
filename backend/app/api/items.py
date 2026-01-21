@@ -25,6 +25,9 @@ from app.schemas.item import (
     ConsumableResponse,
     ItemUpgradeResponse,
     ItemUpgradeIngredientResponse,
+    UsedInRecipeResponse,
+    UsedInUpgradeResponse,
+    UpgradedFromResponse,
 )
 
 router = APIRouter(prefix="/items", tags=["items"])
@@ -232,6 +235,191 @@ def _build_upgrades_response(
                 icon_path=output_item_info.icon_path if output_item_info else None,
             ) if output_item_info else None,
             position=upgrade.position,
+            ingredients=enriched_ingredients,
+        ))
+
+    return result
+
+
+def _build_used_in_recipes_response(
+    db: Session,
+    row_id: str,
+    bench_map: dict[str, Bench],
+    items_cache: dict,
+) -> list[UsedInRecipeResponse]:
+    """Construit la liste des recettes utilisant cet item comme ingredient."""
+    # Recettes utilisant cet item comme ingredient
+    recipes_with_item = db.query(Recipe, RecipeIngredient.quantity).join(
+        RecipeIngredient
+    ).filter(
+        RecipeIngredient.item_row_id == row_id
+    ).all()
+
+    if not recipes_with_item:
+        return []
+
+    # Collecter les output_item_row_id et bench_row_id
+    output_row_ids = {r.output_item_row_id for r, _ in recipes_with_item}
+    bench_row_ids = {r.bench_row_id for r, _ in recipes_with_item if r.bench_row_id}
+
+    # Charger les items de sortie
+    if output_row_ids:
+        items_query = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+            Item.row_id.in_(output_row_ids)
+        ).all()
+        for item in items_query:
+            items_cache[item.row_id] = item
+
+    # Charger les benches manquants
+    missing_benches = bench_row_ids - set(bench_map.keys())
+    if missing_benches:
+        benches = db.query(Bench).filter(Bench.row_id.in_(missing_benches)).all()
+        for bench in benches:
+            bench_map[bench.row_id] = bench
+
+    # Construire les reponses
+    result = []
+    for recipe, quantity in recipes_with_item:
+        output_item_info = items_cache.get(recipe.output_item_row_id)
+        bench = bench_map.get(recipe.bench_row_id) if recipe.bench_row_id else None
+
+        bench_response = None
+        if bench:
+            bench_response = BenchMinimalResponse(
+                row_id=bench.row_id,
+                name=bench.name,
+                item_row_id=bench.item_row_id,
+                tier=bench.tier,
+            )
+
+        result.append(UsedInRecipeResponse(
+            row_id=recipe.row_id,
+            output_item_row_id=recipe.output_item_row_id,
+            output_item=ItemMinimalResponse(
+                row_id=recipe.output_item_row_id,
+                name=output_item_info.name if output_item_info else None,
+                icon_path=output_item_info.icon_path if output_item_info else None,
+            ) if output_item_info else None,
+            quantity=quantity,
+            bench=bench_response,
+        ))
+
+    return result
+
+
+def _build_used_in_upgrades_response(
+    db: Session,
+    row_id: str,
+    items_cache: dict,
+) -> list[UsedInUpgradeResponse]:
+    """Construit la liste des upgrades utilisant cet item comme ingredient."""
+    # Upgrades utilisant cet item comme ingredient
+    upgrades_with_item = db.query(ItemUpgrade, ItemUpgradeIngredient.quantity).join(
+        ItemUpgradeIngredient
+    ).filter(
+        ItemUpgradeIngredient.item_row_id == row_id
+    ).all()
+
+    if not upgrades_with_item:
+        return []
+
+    # Collecter tous les item_row_id necessaires
+    all_item_row_ids = set()
+    for upgrade, _ in upgrades_with_item:
+        all_item_row_ids.add(upgrade.source_item_row_id)
+        all_item_row_ids.add(upgrade.output_item_row_id)
+
+    # Charger les items
+    if all_item_row_ids:
+        items_query = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+            Item.row_id.in_(all_item_row_ids)
+        ).all()
+        for item in items_query:
+            items_cache[item.row_id] = item
+
+    # Construire les reponses
+    result = []
+    for upgrade, quantity in upgrades_with_item:
+        source_item_info = items_cache.get(upgrade.source_item_row_id)
+        output_item_info = items_cache.get(upgrade.output_item_row_id)
+
+        result.append(UsedInUpgradeResponse(
+            id=upgrade.id,
+            source_item_row_id=upgrade.source_item_row_id,
+            source_item=ItemMinimalResponse(
+                row_id=upgrade.source_item_row_id,
+                name=source_item_info.name if source_item_info else None,
+                icon_path=source_item_info.icon_path if source_item_info else None,
+            ) if source_item_info else None,
+            output_item_row_id=upgrade.output_item_row_id,
+            output_item=ItemMinimalResponse(
+                row_id=upgrade.output_item_row_id,
+                name=output_item_info.name if output_item_info else None,
+                icon_path=output_item_info.icon_path if output_item_info else None,
+            ) if output_item_info else None,
+            quantity=quantity,
+        ))
+
+    return result
+
+
+def _build_upgraded_from_response(
+    db: Session,
+    row_id: str,
+    items_cache: dict,
+) -> list[UpgradedFromResponse]:
+    """Construit la liste des items qui peuvent etre ameliores vers cet item."""
+    # Items qui s'ameliorent vers cet item
+    upgrades = db.query(ItemUpgrade).options(
+        joinedload(ItemUpgrade.ingredients)
+    ).filter(ItemUpgrade.output_item_row_id == row_id).all()
+
+    if not upgrades:
+        return []
+
+    # Collecter tous les item_row_id necessaires
+    all_item_row_ids = set()
+    for upgrade in upgrades:
+        all_item_row_ids.add(upgrade.source_item_row_id)
+        for ing in upgrade.ingredients:
+            all_item_row_ids.add(ing.item_row_id)
+
+    # Charger les items
+    if all_item_row_ids:
+        items_query = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+            Item.row_id.in_(all_item_row_ids)
+        ).all()
+        for item in items_query:
+            items_cache[item.row_id] = item
+
+    # Construire les reponses
+    result = []
+    for upgrade in upgrades:
+        source_item_info = items_cache.get(upgrade.source_item_row_id)
+
+        # Ingredients enrichis
+        enriched_ingredients = []
+        for ing in sorted(upgrade.ingredients, key=lambda x: x.position):
+            ing_item_info = items_cache.get(ing.item_row_id)
+            enriched_ingredients.append(ItemUpgradeIngredientResponse(
+                item_row_id=ing.item_row_id,
+                quantity=ing.quantity,
+                position=ing.position,
+                item=ItemMinimalResponse(
+                    row_id=ing.item_row_id,
+                    name=ing_item_info.name if ing_item_info else None,
+                    icon_path=ing_item_info.icon_path if ing_item_info else None,
+                ) if ing_item_info else None,
+            ))
+
+        result.append(UpgradedFromResponse(
+            id=upgrade.id,
+            source_item_row_id=upgrade.source_item_row_id,
+            source_item=ItemMinimalResponse(
+                row_id=upgrade.source_item_row_id,
+                name=source_item_info.name if source_item_info else None,
+                icon_path=source_item_info.icon_path if source_item_info else None,
+            ) if source_item_info else None,
             ingredients=enriched_ingredients,
         ))
 
@@ -475,6 +663,11 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
 
     upgrades_response = _build_upgrades_response(db, upgrades, items_cache)
 
+    # Charger les relations inversees
+    used_in_recipes_response = _build_used_in_recipes_response(db, row_id, bench_map, items_cache)
+    used_in_upgrades_response = _build_used_in_upgrades_response(db, row_id, items_cache)
+    upgraded_from_response = _build_upgraded_from_response(db, row_id, items_cache)
+
     # Construire la reponse finale
     return ItemResponse(
         id=item.id,
@@ -504,4 +697,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         recipes=enriched_recipes,
         salvage=salvage_response,
         upgrades=upgrades_response,
+        used_in_recipes=used_in_recipes_response,
+        used_in_upgrades=used_in_upgrades_response,
+        upgraded_from=upgraded_from_response,
     )

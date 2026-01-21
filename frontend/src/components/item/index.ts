@@ -5,3 +5,6 @@ export { WeaponStats } from "./WeaponStats";
 export { EquipmentStats } from "./EquipmentStats";
 export { ConsumableStats } from "./ConsumableStats";
 export { DeployableStats } from "./DeployableStats";
+export { ItemUsedInRecipes } from "./ItemUsedInRecipes";
+export { ItemUsedInUpgrades } from "./ItemUsedInUpgrades";
+export { ItemUpgradedFrom } from "./ItemUpgradedFrom";

@@ -257,6 +257,42 @@ class ItemUpgradeResponse(BaseModel):
         from_attributes = True
 
 
+class UsedInRecipeResponse(BaseModel):
+    """Recette utilisant cet item comme ingredient."""
+    row_id: str
+    output_item_row_id: str
+    output_item: Optional[ItemMinimalResponse] = None
+    quantity: int
+    bench: Optional[BenchMinimalResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UsedInUpgradeResponse(BaseModel):
+    """Upgrade utilisant cet item comme ingredient."""
+    id: int
+    source_item_row_id: str
+    source_item: Optional[ItemMinimalResponse] = None
+    output_item_row_id: str
+    output_item: Optional[ItemMinimalResponse] = None
+    quantity: int
+
+    class Config:
+        from_attributes = True
+
+
+class UpgradedFromResponse(BaseModel):
+    """Item qui peut etre ameliore vers cet item."""
+    id: int
+    source_item_row_id: str
+    source_item: Optional[ItemMinimalResponse] = None
+    ingredients: List[ItemUpgradeIngredientResponse] = []
+
+    class Config:
+        from_attributes = True
+
+
 class RecipeResponse(BaseModel):
     row_id: str
     output_item_row_id: str
@@ -313,6 +349,11 @@ class ItemResponse(BaseModel):
 
     # Ameliorations possibles
     upgrades: List[ItemUpgradeResponse] = []
+
+    # Relations inversees
+    used_in_recipes: List[UsedInRecipeResponse] = []
+    used_in_upgrades: List[UsedInUpgradeResponse] = []
+    upgraded_from: List[UpgradedFromResponse] = []
 
     class Config:
         from_attributes = True

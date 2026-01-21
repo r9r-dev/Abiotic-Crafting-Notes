@@ -170,6 +170,31 @@ export interface ItemUpgrade {
   ingredients: ItemUpgradeIngredient[];
 }
 
+// Relations inversees
+export interface UsedInRecipe {
+  row_id: string;
+  output_item_row_id: string;
+  output_item: LinkedItem | null;
+  quantity: number;
+  bench: BenchMinimal | null;
+}
+
+export interface UsedInUpgrade {
+  id: number;
+  source_item_row_id: string;
+  source_item: LinkedItem | null;
+  output_item_row_id: string;
+  output_item: LinkedItem | null;
+  quantity: number;
+}
+
+export interface UpgradedFrom {
+  id: number;
+  source_item_row_id: string;
+  source_item: LinkedItem | null;
+  ingredients: ItemUpgradeIngredient[];
+}
+
 // Recettes
 export interface IngredientItem {
   row_id: string;
@@ -237,4 +262,7 @@ export interface Item {
   recipes: Recipe[];
   salvage: Salvage | null;
   upgrades: ItemUpgrade[];
+  used_in_recipes: UsedInRecipe[];
+  used_in_upgrades: UsedInUpgrade[];
+  upgraded_from: UpgradedFrom[];
 }
