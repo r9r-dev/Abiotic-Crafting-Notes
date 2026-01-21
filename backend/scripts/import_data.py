@@ -438,10 +438,8 @@ class DataImporter:
 
         return total
 
-    def import_recipes(self) -> int:
-        """Importe les recettes de crafting."""
-        print("\nImport des recettes...")
-        filepath = DATATABLES_DIR / "DT_Recipes.json"
+    def _import_recipes_from_file(self, filepath: Path) -> int:
+        """Importe les recettes depuis un fichier."""
         data = self.load_json_file(filepath)
         rows = self.extract_rows(data)
 
@@ -499,8 +497,28 @@ class DataImporter:
 
             count += 1
 
-        print(f"  {count} recettes importées")
         return count
+
+    def import_recipes(self) -> int:
+        """Importe les recettes de crafting et de cuisine."""
+        print("\nImport des recettes...")
+        total = 0
+
+        # Recettes de crafting
+        filepath = DATATABLES_DIR / "DT_Recipes.json"
+        count = self._import_recipes_from_file(filepath)
+        print(f"  {count} recettes de crafting importées")
+        total += count
+
+        # Recettes de cuisine (soupes)
+        filepath = DATATABLES_DIR / "DT_SoupRecipes.json"
+        if filepath.exists():
+            count = self._import_recipes_from_file(filepath)
+            print(f"  {count} recettes de cuisine importées")
+            total += count
+
+        print(f"  Total: {total} recettes")
+        return total
 
     def import_salvage(self) -> int:
         """Importe les données de désassemblage."""
