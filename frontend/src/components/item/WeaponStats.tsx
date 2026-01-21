@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   getSecondaryAttackTypeLabel,
   getUnderwaterStateLabel,
+  getDamageTypeLabel,
 } from "@/lib/enumLabels";
 
 interface WeaponStatsProps {
@@ -51,7 +52,7 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
             Degats
             {weapon.is_melee && <Badge variant="secondary">Melee</Badge>}
             {weapon.damage_type && (
-              <Badge variant="outline">{weapon.damage_type}</Badge>
+              <Badge variant="outline">{getDamageTypeLabel(weapon.damage_type)}</Badge>
             )}
           </CardTitle>
         </CardHeader>
