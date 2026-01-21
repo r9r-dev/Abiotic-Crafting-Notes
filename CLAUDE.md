@@ -7,8 +7,8 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 
 ## Stack technique
 
-- **Frontend**: React 19, Vite, shadcn/ui, TailwindCSS, TypeScript, Bun
-- **Backend**: Python 3.12, FastAPI, SQLAlchemy, Pydantic
+- **Frontend**: React 19, Vite 6, shadcn/ui, TailwindCSS, TypeScript 5.6, Bun, Motion
+- **Backend**: Python 3.12, FastAPI, SQLAlchemy 2, Pydantic 2, Alembic
 - **Database**: PostgreSQL (externe sur `sql:5432`)
 - **Auth**: Pangolin SSO via headers HTTP (Remote-User, Remote-Email, Remote-Name)
 
@@ -18,31 +18,61 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 .
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     # Header, ui/*
-│   │   ├── contexts/       # AuthContext
-│   │   ├── pages/          # HomePage
-│   │   ├── services/       # api.ts
-│   │   ├── types/          # User
-│   │   └── lib/            # utils
-│   ├── Dockerfile
+│   │   ├── components/
+│   │   │   ├── ui/             # shadcn/ui (tabs, card, button, etc.)
+│   │   │   ├── item/           # 14 composants affichage items
+│   │   │   ├── Header.tsx
+│   │   │   ├── SearchPanel.tsx # Recherche avec debounce
+│   │   │   └── PageTransition.tsx
+│   │   ├── contexts/           # AuthContext
+│   │   ├── pages/              # HomePage, ItemPage
+│   │   ├── services/           # api.ts
+│   │   ├── types/              # Types complets (~280 lignes)
+│   │   ├── hooks/              # useItemLink
+│   │   └── lib/                # utils, enumLabels
+│   ├── Dockerfile              # Multi-stage Bun + Nginx
 │   └── nginx.conf
 ├── backend/
 │   ├── app/
-│   │   ├── api/            # auth.py
-│   │   ├── models/         # User
-│   │   ├── schemas/        # user.py
+│   │   ├── api/
+│   │   │   ├── auth.py         # GET /auth/me
+│   │   │   └── items.py        # GET /items/{row_id}, /items/search
+│   │   ├── models/             # 13 modeles ORM
+│   │   ├── schemas/            # Pydantic responses
+│   │   ├── auth.py             # Extraction headers Pangolin
+│   │   ├── config.py           # Settings
 │   │   └── main.py
 │   └── requirements.txt
-├── data/                   # Icons et donnees
+├── data/                       # Icons (1311+), traductions, datatables
+├── .github/workflows/          # CI/CD docker.yml
 └── docker-compose.yml
 ```
+
+## Modeles de donnees
+
+**Backend (SQLAlchemy)**: User, Item, Weapon, Equipment, Consumable, Deployable, Recipe, RecipeIngredient, ItemUpgrade, Salvage, SalvageDrop, Bench, NPC, Plant, Projectile
+
+**Frontend (TypeScript)**: Types miroir + relations inverses (UsedInRecipe, UsedInUpgrade, UpgradedFrom) + chaines de transformation (upgrade_chain, cooking_chain)
 
 ## API Endpoints
 
 | Methode | Endpoint | Description |
 |---------|----------|-------------|
-| GET | /api/auth/me | Utilisateur connecte |
 | GET | /api/health | Health check |
+| GET | /api/auth/me | Utilisateur connecte |
+| GET | /api/items/{row_id} | Detail item complet avec relations |
+| GET | /api/items/search?q= | Recherche items (max 20 resultats) |
+
+## Logique de recherche
+
+- Normalisation: accents (NFD), ligatures (oe->oe), points (F.O.R.G.E.->FORGE)
+- Recherche sur nom OU description (case-insensitive)
+- Priorite: correspondances nom > ordre alphabetique
+- Frontend debounce: 300ms
+
+## Composants item
+
+`ItemHeader`, `ItemBaseStats`, `WeaponStats`, `EquipmentStats`, `ConsumableStats`, `DeployableStats`, `ItemRecipes`, `ItemSalvage`, `ItemUpgrades`, `ItemUsedInRecipes`, `ItemUsedInUpgrades`, `ItemUpgradedFrom`, `TransformationChain`
 
 ## Developpement local
 
@@ -62,14 +92,13 @@ bun dev  # http://localhost:3000
 
 ```bash
 # Base de donnees (variables d'env configurees)
-# Ne pas hésiter à utiliser cette commande pour consulter les données de base de données
 psql
 
 # Serveur de production
 ssh cadence
 ```
 
-**Chemins sur le serveur :**
+**Chemins sur le serveur:**
 - `/home/share/docker` : dossiers de volumes Docker
 - `/home/share/docker/dockge/stacks` : stacks docker-compose
 

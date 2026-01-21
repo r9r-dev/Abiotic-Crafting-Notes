@@ -23,8 +23,30 @@ const releaseGroupLabels: Record<ReleaseGroup, string> = {
   Community: "Communauté",
 };
 
+function parseGameplayTags(tagsJson: string | null): string[] {
+  if (!tagsJson) return [];
+  try {
+    const parsed = JSON.parse(tagsJson);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((t): t is string => typeof t === "string" && t.length > 0);
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+function formatTag(tag: string): string {
+  // Transforme "Item.Material.Cloth" en "Cloth"
+  // Garde seulement la derniere partie significative
+  const parts = tag.split(".");
+  return parts[parts.length - 1];
+}
+
 export function ItemHeader({ item }: ItemHeaderProps) {
   const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
+  const gameplayTags = parseGameplayTags(item.gameplay_tags)
+    .filter(tag => !tag.startsWith("Item.") || tag.split(".").length > 2); // Filtre les tags trop generiques
 
   return (
     <div className="flex gap-6 items-start">
@@ -57,6 +79,11 @@ export function ItemHeader({ item }: ItemHeaderProps) {
               {releaseGroupLabels[item.release_group]}
             </Badge>
           )}
+          {gameplayTags.map((tag) => (
+            <Badge key={tag} variant="outline" className="text-xs">
+              {formatTag(tag)}
+            </Badge>
+          ))}
         </div>
 
         {/* Description */}

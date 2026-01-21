@@ -55,6 +55,21 @@ export interface LinkedItem {
   requires_baking?: boolean | null;  // Pour les sources de transformation
 }
 
+// Buff/Debuff
+export interface Buff {
+  row_id: string;
+  name: string | null;
+  description: string | null;
+}
+
+// Noeud dans l'arbre d'ameliorations
+export interface UpgradeTreeNode {
+  row_id: string;
+  name: string | null;
+  icon_path: string | null;
+  children: UpgradeTreeNode[];
+}
+
 // Sous-types
 export interface Weapon {
   is_melee: boolean;
@@ -105,8 +120,8 @@ export interface Consumable {
   temperature_change: number;
   radiation_change: number;
   radioactivity: number;
-  buffs_to_add: string | null;
-  buffs_to_remove: string | null;
+  buffs_to_add: Buff[];
+  buffs_to_remove: Buff[];
   consumable_tag: string | null;
   consumed_action: string | null;
   can_be_cooked: boolean;
@@ -273,6 +288,6 @@ export interface Item {
   used_in_upgrades: UsedInUpgrade[];
   upgraded_from: UpgradedFrom[];
   // Chaines completes de transformation
-  upgrade_chain: LinkedItem[];
+  upgrade_tree: UpgradeTreeNode | null;
   cooking_chain: LinkedItem[];
 }

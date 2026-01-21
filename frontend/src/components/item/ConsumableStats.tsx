@@ -1,6 +1,7 @@
 import type { Consumable } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Plus, Minus } from "lucide-react";
 
 interface ConsumableStatsProps {
   consumable: Consumable;
@@ -37,6 +38,16 @@ function formatValue(val: number): { value: string; highlight: "positive" | "neg
   return { value: "0", highlight: "neutral" };
 }
 
+function formatBuffName(buff: { row_id: string; name: string | null }): string {
+  // Utilise le nom si disponible, sinon formatte le row_id
+  if (buff.name) return buff.name;
+  return buff.row_id
+    .replace(/^Buff_/, "")
+    .replace(/^Debuff_/, "")
+    .replace(/([A-Z])/g, " $1")
+    .trim();
+}
+
 export function ConsumableStats({ consumable }: ConsumableStatsProps) {
   const hasNeeds =
     consumable.hunger_fill !== 0 ||
@@ -59,6 +70,13 @@ export function ConsumableStats({ consumable }: ConsumableStatsProps) {
 
   const hasLiquid = consumable.max_liquid > 0;
 
+  const hasBuffs = consumable.buffs_to_add.length > 0 || consumable.buffs_to_remove.length > 0;
+
+  // Parse consumable_tag (peut etre "None" ou un tag valide)
+  const consumableTag = consumable.consumable_tag && consumable.consumable_tag !== "None"
+    ? consumable.consumable_tag
+    : null;
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {/* Temps de consommation */}
@@ -74,6 +92,14 @@ export function ConsumableStats({ consumable }: ConsumableStatsProps) {
           />
           {consumable.starting_portions > 1 && (
             <StatRow label="Portions" value={consumable.starting_portions} />
+          )}
+          {consumableTag && (
+            <div className="flex justify-between py-1.5 border-b border-border/50 last:border-0">
+              <span className="text-muted-foreground">Type</span>
+              <Badge variant="outline" className="text-xs">
+                {consumableTag.replace(/^Item\./, "").replace(/\./g, " / ")}
+              </Badge>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -158,6 +184,29 @@ export function ConsumableStats({ consumable }: ConsumableStatsProps) {
                 highlight="negative"
               />
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Buffs */}
+      {hasBuffs && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Effets</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {consumable.buffs_to_add.map((buff) => (
+              <div key={buff.row_id} className="flex items-center gap-2">
+                <Plus className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <span className="text-sm">{formatBuffName(buff)}</span>
+              </div>
+            ))}
+            {consumable.buffs_to_remove.map((buff) => (
+              <div key={buff.row_id} className="flex items-center gap-2">
+                <Minus className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <span className="text-sm">{formatBuffName(buff)}</span>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}

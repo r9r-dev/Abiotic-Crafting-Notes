@@ -72,6 +72,30 @@ class LinkedItemResponse(BaseModel):
         from_attributes = True
 
 
+class BuffResponse(BaseModel):
+    """Buff ou debuff."""
+    row_id: str
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UpgradeTreeNode(BaseModel):
+    """Noeud dans l'arbre d'ameliorations."""
+    row_id: str
+    name: Optional[str] = None
+    icon_path: Optional[str] = None
+    children: List["UpgradeTreeNode"] = []
+
+    class Config:
+        from_attributes = True
+
+
+UpgradeTreeNode.model_rebuild()
+
+
 class WeaponResponse(BaseModel):
     is_melee: bool
     damage_per_hit: float
@@ -127,8 +151,8 @@ class ConsumableResponse(BaseModel):
     temperature_change: float
     radiation_change: float
     radioactivity: float
-    buffs_to_add: Optional[str] = None
-    buffs_to_remove: Optional[str] = None
+    buffs_to_add: List[BuffResponse] = []
+    buffs_to_remove: List[BuffResponse] = []
     consumable_tag: Optional[str] = None
     consumed_action: Optional[str] = None
     can_be_cooked: bool
@@ -376,7 +400,7 @@ class ItemResponse(BaseModel):
     upgraded_from: List[UpgradedFromResponse] = []
 
     # Chaines completes de transformation
-    upgrade_chain: List[LinkedItemResponse] = []  # Chaine complete d'ameliorations
+    upgrade_tree: Optional[UpgradeTreeNode] = None  # Arbre complet d'ameliorations
     cooking_chain: List[LinkedItemResponse] = []  # Chaine complete de cuisson
 
     class Config:

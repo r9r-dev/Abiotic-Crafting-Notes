@@ -12,6 +12,7 @@ from app.models.item_upgrade import ItemUpgrade, ItemUpgradeIngredient
 from app.models.npc import NPC
 from app.models.plant import Plant
 from app.models.projectile import Projectile
+from app.models.buff import Buff
 
 __all__ = [
     # User
@@ -43,4 +44,6 @@ __all__ = [
     "NPC",
     "Plant",
     "Projectile",
+    # Buffs
+    "Buff",
 ]

@@ -25,7 +25,8 @@ from app.models import (
     Weapon, Equipment, EquipSlot, Consumable, DecayTemperature, Deployable,
     Bench, BenchUpgrade, Recipe, RecipeIngredient, RecipeSubstitute, RecipeSubstituteItem,
     Salvage, SalvageDrop, NPC, Plant, Projectile,
-    ItemUpgrade, ItemUpgradeIngredient
+    ItemUpgrade, ItemUpgradeIngredient,
+    Buff
 )
 
 
@@ -674,6 +675,41 @@ class DataImporter:
         print(f"  {count} projectiles importés")
         return count
 
+    def import_buffs(self) -> int:
+        """Importe les buffs et debuffs."""
+        print("\nImport des buffs...")
+
+        # Les buffs sont dans les traductions, pas dans un fichier DataTable séparé
+        # On extrait les row_id depuis les clés de traduction (format: {row_id}_DisplayName)
+        buffs_data = {}
+
+        # Parcourir les traductions FR pour extraire les buffs
+        if "DT_BuffsDebuffs" in self.translations_fr:
+            for key, value in self.translations_fr["DT_BuffsDebuffs"].items():
+                if key.endswith("_DisplayName"):
+                    row_id = key.replace("_DisplayName", "")
+                    if row_id not in buffs_data:
+                        buffs_data[row_id] = {"name": None, "description": None}
+                    buffs_data[row_id]["name"] = value
+                elif key.endswith("_DisplayDescription"):
+                    row_id = key.replace("_DisplayDescription", "")
+                    if row_id not in buffs_data:
+                        buffs_data[row_id] = {"name": None, "description": None}
+                    buffs_data[row_id]["description"] = value
+
+        count = 0
+        for row_id, data in buffs_data.items():
+            buff = Buff(
+                row_id=row_id,
+                name=data["name"],
+                description=data["description"],
+            )
+            self.session.add(buff)
+            count += 1
+
+        print(f"  {count} buffs importés")
+        return count
+
     def import_recipe_substitutes(self) -> int:
         """Importe les groupes de substitution pour les recettes."""
         print("\nImport des substituts de recettes...")
@@ -841,6 +877,7 @@ class DataImporter:
             self.session.query(NPC).delete()
             self.session.query(Plant).delete()
             self.session.query(Projectile).delete()
+            self.session.query(Buff).delete()
             self.session.commit()
             print("  Données supprimées")
 
@@ -857,6 +894,7 @@ class DataImporter:
         self.import_npcs()
         self.import_plants()
         self.import_projectiles()
+        self.import_buffs()
 
         # Commit final
         self.session.commit()

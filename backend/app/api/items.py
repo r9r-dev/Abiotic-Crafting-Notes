@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, func
 
 from app.database import get_db
-from app.models import Item, Recipe, RecipeIngredient, Bench, RecipeSubstitute, RecipeSubstituteItem
+from app.models import Item, Recipe, RecipeIngredient, Bench, RecipeSubstitute, RecipeSubstituteItem, Buff
 from app.models.salvage import Salvage, SalvageDrop
 from app.models.item_upgrade import ItemUpgrade, ItemUpgradeIngredient
 from app.models.consumable import Consumable
@@ -29,6 +29,8 @@ from app.schemas.item import (
     UsedInRecipeResponse,
     UsedInUpgradeResponse,
     UpgradedFromResponse,
+    UpgradeTreeNode,
+    BuffResponse,
 )
 
 router = APIRouter(prefix="/items", tags=["items"])
@@ -68,6 +70,47 @@ def _get_linked_item(db: Session, row_id: str | None, items_cache: dict) -> Link
             icon_path=item.icon_path,
         )
     return None
+
+
+def _resolve_buffs(db: Session, buffs_json: str | None) -> list[BuffResponse]:
+    """Resout les buffs depuis leur JSON string vers des BuffResponse enrichis."""
+    import json
+
+    if not buffs_json:
+        return []
+
+    try:
+        buff_ids = json.loads(buffs_json)
+        if not isinstance(buff_ids, list):
+            return []
+    except json.JSONDecodeError:
+        return []
+
+    if not buff_ids:
+        return []
+
+    # Recuperer tous les buffs en une seule requete
+    buffs = db.query(Buff).filter(Buff.row_id.in_(buff_ids)).all()
+    buffs_map = {b.row_id: b for b in buffs}
+
+    result = []
+    for buff_id in buff_ids:
+        buff = buffs_map.get(buff_id)
+        if buff:
+            result.append(BuffResponse(
+                row_id=buff.row_id,
+                name=buff.name,
+                description=buff.description,
+            ))
+        else:
+            # Buff non trouve en base, on retourne juste l'ID
+            result.append(BuffResponse(
+                row_id=buff_id,
+                name=None,
+                description=None,
+            ))
+
+    return result
 
 
 def _get_transformation_sources(
@@ -116,59 +159,80 @@ def _get_transformation_sources(
     ]
 
 
-def _get_full_upgrade_chain(db: Session, row_id: str) -> list[LinkedItemResponse]:
-    """Recupere la chaine complete d'ameliorations pour un item.
+def _get_full_upgrade_tree(db: Session, row_id: str) -> UpgradeTreeNode | None:
+    """Construit l'arbre complet d'ameliorations contenant l'item."""
 
-    Remonte jusqu'a la racine puis descend jusqu'au dernier upgrade.
-    """
-    from app.models.item_upgrade import ItemUpgrade
+    # 1. Charger TOUTES les relations d'upgrade en memoire
+    all_upgrades = db.query(
+        ItemUpgrade.source_item_row_id,
+        ItemUpgrade.output_item_row_id
+    ).all()
 
-    # Trouver la racine (remonter les upgrades)
-    current_id = row_id
-    visited = {current_id}
+    if not all_upgrades:
+        return None
 
-    while True:
-        # Chercher un item qui s'upgrade vers current_id
-        parent = db.query(ItemUpgrade.source_item_row_id).filter(
-            ItemUpgrade.output_item_row_id == current_id
-        ).first()
+    # 2. Construire les maps d'adjacence
+    children_map: dict[str, list[str]] = {}  # parent -> [enfants]
+    parents_map: dict[str, str] = {}          # enfant -> parent
 
-        if not parent or parent.source_item_row_id in visited:
-            break
-        current_id = parent.source_item_row_id
-        visited.add(current_id)
+    for upgrade in all_upgrades:
+        source = upgrade.source_item_row_id
+        output = upgrade.output_item_row_id
 
-    root_id = current_id
+        if source not in children_map:
+            children_map[source] = []
+        children_map[source].append(output)
+        parents_map[output] = source
 
-    # Construire la chaine depuis la racine
-    chain = []
-    current_id = root_id
-    visited = set()
+    # 3. Trouver la racine (remonter jusqu'a l'item sans parent)
+    current = row_id
+    visited = {current}
 
-    while current_id and current_id not in visited:
-        visited.add(current_id)
+    while current in parents_map:
+        parent = parents_map[current]
+        if parent in visited:
+            break  # Cycle detecte
+        visited.add(parent)
+        current = parent
 
-        # Recuperer les infos de l'item
-        item = db.query(Item.row_id, Item.name, Item.icon_path).filter(
-            Item.row_id == current_id
-        ).first()
+    root_id = current
 
-        if item:
-            chain.append(LinkedItemResponse(
-                row_id=item.row_id,
-                name=item.name,
-                icon_path=item.icon_path,
-            ))
+    # 4. Verifier que l'item est dans un arbre d'upgrade
+    if root_id not in children_map and root_id not in parents_map:
+        if row_id not in children_map and row_id not in parents_map:
+            return None
 
-        # Chercher le prochain upgrade
-        next_upgrade = db.query(ItemUpgrade.output_item_row_id).filter(
-            ItemUpgrade.source_item_row_id == current_id
-        ).first()
+    # 5. Collecter tous les IDs de l'arbre (BFS)
+    tree_item_ids = set()
+    queue = [root_id]
+    while queue:
+        current = queue.pop(0)
+        tree_item_ids.add(current)
+        for child in children_map.get(current, []):
+            if child not in tree_item_ids:
+                queue.append(child)
 
-        current_id = next_upgrade.output_item_row_id if next_upgrade else None
+    # 6. Charger les infos de tous les items en une requete
+    items = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+        Item.row_id.in_(tree_item_ids)
+    ).all()
+    items_map = {i.row_id: i for i in items}
 
-    # Ne retourner la chaine que si elle contient plus d'un element
-    return chain if len(chain) > 1 else []
+    # 7. Construire l'arbre recursivement
+    def build_node(item_row_id: str) -> UpgradeTreeNode:
+        item = items_map.get(item_row_id)
+        children = [
+            build_node(child_id)
+            for child_id in children_map.get(item_row_id, [])
+        ]
+        return UpgradeTreeNode(
+            row_id=item_row_id,
+            name=item.name if item else None,
+            icon_path=item.icon_path if item else None,
+            children=children
+        )
+
+    return build_node(root_id)
 
 
 def _get_full_cooking_chain(db: Session, row_id: str) -> list[LinkedItemResponse]:
@@ -796,8 +860,8 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
             temperature_change=item.consumable.temperature_change,
             radiation_change=item.consumable.radiation_change,
             radioactivity=item.consumable.radioactivity,
-            buffs_to_add=item.consumable.buffs_to_add,
-            buffs_to_remove=item.consumable.buffs_to_remove,
+            buffs_to_add=_resolve_buffs(db, item.consumable.buffs_to_add),
+            buffs_to_remove=_resolve_buffs(db, item.consumable.buffs_to_remove),
             consumable_tag=item.consumable.consumable_tag,
             consumed_action=item.consumable.consumed_action,
             can_be_cooked=item.consumable.can_be_cooked,
@@ -837,7 +901,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
     upgraded_from_response = _build_upgraded_from_response(db, row_id, items_cache)
 
     # Charger les chaines completes de transformation
-    upgrade_chain = _get_full_upgrade_chain(db, row_id)
+    upgrade_tree = _get_full_upgrade_tree(db, row_id)
     cooking_chain = _get_full_cooking_chain(db, row_id)
 
     # Construire la reponse finale
@@ -872,6 +936,6 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         used_in_recipes=used_in_recipes_response,
         used_in_upgrades=used_in_upgrades_response,
         upgraded_from=upgraded_from_response,
-        upgrade_chain=upgrade_chain,
+        upgrade_tree=upgrade_tree,
         cooking_chain=cooking_chain,
     )

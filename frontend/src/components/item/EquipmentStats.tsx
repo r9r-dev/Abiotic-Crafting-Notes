@@ -119,7 +119,7 @@ export function EquipmentStats({ equipment }: EquipmentStatsProps) {
                 <img
                   src={slotIcons[equipment.equip_slot!]}
                   alt={slotLabels[equipment.equip_slot!]}
-                  className="w-8 h-8 object-contain invert dark:invert-0 opacity-70"
+                  className="w-8 h-8 object-contain"
                 />
               </div>
               <div>

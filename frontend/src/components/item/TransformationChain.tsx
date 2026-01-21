@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import type { Consumable, LinkedItem } from "@/types";
+import type { Consumable, LinkedItem, UpgradeTreeNode } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useItemLink } from "@/hooks/useItemLink";
 
 interface TransformationChainProps {
   consumable?: Consumable | null;
-  upgradeChain?: LinkedItem[];
+  upgradeTree?: UpgradeTreeNode | null;
   cookingChain?: LinkedItem[];
   currentItemRowId: string;
 }
@@ -21,7 +21,7 @@ function ItemIcon({
   isCurrent,
   linkTo,
 }: {
-  item: LinkedItem;
+  item: LinkedItem | UpgradeTreeNode;
   isCurrent: boolean;
   linkTo: string;
 }) {
@@ -117,18 +117,110 @@ function ChainDisplay({
   );
 }
 
+function TreeNode({
+  node,
+  currentItemRowId,
+  getItemLink,
+  isFirst: _isFirst = false,
+}: {
+  node: UpgradeTreeNode;
+  currentItemRowId: string;
+  getItemLink: (rowId: string) => string;
+  isFirst?: boolean;
+}) {
+  const hasChildren = node.children.length > 0;
+  const isCurrent = node.row_id === currentItemRowId;
+  const hasMultipleChildren = node.children.length > 1;
+
+  return (
+    <div className="flex flex-col items-center">
+      {/* Icone de l'item */}
+      <ItemIcon
+        item={node}
+        isCurrent={isCurrent}
+        linkTo={getItemLink(node.row_id)}
+      />
+
+      {/* Connecteur vertical + enfants */}
+      {hasChildren && (
+        <>
+          {/* Ligne verticale vers le bas */}
+          <div className="flex flex-col items-center">
+            <div className="w-px h-2 bg-border" />
+            <span className="text-xs text-muted-foreground my-1">
+              {TRANSFORMATION_LABELS.upgraded}
+            </span>
+            <div className="w-px h-2 bg-border" />
+          </div>
+
+          {/* Ligne horizontale si plusieurs enfants */}
+          {hasMultipleChildren && (
+            <div
+              className="h-px bg-border"
+              style={{
+                width: `calc(${(node.children.length - 1) * 80}px + 64px)`,
+              }}
+            />
+          )}
+
+          {/* Conteneur des enfants */}
+          <div className="flex gap-4">
+            {node.children.map((child) => (
+              <div key={child.row_id} className="flex flex-col items-center">
+                {/* Ligne verticale depuis la ligne horizontale */}
+                {hasMultipleChildren && <div className="w-px h-3 bg-border" />}
+                <TreeNode
+                  node={child}
+                  currentItemRowId={currentItemRowId}
+                  getItemLink={getItemLink}
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function TreeDisplay({
+  tree,
+  currentItemRowId,
+  getItemLink,
+}: {
+  tree: UpgradeTreeNode;
+  currentItemRowId: string;
+  getItemLink: (rowId: string) => string;
+}) {
+  return (
+    <div className="flex justify-center overflow-x-auto py-2">
+      <TreeNode
+        node={tree}
+        currentItemRowId={currentItemRowId}
+        getItemLink={getItemLink}
+        isFirst
+      />
+    </div>
+  );
+}
+
 export function TransformationChain({
   consumable,
-  upgradeChain = [],
+  upgradeTree,
   cookingChain = [],
   currentItemRowId,
 }: TransformationChainProps) {
   const { getItemLink } = useItemLink();
-  const hasUpgradeChain = upgradeChain.length > 1;
+
+  // Calculer si l'arbre a plus d'un noeud
+  const hasUpgradeTree =
+    upgradeTree &&
+    (upgradeTree.children.length > 0 ||
+      upgradeTree.row_id !== currentItemRowId);
   const hasCookingChain = cookingChain.length > 1;
 
   // Pas de transformations ? Ne rien afficher
-  if (!hasUpgradeChain && !hasCookingChain) {
+  if (!hasUpgradeTree && !hasCookingChain) {
     return null;
   }
 
@@ -144,12 +236,11 @@ export function TransformationChain({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Chaine d'ameliorations */}
-        {hasUpgradeChain && (
-          <ChainDisplay
-            chain={upgradeChain}
+        {/* Arbre d'ameliorations */}
+        {hasUpgradeTree && upgradeTree && (
+          <TreeDisplay
+            tree={upgradeTree}
             currentItemRowId={currentItemRowId}
-            label={TRANSFORMATION_LABELS.upgraded}
             getItemLink={getItemLink}
           />
         )}

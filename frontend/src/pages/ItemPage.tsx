@@ -30,7 +30,7 @@ function ItemContent({ item }: { item: Item }) {
       {item.consumable && <ConsumableStats consumable={item.consumable} />}
       <TransformationChain
         consumable={item.consumable}
-        upgradeChain={item.upgrade_chain}
+        upgradeTree={item.upgrade_tree}
         cookingChain={item.cooking_chain}
         currentItemRowId={item.row_id}
       />
