@@ -27,7 +27,7 @@ function ItemIcon({
   const content = (
     <div
       className={cn(
-        "relative w-12 h-12 rounded-lg flex items-center justify-center transition-all group",
+        "relative w-16 h-16 rounded-lg flex items-center justify-center transition-all group",
         isCurrent
           ? "ring-2 ring-primary bg-primary/10"
           : "bg-muted/50 hover:bg-muted"
@@ -38,10 +38,10 @@ function ItemIcon({
         <img
           src={iconUrl}
           alt={item.name || item.row_id}
-          className="w-10 h-10 object-contain"
+          className="w-14 h-14 object-contain"
         />
       ) : (
-        <div className="w-10 h-10 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">
+        <div className="w-14 h-14 bg-muted-foreground/20 rounded flex items-center justify-center text-sm">
           ?
         </div>
       )}
