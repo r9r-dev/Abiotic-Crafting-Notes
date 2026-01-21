@@ -59,6 +59,7 @@ bun dev  # http://localhost:3000
 
 ```bash
 # Base de donnees (variables d'env configurees)
+# Ne pas hésiter à utiliser cette commande pour consulter les données de base de données
 psql
 
 # Serveur de production

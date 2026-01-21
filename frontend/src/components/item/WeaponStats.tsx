@@ -2,6 +2,10 @@ import { Link } from "react-router-dom";
 import type { Weapon } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  getSecondaryAttackTypeLabel,
+  getUnderwaterStateLabel,
+} from "@/lib/enumLabels";
 
 interface WeaponStatsProps {
   weapon: Weapon;
@@ -169,10 +173,16 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
           </CardHeader>
           <CardContent className="space-y-0">
             {weapon.secondary_attack_type && (
-              <StatRow label="Attaque secondaire" value={weapon.secondary_attack_type} />
+              <StatRow
+                label="Attaque secondaire"
+                value={getSecondaryAttackTypeLabel(weapon.secondary_attack_type) || weapon.secondary_attack_type}
+              />
             )}
             {weapon.underwater_state && (
-              <StatRow label="Sous l'eau" value={weapon.underwater_state} />
+              <StatRow
+                label="Sous l'eau"
+                value={getUnderwaterStateLabel(weapon.underwater_state) || weapon.underwater_state}
+              />
             )}
           </CardContent>
         </Card>
