@@ -13,6 +13,8 @@ import {
   ConsumableStats,
   DeployableStats,
 } from "@/components/item";
+import { ItemSalvage } from "@/components/item/ItemSalvage";
+import { ItemCooking } from "@/components/item/ItemCooking";
 
 function ItemContent({ item }: { item: Item }) {
   return (
@@ -22,11 +24,18 @@ function ItemContent({ item }: { item: Item }) {
       {item.weapon && <WeaponStats weapon={item.weapon} />}
       {item.equipment && <EquipmentStats equipment={item.equipment} />}
       {item.consumable && <ConsumableStats consumable={item.consumable} />}
+      {item.consumable && <ItemCooking consumable={item.consumable} />}
       {item.deployable && <DeployableStats deployable={item.deployable} />}
       {item.recipes.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Fabrication</h2>
           <ItemRecipes recipes={item.recipes} />
+        </div>
+      )}
+      {item.salvage && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Desassemblage</h2>
+          <ItemSalvage salvage={item.salvage} />
         </div>
       )}
     </div>

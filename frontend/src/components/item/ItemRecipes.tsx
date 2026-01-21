@@ -48,25 +48,19 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">
-            {recipe.name || recipe.row_id}
+            {recipe.bench?.name || recipe.bench?.row_id || "Fabrication"}
           </CardTitle>
           {recipe.count_to_create > 1 && (
             <Badge variant="secondary">x{recipe.count_to_create}</Badge>
           )}
         </div>
 
-        {/* Établi requis */}
-        {recipe.bench && (
+        {/* Tier de l'établi */}
+        {recipe.bench && recipe.bench.tier > 1 && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Établi:</span>
-            <span className="font-medium text-foreground">
-              {recipe.bench.name || recipe.bench.row_id}
-            </span>
-            {recipe.bench.tier > 1 && (
-              <Badge variant="outline" className="text-xs">
-                Tier {recipe.bench.tier}
-              </Badge>
-            )}
+            <Badge variant="outline" className="text-xs">
+              Tier {recipe.bench.tier}
+            </Badge>
           </div>
         )}
 
@@ -79,7 +73,6 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
       </CardHeader>
 
       <CardContent>
-        <div className="text-sm text-muted-foreground mb-2">Ingredients:</div>
         <div className="grid gap-2">
           {recipe.ingredients.map((ing, idx) => (
             <IngredientBadge

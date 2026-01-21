@@ -46,6 +46,13 @@ export type EquipSlot =
 
 export type DecayTemperature = "None" | "Cold" | "Warm" | "Hot";
 
+// Item minimal pour les liens
+export interface LinkedItem {
+  row_id: string;
+  name: string | null;
+  icon_path: string | null;
+}
+
 // Sous-types
 export interface Weapon {
   is_melee: boolean;
@@ -61,6 +68,7 @@ export interface Weapon {
   magazine_size: number;
   require_ammo: boolean;
   ammo_type_row_id: string | null;
+  ammo_item: LinkedItem | null;
   projectile_row_id: string | null;
   pellet_count: number;
   tracer_per_shots: number;
@@ -102,7 +110,9 @@ export interface Consumable {
   can_be_cooked: boolean;
   is_cookware: boolean;
   cooked_item_row_id: string | null;
+  cooked_item: LinkedItem | null;
   burned_item_row_id: string | null;
+  burned_item: LinkedItem | null;
   time_to_cook_baseline: number;
   time_to_burn_baseline: number;
   requires_baking: boolean;
@@ -110,6 +120,7 @@ export interface Consumable {
   can_item_decay: boolean;
   item_decay_temperature: DecayTemperature | null;
   decay_to_item_row_id: string | null;
+  decay_to_item: LinkedItem | null;
   max_liquid: number;
   allowed_liquids: string | null;
 }
@@ -122,6 +133,24 @@ export interface Deployable {
   is_small: boolean;
   is_crafting_bench: boolean;
   texture_variant_row_id: string | null;
+}
+
+// Salvage (desassemblage)
+export interface SalvageDrop {
+  item_row_id: string;
+  quantity_min: number;
+  quantity_max: number;
+  drop_chance: number;
+  position: number;
+  item: LinkedItem | null;
+}
+
+export interface Salvage {
+  row_id: string;
+  salvage_time: number;
+  bench_row_id: string | null;
+  bench: BenchMinimal | null;
+  drops: SalvageDrop[];
 }
 
 // Recettes
@@ -180,6 +209,7 @@ export interface Item {
   mesh_path: string | null;
   gameplay_tags: string | null;
   repair_item_id: string | null;
+  repair_item: LinkedItem | null;
   repair_quantity_min: number;
   repair_quantity_max: number;
   salvage_row_id: string | null;
@@ -188,4 +218,5 @@ export interface Item {
   consumable: Consumable | null;
   deployable: Deployable | null;
   recipes: Recipe[];
+  salvage: Salvage | null;
 }

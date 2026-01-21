@@ -55,6 +55,20 @@ bun install
 bun dev  # http://localhost:3000
 ```
 
+## Acces Production
+
+```bash
+# Base de donnees (variables d'env configurees)
+psql
+
+# Serveur de production
+ssh cadence
+```
+
+**Chemins sur le serveur :**
+- `/home/share/docker` : dossiers de volumes Docker
+- `/home/share/docker/dockge/stacks` : stacks docker-compose
+
 ## CI/CD
 
 GitHub Actions: push tag `v*` -> build images -> push ghcr.io -> release GitHub

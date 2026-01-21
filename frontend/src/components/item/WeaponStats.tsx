@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { Weapon } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,17 +40,20 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {/* Dégâts */}
+      {/* Degats */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
-            Dégâts
-            {weapon.is_melee && <Badge variant="secondary">Mêlée</Badge>}
+            Degats
+            {weapon.is_melee && <Badge variant="secondary">Melee</Badge>}
+            {weapon.damage_type && (
+              <Badge variant="outline">{weapon.damage_type}</Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           <StatRow
-            label="Dégâts par coup"
+            label="Degats par coup"
             value={weapon.damage_per_hit.toFixed(1)}
           />
           {weapon.time_between_shots > 0 && (
@@ -79,17 +83,36 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
           </CardHeader>
           <CardContent className="space-y-0">
             <StatRow label="Chargeur" value={weapon.magazine_size} unit="balles" />
-            {weapon.ammo_type_row_id && (
+            {weapon.ammo_item ? (
+              <div className="flex justify-between py-1.5 border-b border-border/50 last:border-0">
+                <span className="text-muted-foreground">Type</span>
+                <Link
+                  to={`/item/${weapon.ammo_item.row_id}`}
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  {weapon.ammo_item.icon_path && (
+                    <img
+                      src={`/icons/${weapon.ammo_item.icon_path}`}
+                      alt={weapon.ammo_item.name || weapon.ammo_item.row_id}
+                      className="w-5 h-5 object-contain"
+                    />
+                  )}
+                  <span className="font-medium">
+                    {weapon.ammo_item.name || weapon.ammo_type_row_id}
+                  </span>
+                </Link>
+              </div>
+            ) : weapon.ammo_type_row_id ? (
               <StatRow label="Type" value={weapon.ammo_type_row_id} />
-            )}
+            ) : null}
           </CardContent>
         </Card>
       )}
 
-      {/* Précision */}
+      {/* Precision */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Précision</CardTitle>
+          <CardTitle className="text-lg">Precision</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           {(weapon.bullet_spread_min > 0 || weapon.bullet_spread_max > 0) && (
@@ -106,10 +129,10 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
             />
           )}
           {weapon.max_aim_correction > 0 && (
-            <StatRow label="Correction visée" value={weapon.max_aim_correction.toFixed(1)} />
+            <StatRow label="Correction visee" value={weapon.max_aim_correction.toFixed(1)} />
           )}
           {weapon.maximum_hitscan_range > 0 && (
-            <StatRow label="Portée max" value={Math.round(weapon.maximum_hitscan_range)} unit="m" />
+            <StatRow label="Portee max" value={Math.round(weapon.maximum_hitscan_range)} unit="m" />
           )}
         </CardContent>
       </Card>
@@ -133,6 +156,23 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
                 label="Bruit secondaire"
                 value={weapon.loudness_secondary.toFixed(0)}
               />
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Modes speciaux */}
+      {(weapon.secondary_attack_type || weapon.underwater_state) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Modes</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-0">
+            {weapon.secondary_attack_type && (
+              <StatRow label="Attaque secondaire" value={weapon.secondary_attack_type} />
+            )}
+            {weapon.underwater_state && (
+              <StatRow label="Sous l'eau" value={weapon.underwater_state} />
             )}
           </CardContent>
         </Card>

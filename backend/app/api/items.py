@@ -1,19 +1,13 @@
 import unicodedata
+from itertools import product
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select, or_, func
+from sqlalchemy import or_, func
 
 from app.database import get_db
-
-
-def remove_accents(text: str) -> str:
-    """Supprime les accents d'une chaîne."""
-    return "".join(
-        c for c in unicodedata.normalize("NFD", text)
-        if unicodedata.category(c) != "Mn"
-    )
-from app.models import Item, Recipe, RecipeIngredient, Bench
+from app.models import Item, Recipe, RecipeIngredient, Bench, RecipeSubstitute, RecipeSubstituteItem
+from app.models.salvage import Salvage, SalvageDrop
 from app.schemas.item import (
     ItemResponse,
     RecipeResponse,
@@ -22,9 +16,159 @@ from app.schemas.item import (
     BenchMinimalResponse,
     ItemSearchResult,
     ItemSearchResponse,
+    LinkedItemResponse,
+    SalvageResponse,
+    SalvageDropResponse,
+    ItemMinimalResponse,
+    WeaponResponse,
+    ConsumableResponse,
 )
 
 router = APIRouter(prefix="/items", tags=["items"])
+
+
+def remove_accents(text: str) -> str:
+    """Supprime les accents d'une chaîne."""
+    return "".join(
+        c for c in unicodedata.normalize("NFD", text)
+        if unicodedata.category(c) != "Mn"
+    )
+
+
+def _get_linked_item(db: Session, row_id: str | None, items_cache: dict) -> LinkedItemResponse | None:
+    """Recupere un item lie depuis le cache ou la DB."""
+    if not row_id:
+        return None
+
+    if row_id not in items_cache:
+        item = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+            Item.row_id == row_id
+        ).first()
+        items_cache[row_id] = item
+
+    item = items_cache.get(row_id)
+    if item:
+        return LinkedItemResponse(
+            row_id=item.row_id,
+            name=item.name,
+            icon_path=item.icon_path,
+        )
+    return None
+
+
+def _build_recipe_response(
+    db: Session,
+    recipe: Recipe,
+    ingredient_row_ids: list[str],
+    bench_map: dict[str, Bench],
+    is_expanded: bool = False
+) -> RecipeResponse:
+    """Construit une RecipeResponse avec les ingredients specifies."""
+    # Charger les infos des items ingredients en une seule query
+    ingredient_items = {}
+    if ingredient_row_ids:
+        items_query = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+            Item.row_id.in_(ingredient_row_ids)
+        ).all()
+        ingredient_items = {i.row_id: i for i in items_query}
+
+    # Construire les ingredients enrichis
+    enriched_ingredients = []
+    for idx, (ing, final_row_id) in enumerate(
+        zip(sorted(recipe.ingredients, key=lambda x: x.position), ingredient_row_ids)
+    ):
+        item_info = ingredient_items.get(final_row_id)
+        enriched_ingredients.append(RecipeIngredientResponse(
+            item_row_id=final_row_id,
+            quantity=ing.quantity,
+            is_substitute_group=False if is_expanded else ing.is_substitute_group,
+            substitute_group_row_id=None if is_expanded else ing.substitute_group_row_id,
+            position=ing.position,
+            item=IngredientItemResponse(
+                row_id=final_row_id,
+                name=item_info.name if item_info else None,
+                icon_path=item_info.icon_path if item_info else None,
+            ) if item_info else None
+        ))
+
+    # Construire le bench minimal (via bench_row_id)
+    bench_response = None
+    bench = bench_map.get(recipe.bench_row_id) if recipe.bench_row_id else None
+    if bench:
+        bench_response = BenchMinimalResponse(
+            row_id=bench.row_id,
+            name=bench.name,
+            item_row_id=bench.item_row_id,
+            tier=bench.tier,
+        )
+
+    return RecipeResponse(
+        row_id=recipe.row_id,
+        output_item_row_id=recipe.output_item_row_id,
+        count_to_create=recipe.count_to_create,
+        bench_row_id=recipe.bench_row_id,
+        unlock_condition=recipe.unlock_condition,
+        is_default_unlocked=recipe.is_default_unlocked,
+        category=recipe.category,
+        subcategory=recipe.subcategory,
+        craft_time=recipe.craft_time,
+        name=recipe.name,
+        ingredients=enriched_ingredients,
+        bench=bench_response,
+    )
+
+
+def _build_salvage_response(
+    db: Session,
+    salvage: Salvage,
+    bench_map: dict[str, Bench],
+    items_cache: dict,
+) -> SalvageResponse:
+    """Construit une SalvageResponse avec les drops enrichis."""
+    # Charger les items des drops
+    drop_item_row_ids = [d.item_row_id for d in salvage.drops]
+    if drop_item_row_ids:
+        items_query = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+            Item.row_id.in_(drop_item_row_ids)
+        ).all()
+        for item in items_query:
+            items_cache[item.row_id] = item
+
+    # Construire les drops enrichis
+    enriched_drops = []
+    for drop in sorted(salvage.drops, key=lambda x: x.position):
+        item_info = items_cache.get(drop.item_row_id)
+        enriched_drops.append(SalvageDropResponse(
+            item_row_id=drop.item_row_id,
+            quantity_min=drop.quantity_min,
+            quantity_max=drop.quantity_max,
+            drop_chance=drop.drop_chance,
+            position=drop.position,
+            item=ItemMinimalResponse(
+                row_id=drop.item_row_id,
+                name=item_info.name if item_info else None,
+                icon_path=item_info.icon_path if item_info else None,
+            ) if item_info else None,
+        ))
+
+    # Bench pour le salvage
+    bench_response = None
+    if salvage.bench_row_id and salvage.bench_row_id in bench_map:
+        bench = bench_map[salvage.bench_row_id]
+        bench_response = BenchMinimalResponse(
+            row_id=bench.row_id,
+            name=bench.name,
+            item_row_id=bench.item_row_id,
+            tier=bench.tier,
+        )
+
+    return SalvageResponse(
+        row_id=salvage.row_id,
+        salvage_time=salvage.salvage_time,
+        bench_row_id=salvage.bench_row_id,
+        bench=bench_response,
+        drops=enriched_drops,
+    )
 
 
 @router.get("/search", response_model=ItemSearchResponse)
@@ -79,6 +223,8 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
     """
     Recupere un item par son row_id avec toutes ses relations.
     Inclut les recettes qui produisent cet item avec leurs ingredients enrichis.
+    Les recettes avec des ingredients de substitution (Any*) sont eclatees en
+    plusieurs recettes distinctes.
     """
     # Charger l'item avec ses sous-types
     item = db.query(Item).options(
@@ -91,67 +237,160 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
     if not item:
         raise HTTPException(status_code=404, detail=f"Item '{row_id}' non trouve")
 
+    # Cache pour les items lies (evite les requetes repetees)
+    items_cache: dict = {}
+
     # Charger les recettes qui produisent cet item
     recipes = db.query(Recipe).options(
         joinedload(Recipe.ingredients),
-        joinedload(Recipe.bench),
     ).filter(Recipe.output_item_row_id == row_id).all()
 
-    # Enrichir les ingredients avec nom_fr et icon_path
+    # Collecter tous les bench_row_id necessaires
+    bench_row_ids = {r.bench_row_id for r in recipes if r.bench_row_id}
+
+    # Charger le salvage si present
+    salvage_response = None
+    if item.salvage_row_id:
+        salvage = db.query(Salvage).options(
+            joinedload(Salvage.drops)
+        ).filter(Salvage.row_id == item.salvage_row_id).first()
+
+        if salvage and salvage.bench_row_id:
+            bench_row_ids.add(salvage.bench_row_id)
+
+    # Charger tous les benches en une seule requete
+    bench_map: dict[str, Bench] = {}
+    if bench_row_ids:
+        benches = db.query(Bench).filter(Bench.row_id.in_(bench_row_ids)).all()
+        bench_map = {b.row_id: b for b in benches}
+
+    # Construire la reponse salvage
+    if item.salvage_row_id and salvage:
+        salvage_response = _build_salvage_response(db, salvage, bench_map, items_cache)
+
+    # Charger tous les groupes de substitution avec leurs items
+    substitute_groups: dict[str, list[str]] = {}
+    substitute_row_ids = set()
+    for recipe in recipes:
+        for ing in recipe.ingredients:
+            if ing.is_substitute_group and ing.item_row_id:
+                substitute_row_ids.add(ing.item_row_id)
+
+    if substitute_row_ids:
+        # Charger les substitutes et leurs items
+        substitutes = db.query(RecipeSubstitute).filter(
+            RecipeSubstitute.row_id.in_(substitute_row_ids)
+        ).all()
+        substitute_id_map = {s.row_id: s.id for s in substitutes}
+
+        # Charger les items de chaque groupe
+        for sub_row_id, sub_id in substitute_id_map.items():
+            sub_items = db.query(RecipeSubstituteItem.item_row_id).filter(
+                RecipeSubstituteItem.substitute_id == sub_id
+            ).all()
+            substitute_groups[sub_row_id] = [si.item_row_id for si in sub_items]
+
+    # Enrichir les ingredients et eclater les recettes avec substituts
     enriched_recipes = []
     for recipe in recipes:
-        # Collecter tous les item_row_id des ingredients
-        ingredient_row_ids = [ing.item_row_id for ing in recipe.ingredients]
+        # Trier les ingredients par position
+        sorted_ingredients = sorted(recipe.ingredients, key=lambda x: x.position)
 
-        # Charger les infos des items ingredients en une seule query
-        ingredient_items = {}
-        if ingredient_row_ids:
-            items_query = db.query(Item.row_id, Item.name, Item.icon_path).filter(
-                Item.row_id.in_(ingredient_row_ids)
-            ).all()
-            ingredient_items = {i.row_id: i for i in items_query}
+        # Verifier si la recette a des substituts
+        has_substitutes = any(
+            ing.is_substitute_group and ing.item_row_id in substitute_groups
+            for ing in sorted_ingredients
+        )
 
-        # Construire les ingredients enrichis
-        enriched_ingredients = []
-        for ing in sorted(recipe.ingredients, key=lambda x: x.position):
-            item_info = ingredient_items.get(ing.item_row_id)
-            enriched_ingredients.append(RecipeIngredientResponse(
-                item_row_id=ing.item_row_id,
-                quantity=ing.quantity,
-                is_substitute_group=ing.is_substitute_group,
-                substitute_group_row_id=ing.substitute_group_row_id,
-                position=ing.position,
-                item=IngredientItemResponse(
-                    row_id=ing.item_row_id,
-                    name=item_info.name if item_info else None,
-                    icon_path=item_info.icon_path if item_info else None,
-                ) if item_info else None
-            ))
-
-        # Construire le bench minimal
-        bench_response = None
-        if recipe.bench:
-            bench_response = BenchMinimalResponse(
-                row_id=recipe.bench.row_id,
-                name=recipe.bench.name,
-                item_row_id=recipe.bench.item_row_id,
-                tier=recipe.bench.tier,
+        if not has_substitutes:
+            # Pas de substituts - construire la recette normalement
+            ingredient_row_ids = [ing.item_row_id for ing in sorted_ingredients]
+            enriched_recipes.append(
+                _build_recipe_response(db, recipe, ingredient_row_ids, bench_map, is_expanded=False)
             )
+        else:
+            # Generer toutes les combinaisons de substituts
+            # Pour chaque ingredient, lister les items possibles
+            variant_options = []
+            for ing in sorted_ingredients:
+                if ing.is_substitute_group and ing.item_row_id in substitute_groups:
+                    # Remplacer par chaque item du groupe
+                    variant_options.append(substitute_groups[ing.item_row_id])
+                else:
+                    # Garder l'ingredient tel quel
+                    variant_options.append([ing.item_row_id])
 
-        enriched_recipes.append(RecipeResponse(
-            row_id=recipe.row_id,
-            output_item_row_id=recipe.output_item_row_id,
-            count_to_create=recipe.count_to_create,
-            bench_row_id=recipe.bench_row_id,
-            unlock_condition=recipe.unlock_condition,
-            is_default_unlocked=recipe.is_default_unlocked,
-            category=recipe.category,
-            subcategory=recipe.subcategory,
-            craft_time=recipe.craft_time,
-            name=recipe.name,
-            ingredients=enriched_ingredients,
-            bench=bench_response,
-        ))
+            # Generer toutes les combinaisons
+            for combination in product(*variant_options):
+                enriched_recipes.append(
+                    _build_recipe_response(db, recipe, list(combination), bench_map, is_expanded=True)
+                )
+
+    # Enrichir les sous-types avec les items lies
+    weapon_response = None
+    if item.weapon:
+        weapon_response = WeaponResponse(
+            is_melee=item.weapon.is_melee,
+            damage_per_hit=item.weapon.damage_per_hit,
+            damage_type=item.weapon.damage_type,
+            time_between_shots=item.weapon.time_between_shots,
+            burst_fire_count=item.weapon.burst_fire_count,
+            bullet_spread_min=item.weapon.bullet_spread_min,
+            bullet_spread_max=item.weapon.bullet_spread_max,
+            max_aim_correction=item.weapon.max_aim_correction,
+            recoil_amount=item.weapon.recoil_amount,
+            maximum_hitscan_range=item.weapon.maximum_hitscan_range,
+            magazine_size=item.weapon.magazine_size,
+            require_ammo=item.weapon.require_ammo,
+            ammo_type_row_id=item.weapon.ammo_type_row_id,
+            ammo_item=_get_linked_item(db, item.weapon.ammo_type_row_id, items_cache),
+            projectile_row_id=item.weapon.projectile_row_id,
+            pellet_count=item.weapon.pellet_count,
+            tracer_per_shots=item.weapon.tracer_per_shots,
+            loudness_primary=item.weapon.loudness_primary,
+            loudness_secondary=item.weapon.loudness_secondary,
+            secondary_attack_type=item.weapon.secondary_attack_type,
+            underwater_state=item.weapon.underwater_state,
+        )
+
+    consumable_response = None
+    if item.consumable:
+        consumable_response = ConsumableResponse(
+            time_to_consume=item.consumable.time_to_consume,
+            hunger_fill=item.consumable.hunger_fill,
+            thirst_fill=item.consumable.thirst_fill,
+            fatigue_fill=item.consumable.fatigue_fill,
+            continence_fill=item.consumable.continence_fill,
+            sanity_fill=item.consumable.sanity_fill,
+            health_change=item.consumable.health_change,
+            armor_change=item.consumable.armor_change,
+            temperature_change=item.consumable.temperature_change,
+            radiation_change=item.consumable.radiation_change,
+            radioactivity=item.consumable.radioactivity,
+            buffs_to_add=item.consumable.buffs_to_add,
+            buffs_to_remove=item.consumable.buffs_to_remove,
+            consumable_tag=item.consumable.consumable_tag,
+            consumed_action=item.consumable.consumed_action,
+            can_be_cooked=item.consumable.can_be_cooked,
+            is_cookware=item.consumable.is_cookware,
+            cooked_item_row_id=item.consumable.cooked_item_row_id,
+            cooked_item=_get_linked_item(db, item.consumable.cooked_item_row_id, items_cache),
+            burned_item_row_id=item.consumable.burned_item_row_id,
+            burned_item=_get_linked_item(db, item.consumable.burned_item_row_id, items_cache),
+            time_to_cook_baseline=item.consumable.time_to_cook_baseline,
+            time_to_burn_baseline=item.consumable.time_to_burn_baseline,
+            requires_baking=item.consumable.requires_baking,
+            starting_portions=item.consumable.starting_portions,
+            can_item_decay=item.consumable.can_item_decay,
+            item_decay_temperature=item.consumable.item_decay_temperature,
+            decay_to_item_row_id=item.consumable.decay_to_item_row_id,
+            decay_to_item=_get_linked_item(db, item.consumable.decay_to_item_row_id, items_cache),
+            max_liquid=item.consumable.max_liquid,
+            allowed_liquids=item.consumable.allowed_liquids,
+        )
+
+    # Charger l'item de reparation
+    repair_item_response = _get_linked_item(db, item.repair_item_id, items_cache)
 
     # Construire la reponse finale
     return ItemResponse(
@@ -171,12 +410,14 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         mesh_path=item.mesh_path,
         gameplay_tags=item.gameplay_tags,
         repair_item_id=item.repair_item_id,
+        repair_item=repair_item_response,
         repair_quantity_min=item.repair_quantity_min,
         repair_quantity_max=item.repair_quantity_max,
         salvage_row_id=item.salvage_row_id,
-        weapon=item.weapon,
+        weapon=weapon_response,
         equipment=item.equipment,
-        consumable=item.consumable,
+        consumable=consumable_response,
         deployable=item.deployable,
         recipes=enriched_recipes,
+        salvage=salvage_response,
     )

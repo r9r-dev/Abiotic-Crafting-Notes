@@ -107,6 +107,14 @@ class DataImporter:
             return None
         return row_name
 
+    def is_substitute_ref(self, ref: dict | None) -> bool:
+        """Vérifie si la référence pointe vers ItemTable_RecipeSubstitutes."""
+        if not ref:
+            return False
+        data_table = ref.get("DataTable", {})
+        object_name = data_table.get("ObjectName", "")
+        return "ItemTable_RecipeSubstitutes" in object_name
+
     def parse_asset_path(self, asset: dict | str | None) -> str | None:
         """Parse un chemin d'asset Unreal (peut être dict ou string)."""
         if not asset:
@@ -444,16 +452,25 @@ class DataImporter:
             if not output_item_row_id:
                 continue
 
+            # Établi requis (BenchesRequired est une liste)
+            benches_required = self.find_property(row_data, "BenchesRequired") or []
+            bench_row_id = None
+            if benches_required and len(benches_required) > 0:
+                bench_row_id = self.parse_data_table_ref(benches_required[0])
+
+            # Temps de craft
+            craft_time = self.find_property(row_data, "CraftDuration") or 0.0
+
             recipe = Recipe(
                 row_id=row_id,
                 output_item_row_id=output_item_row_id,
                 count_to_create=self.find_property(row_data, "CountToCreate") or 1,
-                bench_row_id=self.parse_data_table_ref(self.find_property(row_data, "CraftingBench")),
+                bench_row_id=bench_row_id,
                 unlock_condition=json.dumps(self.find_property(row_data, "UnlockCondition")),
                 is_default_unlocked=self.find_property(row_data, "IsDefaultUnlocked") or False,
                 category=self.find_property(row_data, "Category"),
                 subcategory=self.find_property(row_data, "Subcategory"),
-                craft_time=self.find_property(row_data, "CraftTime") or 0.0,
+                craft_time=craft_time,
             )
             self.session.add(recipe)
             self.session.flush()
@@ -465,11 +482,16 @@ class DataImporter:
                 item_row_id = self.parse_data_table_ref(item_ref)
 
                 if item_row_id:
+                    # Détecter si c'est un groupe de substitution (Any*)
+                    is_substitute = self.is_substitute_ref(item_ref)
+
                     recipe_ingredient = RecipeIngredient(
                         recipe_id=recipe.id,
                         item_row_id=item_row_id,
                         quantity=self.find_property(ingredient, "Count") or 1,
                         position=idx,
+                        is_substitute_group=is_substitute,
+                        substitute_group_row_id=item_row_id if is_substitute else None,
                     )
                     self.session.add(recipe_ingredient)
 

@@ -60,6 +60,16 @@ class DecayTemperature(str, Enum):
 
 # Sous-types schemas
 
+class LinkedItemResponse(BaseModel):
+    """Item lie (ammo, projectile, cooked, etc.)."""
+    row_id: str
+    name: Optional[str] = None
+    icon_path: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
 class WeaponResponse(BaseModel):
     is_melee: bool
     damage_per_hit: float
@@ -74,6 +84,7 @@ class WeaponResponse(BaseModel):
     magazine_size: int
     require_ammo: bool
     ammo_type_row_id: Optional[str] = None
+    ammo_item: Optional[LinkedItemResponse] = None
     projectile_row_id: Optional[str] = None
     pellet_count: int
     tracer_per_shots: int
@@ -121,7 +132,9 @@ class ConsumableResponse(BaseModel):
     can_be_cooked: bool
     is_cookware: bool
     cooked_item_row_id: Optional[str] = None
+    cooked_item: Optional[LinkedItemResponse] = None
     burned_item_row_id: Optional[str] = None
+    burned_item: Optional[LinkedItemResponse] = None
     time_to_cook_baseline: float
     time_to_burn_baseline: float
     requires_baking: bool
@@ -129,6 +142,7 @@ class ConsumableResponse(BaseModel):
     can_item_decay: bool
     item_decay_temperature: Optional[DecayTemperature] = None
     decay_to_item_row_id: Optional[str] = None
+    decay_to_item: Optional[LinkedItemResponse] = None
     max_liquid: int
     allowed_liquids: Optional[str] = None
 
@@ -184,6 +198,41 @@ class BenchMinimalResponse(BaseModel):
         from_attributes = True
 
 
+class ItemMinimalResponse(BaseModel):
+    """Info minimale d'un item pour les relations."""
+    row_id: str
+    name: Optional[str] = None
+    icon_path: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SalvageDropResponse(BaseModel):
+    """Item obtenu lors du desassemblage."""
+    item_row_id: str
+    quantity_min: int
+    quantity_max: int
+    drop_chance: float
+    position: int
+    item: Optional[ItemMinimalResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SalvageResponse(BaseModel):
+    """Profil de desassemblage d'un item."""
+    row_id: str
+    salvage_time: float
+    bench_row_id: Optional[str] = None
+    bench: Optional[BenchMinimalResponse] = None
+    drops: List[SalvageDropResponse] = []
+
+    class Config:
+        from_attributes = True
+
+
 class RecipeResponse(BaseModel):
     row_id: str
     output_item_row_id: str
@@ -221,6 +270,7 @@ class ItemResponse(BaseModel):
     mesh_path: Optional[str] = None
     gameplay_tags: Optional[str] = None
     repair_item_id: Optional[str] = None
+    repair_item: Optional[LinkedItemResponse] = None
     repair_quantity_min: int
     repair_quantity_max: int
     salvage_row_id: Optional[str] = None
@@ -233,6 +283,9 @@ class ItemResponse(BaseModel):
 
     # Recettes qui produisent cet item
     recipes: List[RecipeResponse] = []
+
+    # Salvage (desassemblage)
+    salvage: Optional[SalvageResponse] = None
 
     class Config:
         from_attributes = True
