@@ -461,6 +461,9 @@ class DataImporter:
             # Temps de craft
             craft_time = self.find_property(row_data, "CraftDuration") or 0.0
 
+            # Tags de recette
+            recipe_tags = self.find_property(row_data, "RecipeTags") or []
+
             recipe = Recipe(
                 row_id=row_id,
                 output_item_row_id=output_item_row_id,
@@ -471,6 +474,7 @@ class DataImporter:
                 category=self.find_property(row_data, "Category"),
                 subcategory=self.find_property(row_data, "Subcategory"),
                 craft_time=craft_time,
+                recipe_tags=json.dumps(recipe_tags) if recipe_tags else None,
             )
             self.session.add(recipe)
             self.session.flush()

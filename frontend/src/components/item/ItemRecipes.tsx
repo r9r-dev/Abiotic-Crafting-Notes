@@ -43,7 +43,11 @@ function IngredientBadge({
 }
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
-  const benchName = recipe.bench?.name || recipe.bench?.row_id || "Fabrication";
+  // Déterminer le nom de l'établi/station
+  const isCooking = recipe.recipe_tags?.includes("Recipe.Soup");
+  const benchName = isCooking
+    ? "Cuisine (Marmite)"
+    : recipe.bench?.name || recipe.bench?.row_id || "Fabrication";
 
   return (
     <Card>

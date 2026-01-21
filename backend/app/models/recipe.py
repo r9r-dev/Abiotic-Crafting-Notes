@@ -29,6 +29,9 @@ class Recipe(Base):
     # Temps de craft
     craft_time = Column(Float, default=0.0)
 
+    # Tags de recette (Recipe.Soup, Recipe.Labs, etc.)
+    recipe_tags = Column(Text)  # JSON array
+
     # Traductions
     name = Column(String(255))
 

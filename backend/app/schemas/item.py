@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from enum import Enum
 
@@ -304,9 +304,23 @@ class RecipeResponse(BaseModel):
     category: Optional[str] = None
     subcategory: Optional[str] = None
     craft_time: float
+    recipe_tags: Optional[List[str]] = None
     name: Optional[str] = None
     ingredients: List[RecipeIngredientResponse] = []
     bench: Optional[BenchMinimalResponse] = None
+
+    @field_validator("recipe_tags", mode="before")
+    @classmethod
+    def parse_recipe_tags(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            import json
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return None
+        return v
 
     class Config:
         from_attributes = True

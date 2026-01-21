@@ -2,6 +2,9 @@
 
 `abiotic.hellonowork.com`
 
+# ATTENTION
+OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque chose de simple en attendant de faire mieux plus tard. Il ne faut jamais contourner un problème. Il faut le résoudre proprement.
+
 ## Stack technique
 
 - **Frontend**: React 19, Vite, shadcn/ui, TailwindCSS, TypeScript, Bun

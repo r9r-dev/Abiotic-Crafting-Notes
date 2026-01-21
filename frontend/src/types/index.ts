@@ -229,6 +229,7 @@ export interface Recipe {
   category: string | null;
   subcategory: string | null;
   craft_time: number;
+  recipe_tags: string[] | null;
   name: string | null;
   ingredients: RecipeIngredient[];
   bench: BenchMinimal | null;
