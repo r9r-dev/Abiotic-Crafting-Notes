@@ -188,18 +188,19 @@ class DataImporter:
         return ReleaseGroup.CORE
 
     def parse_equip_slot(self, value: str | None) -> EquipSlot | None:
-        """Parse le slot d'équipement."""
+        """Parse le slot d'équipement depuis E_InventorySlotType::NewEnumeratorX."""
         if not value:
             return None
+        # Mapping des valeurs Unreal Engine vers les slots
         mapping = {
-            "Head": EquipSlot.HEAD,
-            "Torso": EquipSlot.TORSO,
-            "Legs": EquipSlot.LEGS,
-            "Feet": EquipSlot.FEET,
-            "Hands": EquipSlot.HANDS,
-            "Back": EquipSlot.BACK,
-            "Face": EquipSlot.FACE,
-            "Accessory": EquipSlot.ACCESSORY,
+            "NewEnumerator5": EquipSlot.HEAD,      # Casques
+            "NewEnumerator6": EquipSlot.LEGS,      # Jambes
+            "NewEnumerator7": EquipSlot.BACK,      # Sacs à dos
+            "NewEnumerator12": EquipSlot.HANDS,    # Bras/Mains
+            "NewEnumerator13": EquipSlot.TORSO,    # Combinaisons (corps entier)
+            "NewEnumerator14": EquipSlot.TORSO,    # Torse
+            "NewEnumerator15": EquipSlot.FACE,     # Visage (lampes, lunettes)
+            "NewEnumerator16": EquipSlot.ACCESSORY,  # Accessoires/Gadgets
         }
         for key, slot in mapping.items():
             if key in value:
