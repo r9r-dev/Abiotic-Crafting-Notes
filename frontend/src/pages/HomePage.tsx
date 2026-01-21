@@ -18,12 +18,12 @@ const categoryLabels: Record<string, string> = {
   pet: "Familier",
 };
 
-function SearchResult({ item }: { item: ItemSearchResult }) {
+function SearchResult({ item, query }: { item: ItemSearchResult; query: string }) {
   const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
 
   return (
     <Link
-      to={`/item/${item.row_id}`}
+      to={`/item/${item.row_id}?q=${encodeURIComponent(query)}`}
       className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors"
     >
       <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
@@ -146,7 +146,7 @@ export function HomePage() {
         {results.length > 0 && (
           <div className="space-y-1">
             {results.map((item) => (
-              <SearchResult key={item.row_id} item={item} />
+              <SearchResult key={item.row_id} item={item} query={query} />
             ))}
           </div>
         )}

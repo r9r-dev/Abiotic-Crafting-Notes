@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 import type { Item } from "@/types";
 import { getItem, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -13,12 +14,35 @@ import {
   DeployableStats,
 } from "@/components/item";
 
+function ItemContent({ item }: { item: Item }) {
+  return (
+    <div className="space-y-6">
+      <ItemHeader item={item} />
+      <ItemBaseStats item={item} />
+      {item.weapon && <WeaponStats weapon={item.weapon} />}
+      {item.equipment && <EquipmentStats equipment={item.equipment} />}
+      {item.consumable && <ConsumableStats consumable={item.consumable} />}
+      {item.deployable && <DeployableStats deployable={item.deployable} />}
+      {item.recipes.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Fabrication</h2>
+          <ItemRecipes recipes={item.recipes} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ItemPage() {
   const { rowId } = useParams<{ rowId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [item, setItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const query = searchParams.get("q") || "";
+  const hasSearchContext = query.length > 0;
 
   useEffect(() => {
     if (!rowId) {
@@ -68,36 +92,30 @@ export function ItemPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className={hasSearchContext ? "max-w-3xl" : "max-w-3xl mx-auto"}>
       {/* Bouton retour */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
-        className="gap-2"
-      >
-        <span>&larr;</span> Retour
-      </Button>
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="gap-2"
+        >
+          <span>&larr;</span> {hasSearchContext ? "Nouvelle recherche" : "Retour"}
+        </Button>
+      </div>
 
-      {/* Header avec icône et infos principales */}
-      <ItemHeader item={item} />
-
-      {/* Propriétés de base */}
-      <ItemBaseStats item={item} />
-
-      {/* Stats spécialisées selon le type */}
-      {item.weapon && <WeaponStats weapon={item.weapon} />}
-      {item.equipment && <EquipmentStats equipment={item.equipment} />}
-      {item.consumable && <ConsumableStats consumable={item.consumable} />}
-      {item.deployable && <DeployableStats deployable={item.deployable} />}
-
-      {/* Recettes de craft */}
-      {item.recipes.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Fabrication</h2>
-          <ItemRecipes recipes={item.recipes} />
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={rowId}
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          transition={{ ease: "easeInOut", duration: 0.15 }}
+        >
+          <ItemContent item={item} />
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
