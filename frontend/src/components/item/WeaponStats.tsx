@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
+import { Check, X, Droplets } from "lucide-react";
 import type { Weapon } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   getSecondaryAttackTypeLabel,
-  getUnderwaterStateLabel,
   getDamageTypeLabel,
 } from "@/lib/enumLabels";
 
@@ -180,10 +180,20 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
               />
             )}
             {weapon.underwater_state && (
-              <StatRow
-                label="Sous l'eau"
-                value={getUnderwaterStateLabel(weapon.underwater_state) || weapon.underwater_state}
-              />
+              <div className="flex justify-between py-1.5 border-b border-border/50 last:border-0">
+                <span className="text-muted-foreground">Sous l'eau</span>
+                <span className="font-medium flex items-center gap-1">
+                  {weapon.underwater_state === "E_UnderwaterUsage::NewEnumerator0" && (
+                    <><Check className="w-4 h-4 text-green-500" /> Utilisable</>
+                  )}
+                  {weapon.underwater_state === "E_UnderwaterUsage::NewEnumerator1" && (
+                    <><X className="w-4 h-4 text-red-500" /> Non utilisable</>
+                  )}
+                  {weapon.underwater_state === "E_UnderwaterUsage::NewEnumerator2" && (
+                    <><Droplets className="w-4 h-4 text-blue-500" /> Uniquement</>
+                  )}
+                </span>
+              </div>
             )}
           </CardContent>
         </Card>
