@@ -8,6 +8,7 @@ from sqlalchemy import or_, func
 from app.database import get_db
 from app.models import Item, Recipe, RecipeIngredient, Bench, RecipeSubstitute, RecipeSubstituteItem
 from app.models.salvage import Salvage, SalvageDrop
+from app.models.item_upgrade import ItemUpgrade, ItemUpgradeIngredient
 from app.schemas.item import (
     ItemResponse,
     RecipeResponse,
@@ -22,17 +23,26 @@ from app.schemas.item import (
     ItemMinimalResponse,
     WeaponResponse,
     ConsumableResponse,
+    ItemUpgradeResponse,
+    ItemUpgradeIngredientResponse,
 )
 
 router = APIRouter(prefix="/items", tags=["items"])
 
 
-def remove_accents(text: str) -> str:
-    """Supprime les accents d'une chaîne."""
-    return "".join(
+def normalize_search_text(text: str) -> str:
+    """Normalise le texte pour la recherche (accents, ligatures, points)."""
+    # Remplacer les ligatures
+    text = text.replace("œ", "oe").replace("Œ", "OE")
+    text = text.replace("æ", "ae").replace("Æ", "AE")
+    # Supprimer les points (pour F.O.R.G.E. -> FORGE)
+    text = text.replace(".", "")
+    # Supprimer les accents
+    text = "".join(
         c for c in unicodedata.normalize("NFD", text)
         if unicodedata.category(c) != "Mn"
     )
+    return text
 
 
 def _get_linked_item(db: Session, row_id: str | None, items_cache: dict) -> LinkedItemResponse | None:
@@ -171,6 +181,63 @@ def _build_salvage_response(
     )
 
 
+def _build_upgrades_response(
+    db: Session,
+    upgrades: list[ItemUpgrade],
+    items_cache: dict,
+) -> list[ItemUpgradeResponse]:
+    """Construit la liste des upgrades avec les items enrichis."""
+    # Collecter tous les item_row_id necessaires
+    all_item_row_ids = set()
+    for upgrade in upgrades:
+        all_item_row_ids.add(upgrade.output_item_row_id)
+        for ing in upgrade.ingredients:
+            all_item_row_ids.add(ing.item_row_id)
+
+    # Charger les items en une seule requete
+    if all_item_row_ids:
+        items_query = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+            Item.row_id.in_(all_item_row_ids)
+        ).all()
+        for item in items_query:
+            items_cache[item.row_id] = item
+
+    # Construire les reponses
+    result = []
+    for upgrade in sorted(upgrades, key=lambda x: x.position):
+        output_item_info = items_cache.get(upgrade.output_item_row_id)
+
+        # Ingredients enrichis
+        enriched_ingredients = []
+        for ing in sorted(upgrade.ingredients, key=lambda x: x.position):
+            ing_item_info = items_cache.get(ing.item_row_id)
+            enriched_ingredients.append(ItemUpgradeIngredientResponse(
+                item_row_id=ing.item_row_id,
+                quantity=ing.quantity,
+                position=ing.position,
+                item=ItemMinimalResponse(
+                    row_id=ing.item_row_id,
+                    name=ing_item_info.name if ing_item_info else None,
+                    icon_path=ing_item_info.icon_path if ing_item_info else None,
+                ) if ing_item_info else None,
+            ))
+
+        result.append(ItemUpgradeResponse(
+            id=upgrade.id,
+            source_item_row_id=upgrade.source_item_row_id,
+            output_item_row_id=upgrade.output_item_row_id,
+            output_item=ItemMinimalResponse(
+                row_id=upgrade.output_item_row_id,
+                name=output_item_info.name if output_item_info else None,
+                icon_path=output_item_info.icon_path if output_item_info else None,
+            ) if output_item_info else None,
+            position=upgrade.position,
+            ingredients=enriched_ingredients,
+        ))
+
+    return result
+
+
 @router.get("/search", response_model=ItemSearchResponse)
 def search_items(
     q: str = Query(..., min_length=1, description="Terme de recherche"),
@@ -179,17 +246,26 @@ def search_items(
     """
     Recherche d'items par nom ou description.
     Retourne jusqu'à 20 résultats.
-    Ignore les accents (ex: "fusil a pompe" trouve "fusil à pompe").
+    Ignore les accents, ligatures et points (ex: "coeur" trouve "Cœur", "for" trouve "F.O.R.G.E.").
     """
-    # Normaliser le terme de recherche (sans accents, minuscules)
-    search_normalized = f"%{remove_accents(q.lower())}%"
+    # Normaliser le terme de recherche
+    search_normalized = f"%{normalize_search_text(q.lower())}%"
 
-    # Fonction SQL pour normaliser les accents (caractères français courants)
-    accents_from = "àâäéèêëïîôùûüçÀÂÄÉÈÊËÏÎÔÙÛÜÇ"
-    accents_to = "aaaeeeeiioouucAAAEEEEIIOOUUC"
-
+    # Fonction SQL pour normaliser le texte
+    # 1. Remplacer les ligatures
+    # 2. Supprimer les points
+    # 3. Supprimer les accents
     def normalize_column(col):
-        return func.translate(func.lower(col), accents_from, accents_to)
+        # Remplacer ligatures
+        normalized = func.replace(func.replace(col, "œ", "oe"), "Œ", "OE")
+        normalized = func.replace(func.replace(normalized, "æ", "ae"), "Æ", "AE")
+        # Supprimer les points
+        normalized = func.replace(normalized, ".", "")
+        # Supprimer les accents (caractères français courants)
+        accents_from = "àâäéèêëïîôùûüçÀÂÄÉÈÊËÏÎÔÙÛÜÇ"
+        accents_to = "aaaeeeeiioouucAAAEEEEIIOOUUC"
+        normalized = func.translate(func.lower(normalized), accents_from, accents_to)
+        return normalized
 
     results = db.query(Item).filter(
         or_(
@@ -392,6 +468,13 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
     # Charger l'item de reparation
     repair_item_response = _get_linked_item(db, item.repair_item_id, items_cache)
 
+    # Charger les upgrades possibles
+    upgrades = db.query(ItemUpgrade).options(
+        joinedload(ItemUpgrade.ingredients)
+    ).filter(ItemUpgrade.source_item_row_id == row_id).all()
+
+    upgrades_response = _build_upgrades_response(db, upgrades, items_cache)
+
     # Construire la reponse finale
     return ItemResponse(
         id=item.id,
@@ -420,4 +503,5 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         deployable=item.deployable,
         recipes=enriched_recipes,
         salvage=salvage_response,
+        upgrades=upgrades_response,
     )

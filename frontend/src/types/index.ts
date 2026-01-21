@@ -153,6 +153,23 @@ export interface Salvage {
   drops: SalvageDrop[];
 }
 
+// Item Upgrades (ameliorations)
+export interface ItemUpgradeIngredient {
+  item_row_id: string;
+  quantity: number;
+  position: number;
+  item: LinkedItem | null;
+}
+
+export interface ItemUpgrade {
+  id: number;
+  source_item_row_id: string;
+  output_item_row_id: string;
+  output_item: LinkedItem | null;
+  position: number;
+  ingredients: ItemUpgradeIngredient[];
+}
+
 // Recettes
 export interface IngredientItem {
   row_id: string;
@@ -219,4 +236,5 @@ export interface Item {
   deployable: Deployable | null;
   recipes: Recipe[];
   salvage: Salvage | null;
+  upgrades: ItemUpgrade[];
 }

@@ -24,7 +24,8 @@ from app.models import (
     Item, ItemCategory, ReleaseGroup,
     Weapon, Equipment, EquipSlot, Consumable, DecayTemperature, Deployable,
     Bench, BenchUpgrade, Recipe, RecipeIngredient, RecipeSubstitute, RecipeSubstituteItem,
-    Salvage, SalvageDrop, NPC, Plant, Projectile
+    Salvage, SalvageDrop, NPC, Plant, Projectile,
+    ItemUpgrade, ItemUpgradeIngredient
 )
 
 
@@ -737,6 +738,59 @@ class DataImporter:
         print(f"  {upgrade_count} upgrades d'établis importés")
         return bench_count + upgrade_count
 
+    def import_item_upgrades(self) -> int:
+        """Importe les améliorations d'items (ex: Tournevis -> Chignole)."""
+        print("\nImport des améliorations d'items...")
+        filepath = DATATABLES_DIR / "DT_ItemUpgrades.json"
+        data = self.load_json_file(filepath)
+        rows = self.extract_rows(data)
+
+        upgrade_count = 0
+        ingredient_count = 0
+
+        for source_item_row_id, row_data in rows.items():
+            upgrades_list = row_data.get("Upgrades", [])
+
+            for upgrade_idx, upgrade_data in enumerate(upgrades_list):
+                # Item résultant
+                output_ref = upgrade_data.get("OutputItem")
+                output_item_row_id = self.parse_data_table_ref(output_ref)
+
+                if not output_item_row_id:
+                    continue
+
+                # Créer l'upgrade
+                upgrade = ItemUpgrade(
+                    source_item_row_id=source_item_row_id,
+                    output_item_row_id=output_item_row_id,
+                    position=upgrade_idx,
+                )
+                self.session.add(upgrade)
+                self.session.flush()
+
+                # Ingrédients requis
+                required_items = upgrade_data.get("RequiredItems", [])
+                for ing_idx, ingredient in enumerate(required_items):
+                    item_ref = ingredient.get("Item")
+                    item_row_id = self.parse_data_table_ref(item_ref)
+                    quantity = ingredient.get("Count", 1)
+
+                    if item_row_id:
+                        ing = ItemUpgradeIngredient(
+                            upgrade_id=upgrade.id,
+                            item_row_id=item_row_id,
+                            quantity=quantity,
+                            position=ing_idx,
+                        )
+                        self.session.add(ing)
+                        ingredient_count += 1
+
+                upgrade_count += 1
+
+        print(f"  {upgrade_count} améliorations importées")
+        print(f"  {ingredient_count} ingrédients d'amélioration importés")
+        return upgrade_count
+
     def run(self, reset: bool = False) -> None:
         """Exécute l'import complet."""
         print("=" * 60)
@@ -746,6 +800,8 @@ class DataImporter:
         if reset:
             print("\n[RESET] Suppression des données existantes...")
             # Supprimer dans l'ordre inverse des dépendances
+            self.session.query(ItemUpgradeIngredient).delete()
+            self.session.query(ItemUpgrade).delete()
             self.session.query(RecipeSubstituteItem).delete()
             self.session.query(RecipeSubstitute).delete()
             self.session.query(RecipeIngredient).delete()
@@ -774,6 +830,7 @@ class DataImporter:
         self.import_benches()
         self.import_recipes()
         self.import_salvage()
+        self.import_item_upgrades()
         self.import_npcs()
         self.import_plants()
         self.import_projectiles()

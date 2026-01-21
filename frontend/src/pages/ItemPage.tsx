@@ -15,6 +15,7 @@ import {
 } from "@/components/item";
 import { ItemSalvage } from "@/components/item/ItemSalvage";
 import { ItemCooking } from "@/components/item/ItemCooking";
+import { ItemUpgrades } from "@/components/item/ItemUpgrades";
 
 function ItemContent({ item }: { item: Item }) {
   return (
@@ -36,6 +37,12 @@ function ItemContent({ item }: { item: Item }) {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Desassemblage</h2>
           <ItemSalvage salvage={item.salvage} />
+        </div>
+      )}
+      {item.upgrades && item.upgrades.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Ameliorations</h2>
+          <ItemUpgrades upgrades={item.upgrades} />
         </div>
       )}
     </div>

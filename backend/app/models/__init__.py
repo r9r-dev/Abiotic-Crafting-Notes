@@ -8,6 +8,7 @@ from app.models.deployable import Deployable
 from app.models.bench import Bench, BenchUpgrade
 from app.models.recipe import Recipe, RecipeIngredient, RecipeSubstitute, RecipeSubstituteItem
 from app.models.salvage import Salvage, SalvageDrop
+from app.models.item_upgrade import ItemUpgrade, ItemUpgradeIngredient
 from app.models.npc import NPC
 from app.models.plant import Plant
 from app.models.projectile import Projectile
@@ -35,6 +36,9 @@ __all__ = [
     # Salvage
     "Salvage",
     "SalvageDrop",
+    # Item Upgrades
+    "ItemUpgrade",
+    "ItemUpgradeIngredient",
     # Entities
     "NPC",
     "Plant",

@@ -233,6 +233,30 @@ class SalvageResponse(BaseModel):
         from_attributes = True
 
 
+class ItemUpgradeIngredientResponse(BaseModel):
+    """Ingredient requis pour une amelioration."""
+    item_row_id: str
+    quantity: int
+    position: int
+    item: Optional[ItemMinimalResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ItemUpgradeResponse(BaseModel):
+    """Amelioration possible d'un item."""
+    id: int
+    source_item_row_id: str
+    output_item_row_id: str
+    output_item: Optional[ItemMinimalResponse] = None
+    position: int
+    ingredients: List[ItemUpgradeIngredientResponse] = []
+
+    class Config:
+        from_attributes = True
+
+
 class RecipeResponse(BaseModel):
     row_id: str
     output_item_row_id: str
@@ -286,6 +310,9 @@ class ItemResponse(BaseModel):
 
     # Salvage (desassemblage)
     salvage: Optional[SalvageResponse] = None
+
+    # Ameliorations possibles
+    upgrades: List[ItemUpgradeResponse] = []
 
     class Config:
         from_attributes = True
