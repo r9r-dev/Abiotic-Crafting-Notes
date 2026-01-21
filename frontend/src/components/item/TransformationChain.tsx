@@ -1,33 +1,18 @@
 import { Link } from "react-router-dom";
-import type { Consumable, LinkedItem, ItemUpgrade, UpgradedFrom } from "@/types";
+import type { Consumable, LinkedItem } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface TransformationChainProps {
   consumable?: Consumable | null;
-  upgrades?: ItemUpgrade[];
-  upgradedFrom?: UpgradedFrom[];
+  upgradeChain?: LinkedItem[];
+  cookingChain?: LinkedItem[];
   currentItemRowId: string;
-  currentItemName: string | null;
-  currentItemIconPath: string | null;
 }
 
-interface TransformationNode {
-  item: LinkedItem;
-  isCurrent: boolean;
-}
-
-interface TransformationStep {
-  from: TransformationNode;
-  to: TransformationNode;
-  type: "cooked" | "burned" | "decayed" | "upgraded";
-}
-
-const TRANSFORMATION_LABELS: Record<string, string> = {
-  cooked: "Cuit",
-  burned: "Brule",
-  decayed: "Pourri",
+const TRANSFORMATION_LABELS = {
   upgraded: "Ameliore",
+  cooked: "Cuit",
 };
 
 function ItemIcon({
@@ -100,167 +85,50 @@ function Arrow({ label }: { label: string }) {
   );
 }
 
+function ChainDisplay({
+  chain,
+  currentItemRowId,
+  label,
+}: {
+  chain: LinkedItem[];
+  currentItemRowId: string;
+  label: string;
+}) {
+  if (chain.length === 0) return null;
+
+  return (
+    <div className="flex items-center justify-center flex-wrap gap-y-4">
+      {chain.map((item, index) => (
+        <div key={item.row_id} className="flex items-center">
+          <ItemIcon
+            item={item}
+            isCurrent={item.row_id === currentItemRowId}
+          />
+          {index < chain.length - 1 && <Arrow label={label} />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function TransformationChain({
   consumable,
-  upgrades,
-  upgradedFrom,
+  upgradeChain = [],
+  cookingChain = [],
   currentItemRowId,
-  currentItemName,
-  currentItemIconPath,
 }: TransformationChainProps) {
-  // Construire l'item courant
-  const currentItem: LinkedItem = {
-    row_id: currentItemRowId,
-    name: currentItemName,
-    icon_path: currentItemIconPath,
-  };
-
-  // Collecter toutes les transformations
-  const steps: TransformationStep[] = [];
-
-  // === Relations de cuisson (consumable) ===
-  if (consumable) {
-    // Relations inverses (items qui deviennent l'item courant)
-    consumable.cooked_from?.forEach((source) => {
-      steps.push({
-        from: { item: source, isCurrent: false },
-        to: { item: currentItem, isCurrent: true },
-        type: "cooked",
-      });
-    });
-
-    consumable.burned_from?.forEach((source) => {
-      steps.push({
-        from: { item: source, isCurrent: false },
-        to: { item: currentItem, isCurrent: true },
-        type: "burned",
-      });
-    });
-
-    consumable.decayed_from?.forEach((source) => {
-      steps.push({
-        from: { item: source, isCurrent: false },
-        to: { item: currentItem, isCurrent: true },
-        type: "decayed",
-      });
-    });
-
-    // Relations directes (item courant devient autre chose)
-    if (consumable.cooked_item) {
-      steps.push({
-        from: { item: currentItem, isCurrent: true },
-        to: { item: consumable.cooked_item, isCurrent: false },
-        type: "cooked",
-      });
-    }
-
-    if (consumable.burned_item) {
-      steps.push({
-        from: { item: currentItem, isCurrent: true },
-        to: { item: consumable.burned_item, isCurrent: false },
-        type: "burned",
-      });
-    }
-
-    if (consumable.decay_to_item && consumable.can_item_decay) {
-      steps.push({
-        from: { item: currentItem, isCurrent: true },
-        to: { item: consumable.decay_to_item, isCurrent: false },
-        type: "decayed",
-      });
-    }
-  }
-
-  // === Relations d'amelioration (upgrades) ===
-  // Relations inverses (items qui s'ameliorent vers l'item courant)
-  upgradedFrom?.forEach((upgrade) => {
-    if (upgrade.source_item) {
-      steps.push({
-        from: { item: upgrade.source_item, isCurrent: false },
-        to: { item: currentItem, isCurrent: true },
-        type: "upgraded",
-      });
-    }
-  });
-
-  // Relations directes (item courant peut etre ameliore)
-  upgrades?.forEach((upgrade) => {
-    if (upgrade.output_item) {
-      steps.push({
-        from: { item: currentItem, isCurrent: true },
-        to: { item: upgrade.output_item, isCurrent: false },
-        type: "upgraded",
-      });
-    }
-  });
+  const hasUpgradeChain = upgradeChain.length > 1;
+  const hasCookingChain = cookingChain.length > 1;
 
   // Pas de transformations ? Ne rien afficher
-  if (steps.length === 0) {
+  if (!hasUpgradeChain && !hasCookingChain) {
     return null;
   }
 
-  // Construire une chaine lineaire unique
-  // On part des sources (items sans predecesseur) vers les destinations
-  const buildChain = (): { item: LinkedItem; isCurrent: boolean; nextType?: string }[] => {
-    const chain: { item: LinkedItem; isCurrent: boolean; nextType?: string }[] = [];
-    const visited = new Set<string>();
-
-    // Trouver l'item source (celui qui n'est jamais une destination dans les relations inverses)
-    // ou l'item courant s'il est la source
-    const sources = steps.filter(
-      (s) =>
-        s.from.isCurrent ||
-        !steps.some((other) => other.to.item.row_id === s.from.item.row_id)
-    );
-
-    if (sources.length === 0) {
-      // Fallback: commencer par l'item courant
-      chain.push({ item: currentItem, isCurrent: true });
-      return chain;
-    }
-
-    // Prendre la premiere source et construire la chaine
-    const startStep = sources.find((s) => !s.from.isCurrent) || sources[0];
-    let currentStep: TransformationStep | undefined = startStep;
-
-    // Ajouter le premier item (source)
-    if (!visited.has(startStep.from.item.row_id)) {
-      chain.push({
-        item: startStep.from.item,
-        isCurrent: startStep.from.isCurrent,
-        nextType: startStep.type,
-      });
-      visited.add(startStep.from.item.row_id);
-    }
-
-    // Suivre la chaine
-    while (currentStep) {
-      const toItem: TransformationNode = currentStep.to;
-      if (visited.has(toItem.item.row_id)) break;
-
-      // Trouver le prochain step qui part de cet item
-      const nextStep: TransformationStep | undefined = steps.find(
-        (s) => s.from.item.row_id === toItem.item.row_id && !visited.has(s.to.item.row_id)
-      );
-
-      chain.push({
-        item: toItem.item,
-        isCurrent: toItem.isCurrent,
-        nextType: nextStep?.type,
-      });
-      visited.add(toItem.item.row_id);
-
-      currentStep = nextStep;
-    }
-
-    return chain;
-  };
-
-  const chain = buildChain();
-
   // Determiner si on doit afficher "Necessite un four"
-  const requiresBaking = consumable?.requires_baking ||
-    consumable?.cooked_from?.some(item => item.requires_baking);
+  const requiresBaking =
+    consumable?.requires_baking ||
+    cookingChain.some((item) => item.requires_baking);
 
   return (
     <Card>
@@ -268,20 +136,27 @@ export function TransformationChain({
         <CardTitle className="text-base">Transformation</CardTitle>
       </CardHeader>
 
-      <CardContent>
-        <div className="flex items-center justify-center flex-wrap gap-y-4">
-          {chain.map((node, index) => (
-            <div key={node.item.row_id} className="flex items-center">
-              <ItemIcon item={node.item} isCurrent={node.isCurrent} />
-              {node.nextType && index < chain.length - 1 && (
-                <Arrow label={TRANSFORMATION_LABELS[node.nextType]} />
-              )}
-            </div>
-          ))}
-        </div>
+      <CardContent className="space-y-4">
+        {/* Chaine d'ameliorations */}
+        {hasUpgradeChain && (
+          <ChainDisplay
+            chain={upgradeChain}
+            currentItemRowId={currentItemRowId}
+            label={TRANSFORMATION_LABELS.upgraded}
+          />
+        )}
+
+        {/* Chaine de cuisson */}
+        {hasCookingChain && (
+          <ChainDisplay
+            chain={cookingChain}
+            currentItemRowId={currentItemRowId}
+            label={TRANSFORMATION_LABELS.cooked}
+          />
+        )}
 
         {requiresBaking && (
-          <div className="mt-3 text-center">
+          <div className="text-center">
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
               Necessite un four
             </span>

@@ -116,6 +116,118 @@ def _get_transformation_sources(
     ]
 
 
+def _get_full_upgrade_chain(db: Session, row_id: str) -> list[LinkedItemResponse]:
+    """Recupere la chaine complete d'ameliorations pour un item.
+
+    Remonte jusqu'a la racine puis descend jusqu'au dernier upgrade.
+    """
+    from app.models.item_upgrade import ItemUpgrade
+
+    # Trouver la racine (remonter les upgrades)
+    current_id = row_id
+    visited = {current_id}
+
+    while True:
+        # Chercher un item qui s'upgrade vers current_id
+        parent = db.query(ItemUpgrade.source_item_row_id).filter(
+            ItemUpgrade.output_item_row_id == current_id
+        ).first()
+
+        if not parent or parent.source_item_row_id in visited:
+            break
+        current_id = parent.source_item_row_id
+        visited.add(current_id)
+
+    root_id = current_id
+
+    # Construire la chaine depuis la racine
+    chain = []
+    current_id = root_id
+    visited = set()
+
+    while current_id and current_id not in visited:
+        visited.add(current_id)
+
+        # Recuperer les infos de l'item
+        item = db.query(Item.row_id, Item.name, Item.icon_path).filter(
+            Item.row_id == current_id
+        ).first()
+
+        if item:
+            chain.append(LinkedItemResponse(
+                row_id=item.row_id,
+                name=item.name,
+                icon_path=item.icon_path,
+            ))
+
+        # Chercher le prochain upgrade
+        next_upgrade = db.query(ItemUpgrade.output_item_row_id).filter(
+            ItemUpgrade.source_item_row_id == current_id
+        ).first()
+
+        current_id = next_upgrade.output_item_row_id if next_upgrade else None
+
+    # Ne retourner la chaine que si elle contient plus d'un element
+    return chain if len(chain) > 1 else []
+
+
+def _get_full_cooking_chain(db: Session, row_id: str) -> list[LinkedItemResponse]:
+    """Recupere la chaine complete de cuisson pour un item.
+
+    Remonte jusqu'a l'item non cuit puis descend jusqu'a l'item brule/pourri.
+    """
+    # Trouver la racine (remonter les cuissons)
+    current_id = row_id
+    visited = {current_id}
+
+    while True:
+        # Chercher un item qui se cuit vers current_id
+        parent = db.query(Item.row_id).join(
+            Consumable, Consumable.item_id == Item.id
+        ).filter(
+            Consumable.cooked_item_row_id == current_id
+        ).first()
+
+        if not parent or parent.row_id in visited:
+            break
+        current_id = parent.row_id
+        visited.add(current_id)
+
+    root_id = current_id
+
+    # Construire la chaine depuis la racine (suivre cooked_item)
+    chain = []
+    current_id = root_id
+    visited = set()
+
+    while current_id and current_id not in visited:
+        visited.add(current_id)
+
+        # Recuperer les infos de l'item et son cooked_item
+        item_data = db.query(
+            Item.row_id, Item.name, Item.icon_path,
+            Consumable.cooked_item_row_id, Consumable.requires_baking
+        ).outerjoin(
+            Consumable, Consumable.item_id == Item.id
+        ).filter(
+            Item.row_id == current_id
+        ).first()
+
+        if item_data:
+            chain.append(LinkedItemResponse(
+                row_id=item_data.row_id,
+                name=item_data.name,
+                icon_path=item_data.icon_path,
+                requires_baking=item_data.requires_baking,
+            ))
+            current_id = item_data.cooked_item_row_id
+        else:
+            break
+
+    # Ne retourner la chaine que si elle contient plus d'un element
+    return chain if len(chain) > 1 else []
+
+
 def _build_recipe_response(
     db: Session,
     recipe: Recipe,
@@ -724,6 +836,10 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
     used_in_upgrades_response = _build_used_in_upgrades_response(db, row_id, items_cache)
     upgraded_from_response = _build_upgraded_from_response(db, row_id, items_cache)
 
+    # Charger les chaines completes de transformation
+    upgrade_chain = _get_full_upgrade_chain(db, row_id)
+    cooking_chain = _get_full_cooking_chain(db, row_id)
+
     # Construire la reponse finale
     return ItemResponse(
         id=item.id,
@@ -756,4 +872,6 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         used_in_recipes=used_in_recipes_response,
         used_in_upgrades=used_in_upgrades_response,
         upgraded_from=upgraded_from_response,
+        upgrade_chain=upgrade_chain,
+        cooking_chain=cooking_chain,
     )

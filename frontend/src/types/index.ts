@@ -272,4 +272,7 @@ export interface Item {
   used_in_recipes: UsedInRecipe[];
   used_in_upgrades: UsedInUpgrade[];
   upgraded_from: UpgradedFrom[];
+  // Chaines completes de transformation
+  upgrade_chain: LinkedItem[];
+  cooking_chain: LinkedItem[];
 }

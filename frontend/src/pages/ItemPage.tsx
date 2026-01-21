@@ -30,11 +30,9 @@ function ItemContent({ item }: { item: Item }) {
       {item.consumable && <ConsumableStats consumable={item.consumable} />}
       <TransformationChain
         consumable={item.consumable}
-        upgrades={item.upgrades}
-        upgradedFrom={item.upgraded_from}
+        upgradeChain={item.upgrade_chain}
+        cookingChain={item.cooking_chain}
         currentItemRowId={item.row_id}
-        currentItemName={item.name}
-        currentItemIconPath={item.icon_path}
       />
       {item.deployable && <DeployableStats deployable={item.deployable} />}
       {item.recipes.length > 0 && (

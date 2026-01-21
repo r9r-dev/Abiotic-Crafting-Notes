@@ -375,5 +375,9 @@ class ItemResponse(BaseModel):
     used_in_upgrades: List[UsedInUpgradeResponse] = []
     upgraded_from: List[UpgradedFromResponse] = []
 
+    # Chaines completes de transformation
+    upgrade_chain: List[LinkedItemResponse] = []  # Chaine complete d'ameliorations
+    cooking_chain: List[LinkedItemResponse] = []  # Chaine complete de cuisson
+
     class Config:
         from_attributes = True
