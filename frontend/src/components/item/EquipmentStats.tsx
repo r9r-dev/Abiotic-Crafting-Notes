@@ -43,6 +43,17 @@ const slotLabels: Record<EquipSlot, string> = {
   Accessory: "Accessoire",
 };
 
+const slotIcons: Record<EquipSlot, string> = {
+  Head: "/icons/icon_helmet.png",
+  Torso: "/icons/icon_armor.png",
+  Legs: "/icons/icon_pants.png",
+  Feet: "/icons/icon_pants.png",
+  Hands: "/icons/icon_arm.png",
+  Back: "/icons/icon_backpack.png",
+  Face: "/icons/icon_headlamp.png",
+  Accessory: "/icons/icon_trinket.png",
+};
+
 const mitigationTypeLabels: Record<string, string> = {
   DamageType_Sharp: "Tranchant",
   DamageType_Blunt: "Contondant",
@@ -100,14 +111,24 @@ export function EquipmentStats({ equipment }: EquipmentStatsProps) {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Emplacement</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-0">
-            <StatRow
-              label="Slot"
-              value={slotLabels[equipment.equip_slot!] || equipment.equip_slot!}
-            />
-            {equipment.can_auto_equip && (
-              <StatRow label="Auto-équip" value="Oui" />
-            )}
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                <img
+                  src={slotIcons[equipment.equip_slot!]}
+                  alt={slotLabels[equipment.equip_slot!]}
+                  className="w-8 h-8 object-contain invert dark:invert-0 opacity-70"
+                />
+              </div>
+              <div>
+                <div className="font-medium">
+                  {slotLabels[equipment.equip_slot!] || equipment.equip_slot}
+                </div>
+                {equipment.can_auto_equip && (
+                  <div className="text-sm text-muted-foreground">Auto-équip</div>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
