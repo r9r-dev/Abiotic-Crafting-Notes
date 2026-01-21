@@ -1,5 +1,7 @@
+import { useNavigate } from "react-router-dom";
 import type { Item, ItemCategory, ReleaseGroup } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { parseGameplayTags, formatTag, filterGenericTags } from "@/lib/tagUtils";
 
 interface ItemHeaderProps {
   item: Item;
@@ -23,30 +25,18 @@ const releaseGroupLabels: Record<ReleaseGroup, string> = {
   Community: "Communauté",
 };
 
-function parseGameplayTags(tagsJson: string | null): string[] {
-  if (!tagsJson) return [];
-  try {
-    const parsed = JSON.parse(tagsJson);
-    if (Array.isArray(parsed)) {
-      return parsed.filter((t): t is string => typeof t === "string" && t.length > 0);
-    }
-    return [];
-  } catch {
-    return [];
-  }
-}
-
-function formatTag(tag: string): string {
-  // Transforme "Item.Material.Cloth" en "Cloth"
-  // Garde seulement la derniere partie significative
-  const parts = tag.split(".");
-  return parts[parts.length - 1];
-}
-
 export function ItemHeader({ item }: ItemHeaderProps) {
+  const navigate = useNavigate();
   const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
-  const gameplayTags = parseGameplayTags(item.gameplay_tags)
-    .filter(tag => !tag.startsWith("Item.") || tag.split(".").length > 2); // Filtre les tags trop generiques
+  const gameplayTags = filterGenericTags(parseGameplayTags(item.gameplay_tags));
+
+  const handleCategoryClick = () => {
+    navigate(`/?view=gallery&category=${encodeURIComponent(item.category)}`);
+  };
+
+  const handleTagClick = (tag: string) => {
+    navigate(`/?view=gallery&tag=${encodeURIComponent(tag)}`);
+  };
 
   return (
     <div className="flex gap-6 items-start">
@@ -71,7 +61,11 @@ export function ItemHeader({ item }: ItemHeaderProps) {
 
         {/* Badges */}
         <div className="flex flex-wrap gap-2 mt-2">
-          <Badge variant="secondary">
+          <Badge
+            variant="secondary"
+            className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+            onClick={handleCategoryClick}
+          >
             {categoryLabels[item.category] || item.category}
           </Badge>
           {item.release_group && item.release_group !== "Core" && (
@@ -80,7 +74,12 @@ export function ItemHeader({ item }: ItemHeaderProps) {
             </Badge>
           )}
           {gameplayTags.map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs">
+            <Badge
+              key={tag}
+              variant="outline"
+              className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+              onClick={() => handleTagClick(tag)}
+            >
               {formatTag(tag)}
             </Badge>
           ))}

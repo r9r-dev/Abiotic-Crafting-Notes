@@ -1,4 +1,4 @@
-import type { User, Item, ItemSearchResponse } from "@/types";
+import type { User, Item, ItemSearchResponse, ItemListResponse } from "@/types";
 
 const API_BASE = "/api";
 
@@ -49,6 +49,25 @@ export async function getItem(rowId: string): Promise<Item> {
 
 export async function searchItems(query: string): Promise<ItemSearchResponse> {
   return request<ItemSearchResponse>(`/items/search?q=${encodeURIComponent(query)}`);
+}
+
+// Gallery
+export interface ListItemsParams {
+  skip?: number;
+  limit?: number;
+  category?: string;
+  tag?: string;
+}
+
+export async function listItems(params: ListItemsParams = {}): Promise<ItemListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.skip !== undefined) searchParams.set("skip", params.skip.toString());
+  if (params.limit !== undefined) searchParams.set("limit", params.limit.toString());
+  if (params.category) searchParams.set("category", params.category);
+  if (params.tag) searchParams.set("tag", params.tag);
+
+  const query = searchParams.toString();
+  return request<ItemListResponse>(`/items/list${query ? `?${query}` : ""}`);
 }
 
 export { ApiError };

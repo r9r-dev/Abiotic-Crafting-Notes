@@ -11,7 +11,7 @@ export function Header() {
         <Link to="/" className="flex items-center gap-2">
           <img src="/logo.png" alt="Abiotic Factor" className="h-8" />
           <span className="text-sm text-muted-foreground">
-            Crafting Notes
+            Database
           </span>
         </Link>
 

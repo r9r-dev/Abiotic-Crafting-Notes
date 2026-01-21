@@ -20,6 +20,24 @@ export interface ItemSearchResponse {
   results: ItemSearchResult[];
 }
 
+// Galerie
+export interface ItemListResult {
+  row_id: string;
+  category: string;
+  name: string | null;
+  description: string | null;
+  icon_path: string | null;
+  gameplay_tags: string | null;
+}
+
+export interface ItemListResponse {
+  items: ItemListResult[];
+  total: number;
+  skip: number;
+  limit: number;
+  has_more: boolean;
+}
+
 // Enums
 export type ItemCategory =
   | "weapon"

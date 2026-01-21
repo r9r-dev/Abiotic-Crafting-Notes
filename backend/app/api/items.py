@@ -1,6 +1,8 @@
 import unicodedata
 from itertools import product
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, func
@@ -18,6 +20,9 @@ from app.schemas.item import (
     BenchMinimalResponse,
     ItemSearchResult,
     ItemSearchResponse,
+    ItemListResult,
+    ItemListResponse,
+    ItemCategory,
     LinkedItemResponse,
     SalvageResponse,
     SalvageDropResponse,
@@ -703,6 +708,45 @@ def search_items(
             )
             for item in results
         ],
+    )
+
+
+@router.get("/list", response_model=ItemListResponse)
+def list_items(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(24, ge=1, le=100),
+    category: Optional[str] = Query(None),
+    tag: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """Liste les items avec pagination et filtres."""
+    query = db.query(Item)
+
+    if category:
+        try:
+            query = query.filter(Item.category == ItemCategory(category))
+        except ValueError:
+            pass
+
+    if tag:
+        query = query.filter(Item.gameplay_tags.like(f'%"{tag}"%'))
+
+    total = query.count()
+    results = query.order_by(Item.name).offset(skip).limit(limit).all()
+
+    return ItemListResponse(
+        items=[ItemListResult(
+            row_id=item.row_id,
+            category=item.category.value,
+            name=item.name,
+            description=item.description,
+            icon_path=item.icon_path,
+            gameplay_tags=item.gameplay_tags,
+        ) for item in results],
+        total=total,
+        skip=skip,
+        limit=limit,
+        has_more=(skip + limit) < total,
     )
 
 

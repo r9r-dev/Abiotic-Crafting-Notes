@@ -22,6 +22,8 @@ function AppLayout() {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const isItemPage = location.pathname.startsWith("/item/");
+  const isHomePage = location.pathname === "/";
+  const isGalleryView = searchParams.get("view") === "gallery";
   const query = searchParams.get("q") || "";
   const hasSearchContext = isItemPage && query.length > 0;
 
@@ -31,10 +33,13 @@ function AppLayout() {
 
   const pageType = location.pathname === "/" ? "home" : "item";
 
+  // Page d'accueil minimaliste (sans galerie) : pas de padding
+  const isMinimalHome = isHomePage && !isGalleryView;
+
   // Sans contexte de recherche : layout simple
   if (!hasSearchContext) {
     return (
-      <main className="container mx-auto px-4 py-6">
+      <main className={isMinimalHome ? "" : "container mx-auto px-4 py-6"}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={pageType}>
             <Route
@@ -109,6 +114,13 @@ function AppLayout() {
 
 function AppContent() {
   const { loading, error } = useAuth();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  // Cacher le header sur la page d'accueil (recherche uniquement, pas galerie)
+  const isHomePage = location.pathname === "/";
+  const isGalleryView = searchParams.get("view") === "gallery";
+  const showHeader = !isHomePage || isGalleryView;
 
   if (loading) {
     return (
@@ -134,7 +146,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      {showHeader && <Header />}
       <AppLayout />
     </div>
   );

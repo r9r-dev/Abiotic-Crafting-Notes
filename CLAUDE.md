@@ -1,4 +1,4 @@
-# Abiotic Crafting Notes
+# Abiotic Science Database
 
 `abiotic.hellonowork.com`
 

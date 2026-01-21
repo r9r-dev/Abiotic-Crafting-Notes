@@ -22,6 +22,28 @@ class ItemSearchResponse(BaseModel):
     results: List[ItemSearchResult]
 
 
+class ItemListResult(BaseModel):
+    """Resultat pour la galerie."""
+    row_id: str
+    category: str
+    name: Optional[str] = None
+    description: Optional[str] = None
+    icon_path: Optional[str] = None
+    gameplay_tags: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ItemListResponse(BaseModel):
+    """Reponse paginee pour la galerie."""
+    items: List[ItemListResult]
+    total: int
+    skip: int
+    limit: int
+    has_more: bool
+
+
 class ItemCategory(str, Enum):
     WEAPON = "weapon"
     EQUIPMENT = "equipment"
