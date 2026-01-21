@@ -43,6 +43,7 @@ class ReleaseGroup(str, Enum):
 class EquipSlot(str, Enum):
     HEAD = "Head"
     TORSO = "Torso"
+    SUIT = "Suit"
     LEGS = "Legs"
     FEET = "Feet"
     HANDS = "Hands"
