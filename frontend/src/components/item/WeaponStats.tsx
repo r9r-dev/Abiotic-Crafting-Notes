@@ -51,8 +51,8 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
-            Degats
-            {weapon.is_melee && <Badge variant="secondary">Melee</Badge>}
+            Dégâts
+            {weapon.is_melee && <Badge variant="secondary">Mêlée</Badge>}
             {weapon.damage_type && (
               <Badge variant="outline">{getDamageTypeLabel(weapon.damage_type)}</Badge>
             )}
@@ -60,13 +60,13 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
         </CardHeader>
         <CardContent className="space-y-0">
           <StatRow
-            label="Degats par coup"
+            label="Dégâts par coup"
             value={weapon.damage_per_hit.toFixed(1)}
           />
           {weapon.time_between_shots > 0 && (
             <>
               <StatRow
-                label="Temps entre tirs"
+                label="Délai"
                 value={weapon.time_between_shots.toFixed(2)}
                 unit="s"
               />
@@ -119,7 +119,7 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
       {/* Precision */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Precision</CardTitle>
+          <CardTitle className="text-lg">Précision</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           {(weapon.bullet_spread_min > 0 || weapon.bullet_spread_max > 0) && (

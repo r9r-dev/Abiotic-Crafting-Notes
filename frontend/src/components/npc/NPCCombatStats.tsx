@@ -36,7 +36,7 @@ export function NPCCombatStats({ npc }: NPCCombatStatsProps) {
         <CardContent className="space-y-1">
           <StatRow label="Total" value={totalHP.toFixed(0)} unit="HP" />
           <div className="border-t my-2" />
-          <StatRow label="Tete" value={npc.hp_zones.head.toFixed(0)} unit="HP" />
+          <StatRow label="Tête" value={npc.hp_zones.head.toFixed(0)} unit="HP" />
           <StatRow label="Corps" value={npc.hp_zones.body.toFixed(0)} unit="HP" />
           <StatRow label="Membres" value={npc.hp_zones.limbs.toFixed(0)} unit="HP" />
         </CardContent>
@@ -50,19 +50,19 @@ export function NPCCombatStats({ npc }: NPCCombatStatsProps) {
         <CardContent className="space-y-1">
           {npc.combat.melee_attack_damage > 0 && (
             <StatRow
-              label="Degats melee"
+              label="Dégâts de mêlée"
               value={npc.combat.melee_attack_damage.toFixed(1)}
             />
           )}
           {npc.combat.ranged_attack_damage > 0 && (
             <StatRow
-              label="Degats distance"
+              label="Dégâts à distance"
               value={npc.combat.ranged_attack_damage.toFixed(1)}
             />
           )}
           {npc.combat.attack_range > 0 && (
             <StatRow
-              label="Portee d'attaque"
+              label="Portée d'attaque"
               value={npc.combat.attack_range.toFixed(1)}
               unit="m"
             />
@@ -77,11 +77,11 @@ export function NPCCombatStats({ npc }: NPCCombatStatsProps) {
         </CardHeader>
         <CardContent className="space-y-1">
           <StatRow
-            label="Vitesse marche"
+            label="Vitesse de marche"
             value={npc.movement.default_walk_speed.toFixed(0)}
           />
           <StatRow
-            label="Vitesse course"
+            label="Vitesse de course"
             value={npc.movement.default_run_speed.toFixed(0)}
           />
         </CardContent>

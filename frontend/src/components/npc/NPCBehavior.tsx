@@ -16,7 +16,7 @@ export function NPCBehavior({ npc }: NPCBehaviorProps) {
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Agressivite */}
           <div>
-            <span className="text-sm text-muted-foreground">Temperament</span>
+            <span className="text-sm text-muted-foreground">Tempérament</span>
             <div className="flex gap-2 mt-1">
               {npc.is_hostile && (
                 <Badge variant="destructive">Hostile</Badge>
@@ -33,8 +33,7 @@ export function NPCBehavior({ npc }: NPCBehaviorProps) {
           {/* Portee d'aggro */}
           {npc.aggro_range > 0 && (
             <div>
-              <span className="text-sm text-muted-foreground">Portee de detection</span>
-              <p className="font-medium">{npc.aggro_range.toFixed(1)} m</p>
+              <span className="text-sm text-muted-foreground">Portée de détection</span>
             </div>
           )}
 
