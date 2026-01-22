@@ -194,7 +194,6 @@ function SearchView() {
             className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
           >
             <LayoutGrid className="h-3.5 w-3.5" />
-            Parcourir la galerie
           </Link>
           {user && (
             <span className="text-xs text-muted-foreground/60">
