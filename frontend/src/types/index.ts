@@ -331,6 +331,7 @@ export interface NPCSearchResult {
   category: string | null;
   is_hostile: boolean;
   is_passive: boolean;
+  icon_path: string | null;
 }
 
 export interface NPCSearchResponse {
@@ -346,6 +347,7 @@ export interface NPCListResult {
   category: string | null;
   is_hostile: boolean;
   is_passive: boolean;
+  icon_path: string | null;
 }
 
 export interface NPCListResponse {
@@ -383,6 +385,7 @@ export interface NPC {
   row_id: string;
   name: string | null;
   description: string | null;
+  icon_path: string | null;
   hp_zones: HPZones;
   combat: CombatStats;
   movement: MovementStats;

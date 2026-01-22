@@ -23,6 +23,7 @@ class NPCSearchResult(BaseModel):
     category: Optional[str] = None
     is_hostile: bool = True
     is_passive: bool = False
+    icon_path: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -43,6 +44,7 @@ class NPCListResult(BaseModel):
     category: Optional[str] = None
     is_hostile: bool = True
     is_passive: bool = False
+    icon_path: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -92,6 +94,7 @@ class NPCResponse(BaseModel):
     row_id: str
     name: Optional[str] = None
     description: Optional[str] = None
+    icon_path: Optional[str] = None
 
     # HP par zone
     hp_zones: HPZones

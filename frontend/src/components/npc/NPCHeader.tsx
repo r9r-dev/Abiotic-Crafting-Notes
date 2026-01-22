@@ -16,6 +16,7 @@ const categoryLabels: Record<string, string> = {
 
 export function NPCHeader({ npc }: NPCHeaderProps) {
   const navigate = useNavigate();
+  const iconUrl = npc.icon_path ? `/npc-icons/${npc.icon_path}` : null;
 
   const handleCategoryClick = () => {
     if (npc.category) {
@@ -24,13 +25,17 @@ export function NPCHeader({ npc }: NPCHeaderProps) {
   };
 
   return (
-    <div className="flex gap-6 items-start">
-      {/* Icone placeholder */}
-      <div className="flex-shrink-0 w-24 h-24 bg-muted rounded-lg flex items-center justify-center overflow-hidden border">
-        <span className="text-4xl text-muted-foreground">
-          {npc.is_hostile ? "!" : npc.is_passive ? "~" : "?"}
-        </span>
-      </div>
+    <div className="flex flex-col md:flex-row gap-6 items-start">
+      {/* Image grande pour les NPCs */}
+      {iconUrl && (
+        <div className="flex-shrink-0 w-full md:w-64 lg:w-80 bg-muted rounded-lg overflow-hidden border">
+          <img
+            src={iconUrl}
+            alt={npc.name || npc.row_id}
+            className="w-full h-auto object-contain"
+          />
+        </div>
+      )}
 
       {/* Infos */}
       <div className="flex-1 min-w-0">

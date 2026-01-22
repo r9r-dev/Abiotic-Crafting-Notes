@@ -566,9 +566,41 @@ class DataImporter:
         print(f"  {count} profils de salvage importés")
         return count
 
+    def _load_npc_icons_from_compendium(self) -> dict[str, str]:
+        """Charge le mapping NPC row_id -> icon_path depuis le Compendium."""
+        filepath = DATATABLES_DIR / "DT_Compendium.json"
+        if not filepath.exists():
+            return {}
+
+        data = self.load_json_file(filepath)
+        rows = self.extract_rows(data)
+
+        npc_icons = {}
+        for entry_id, entry_data in rows.items():
+            # Récupérer le row_id du NPC
+            npc_row = entry_data.get("NPCRow", {})
+            npc_row_id = npc_row.get("RowName")
+            if not npc_row_id or npc_row_id == "None":
+                continue
+
+            # Récupérer l'image depuis la première section
+            sections = entry_data.get("Sections", [])
+            if sections:
+                image_asset = sections[0].get("OptionalSectionImage", {})
+                icon_path = self.parse_icon_path(image_asset)
+                if icon_path:
+                    npc_icons[npc_row_id] = icon_path
+
+        return npc_icons
+
     def import_npcs(self) -> int:
         """Importe les NPCs."""
         print("\nImport des NPCs...")
+
+        # Charger le mapping des icônes depuis le Compendium
+        npc_icons = self._load_npc_icons_from_compendium()
+        print(f"  {len(npc_icons)} icônes NPC trouvées dans le Compendium")
+
         filepath = DATATABLES_DIR / "DT_NPCList.json"
         data = self.load_json_file(filepath)
         rows = self.extract_rows(data)
@@ -622,6 +654,7 @@ class DataImporter:
                 gib_salvage_row_id=gib_salvage_row_id,
                 spawn_weight=self.find_property(row_data, "SpawnWeight") or 1.0,
                 category=self.safe_str(self.find_property(row_data, "DefaultFaction")),
+                icon_path=npc_icons.get(row_id),
             )
             self.session.add(npc)
             self.session.flush()  # Pour obtenir l'ID du NPC
@@ -650,7 +683,9 @@ class DataImporter:
 
             count += 1
 
-        print(f"  {count} NPCs importés")
+        # Compter les NPCs avec icône
+        npcs_with_icon = sum(1 for row_id in rows if row_id in npc_icons)
+        print(f"  {count} NPCs importés ({npcs_with_icon} avec icône)")
         print(f"  {loot_table_count} tables de loot associées")
         return count
 

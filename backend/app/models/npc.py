@@ -44,6 +44,12 @@ class NPC(Base):
 
     # Spawn
     spawn_weight = Column(Float, default=1.0)
+    min_spawn_level = Column(Integer)
+    max_spawn_level = Column(Integer)
+
+    # Assets
+    icon_path = Column(String(512))
+    mesh_path = Column(String(512))
 
     # Catégorie (faction)
     category = Column(String(100))

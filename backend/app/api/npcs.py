@@ -161,6 +161,7 @@ def search_npcs(
                 category=npc.category,
                 is_hostile=npc.is_hostile,
                 is_passive=npc.is_passive,
+                icon_path=npc.icon_path,
             )
             for npc in results
         ],
@@ -191,6 +192,7 @@ def list_npcs(
             category=npc.category,
             is_hostile=npc.is_hostile,
             is_passive=npc.is_passive,
+            icon_path=npc.icon_path,
         ) for npc in results],
         total=total,
         skip=skip,
@@ -253,6 +255,7 @@ def get_npc(row_id: str, db: Session = Depends(get_db)):
         row_id=npc.row_id,
         name=npc.name,
         description=npc.description,
+        icon_path=npc.icon_path,
         hp_zones=HPZones(
             head=npc.hp_head,
             body=npc.hp_body,
