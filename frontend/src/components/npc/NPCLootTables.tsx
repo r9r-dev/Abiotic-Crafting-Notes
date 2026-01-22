@@ -8,18 +8,34 @@ interface NPCLootTablesProps {
   lootTables: NPCLootTable[];
 }
 
-const lootTypeLabels: Record<string, string> = {
-  death: "Loot a la mort",
-  gib: "Loot de decoupe",
-  blunt: "Loot contondant",
-  slash: "Loot tranchant",
-  pierce: "Loot percant",
-  fire: "Loot feu",
-  explosion: "Loot explosion",
+const damageTypeLabels: Record<string, string> = {
+  blunt: "Mort par arme contondante",
+  slash: "Mort par arme tranchante",
+  pierce: "Mort par arme perçante",
+  fire: "Mort par le feu",
+  explosion: "Mort par explosion",
 };
 
-function getLootTypeLabel(lootType: string): string {
-  return lootTypeLabels[lootType.toLowerCase()] || lootType;
+function getLootTypeLabel(lootType: string, salvageRowId?: string): string {
+  if (lootType === "gib") {
+    return "Découpe";
+  }
+
+  if (lootType === "death" && salvageRowId) {
+    // Chercher un suffixe de type de dégât dans le row_id
+    for (const [damageType, label] of Object.entries(damageTypeLabels)) {
+      if (salvageRowId.includes(`_${damageType}`)) {
+        return label;
+      }
+    }
+  }
+
+  // Par défaut pour "death" sans suffixe
+  if (lootType === "death") {
+    return "Mort";
+  }
+
+  return lootType;
 }
 
 export function NPCLootTables({ lootTables }: NPCLootTablesProps) {
@@ -39,7 +55,7 @@ export function NPCLootTables({ lootTables }: NPCLootTablesProps) {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">
-                {getLootTypeLabel(lootTable.loot_type)}
+                {getLootTypeLabel(lootTable.loot_type, lootTable.salvage?.row_id)}
               </CardTitle>
               {lootTable.salvage?.bench && lootTable.salvage.bench.tier > 1 && (
                 <Badge variant="outline" className="text-xs">
@@ -48,7 +64,7 @@ export function NPCLootTables({ lootTables }: NPCLootTablesProps) {
               )}
             </div>
 
-            {lootTable.salvage?.salvage_time && lootTable.salvage.salvage_time > 0 && (
+            {lootTable.salvage && lootTable.salvage.salvage_time > 0 && (
               <div className="text-sm text-muted-foreground">
                 Temps: {lootTable.salvage.salvage_time.toFixed(1)}s
               </div>

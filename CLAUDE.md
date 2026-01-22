@@ -63,6 +63,8 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 | GET | /api/items/{row_id} | Detail item complet avec relations |
 | GET | /api/items/search?q= | Recherche items (max 20 resultats) |
 
+Tu as le droit de tester l'api sur l'url de prod : https://abiotic.hellonowork.com/
+
 ## Logique de recherche
 
 - Normalisation: accents (NFD), ligatures (oe->oe), points (F.O.R.G.E.->FORGE)
