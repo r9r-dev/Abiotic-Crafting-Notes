@@ -178,7 +178,7 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
           <div className="space-y-1">
             {results.map((item) => (
               <SearchResultItem
-                key={item.row_id}
+                key={`${item.type}-${item.row_id}`}
                 item={item}
                 isActive={item.row_id === currentItemId}
                 query={query}

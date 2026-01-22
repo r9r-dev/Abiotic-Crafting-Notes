@@ -88,13 +88,15 @@ def unified_search(
     ).limit(15).all()
 
     # Rechercher les NPCs (max 5)
+    # Utiliser COALESCE pour gerer les NULL
     npcs = db.query(NPC).filter(
         or_(
-            normalize_column(NPC.name).like(search_normalized),
-            normalize_column(NPC.description).like(search_normalized),
+            normalize_column(func.coalesce(NPC.name, '')).like(search_normalized),
+            normalize_column(func.coalesce(NPC.description, '')).like(search_normalized),
+            normalize_column(NPC.row_id).like(search_normalized),
         )
     ).order_by(
-        normalize_column(NPC.name).like(search_normalized).desc(),
+        normalize_column(func.coalesce(NPC.name, '')).like(search_normalized).desc(),
         NPC.name,
     ).limit(5).all()
 
