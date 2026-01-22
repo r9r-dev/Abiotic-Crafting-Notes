@@ -28,10 +28,8 @@ export function ElectricStringsBackground({ children, className = "", speed = 1 
     let h = canvas.height = window.innerHeight;
 
     const mouse: { x: number | false; y: number | false } = { x: false, y: false };
-    const last_mouse: { x?: number; y?: number } = {};
     let last_target: { x?: number; y?: number } = {};
     let t = 0;
-    const q = 10;
 
     function dist(p1x: number, p1y: number, p2x: number, p2y: number) {
       return Math.sqrt(Math.pow(p2x - p1x, 2) + Math.pow(p2y - p1y, 2));
