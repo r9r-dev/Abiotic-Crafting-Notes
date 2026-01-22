@@ -4,30 +4,40 @@ import { Search, LayoutGrid } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { searchItems } from "@/services/api";
+import { unifiedSearch } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { GalleryView } from "@/components/gallery";
 import { VantaBackground } from "@/components/VantaBackground";
-import type { ItemSearchResult } from "@/types";
+import type { UnifiedSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
   weapon: "Arme",
-  equipment: "Équipement",
+  equipment: "Equipement",
   consumable: "Consommable",
-  deployable: "Déployable",
-  deployable_small: "Petit déployable",
-  crafting_bench: "Établi",
+  deployable: "Deployable",
+  deployable_small: "Petit deployable",
+  crafting_bench: "Etabli",
   pickup: "Ramassable",
   plant: "Plante",
   pet: "Familier",
+  // NPC categories
+  alien: "Alien",
+  human: "Humain",
+  robot: "Robot",
+  creature: "Creature",
+  mutant: "Mutant",
 };
 
-function SearchResult({ item, query }: { item: ItemSearchResult; query: string }) {
+function SearchResult({ item, query }: { item: UnifiedSearchResult; query: string }) {
+  const isNPC = item.type === "npc";
   const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
+  const linkPath = isNPC
+    ? `/npc/${item.row_id}?q=${encodeURIComponent(query)}`
+    : `/item/${item.row_id}?q=${encodeURIComponent(query)}`;
 
   return (
     <Link
-      to={`/item/${item.row_id}?q=${encodeURIComponent(query)}`}
+      to={linkPath}
       className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors"
     >
       <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
@@ -37,18 +47,34 @@ function SearchResult({ item, query }: { item: ItemSearchResult; query: string }
             alt={item.name || item.row_id}
             className="w-10 h-10 object-contain"
           />
+        ) : isNPC ? (
+          <span className="text-xl text-muted-foreground">
+            {item.is_hostile ? "!" : item.is_passive ? "~" : "?"}
+          </span>
         ) : (
           <span className="text-xl text-muted-foreground">?</span>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium truncate">
             {item.name || item.row_id}
           </span>
-          <Badge variant="outline" className="text-xs flex-shrink-0">
-            {categoryLabels[item.category] || item.category}
-          </Badge>
+          {isNPC && (
+            <Badge variant="destructive" className="text-xs flex-shrink-0">
+              NPC
+            </Badge>
+          )}
+          {item.category && (
+            <Badge variant="outline" className="text-xs flex-shrink-0">
+              {categoryLabels[item.category] || item.category}
+            </Badge>
+          )}
+          {isNPC && item.is_hostile && (
+            <Badge variant="secondary" className="text-xs flex-shrink-0">
+              Hostile
+            </Badge>
+          )}
         </div>
         {item.description && (
           <p className="text-sm text-muted-foreground truncate">
@@ -91,7 +117,7 @@ export function HomePage() {
 function SearchView() {
   const { user } = useAuth();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<ItemSearchResult[]>([]);
+  const [results, setResults] = useState<UnifiedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -111,7 +137,7 @@ function SearchView() {
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const response = await searchItems(query.trim());
+        const response = await unifiedSearch(query.trim());
         setResults(response.results);
         setHasSearched(true);
       } catch {
@@ -177,7 +203,7 @@ function SearchView() {
             {results.length > 0 && (
               <div className="space-y-1 bg-background/80 backdrop-blur-sm rounded-lg p-2">
                 {results.map((item) => (
-                  <SearchResult key={item.row_id} item={item} query={query} />
+                  <SearchResult key={`${item.type}-${item.row_id}`} item={item} query={query} />
                 ))}
               </div>
             )}
