@@ -3,34 +3,44 @@ import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { searchItems } from "@/services/api";
-import type { ItemSearchResult } from "@/types";
+import { unifiedSearch } from "@/services/api";
+import type { UnifiedSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
   weapon: "Arme",
-  equipment: "Équipement",
+  equipment: "Equipement",
   consumable: "Consommable",
-  deployable: "Déployable",
-  deployable_small: "Petit déployable",
-  crafting_bench: "Établi",
+  deployable: "Deployable",
+  deployable_small: "Petit deployable",
+  crafting_bench: "Etabli",
   pickup: "Ramassable",
   plant: "Plante",
   pet: "Familier",
+  // NPC categories
+  alien: "Alien",
+  human: "Humain",
+  robot: "Robot",
+  creature: "Creature",
+  mutant: "Mutant",
 };
 
 interface SearchResultItemProps {
-  item: ItemSearchResult;
+  item: UnifiedSearchResult;
   isActive: boolean;
   query: string;
   onClick?: () => void;
 }
 
 function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemProps) {
+  const isNPC = item.type === "npc";
   const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
+  const linkPath = isNPC
+    ? `/npc/${item.row_id}?q=${encodeURIComponent(query)}`
+    : `/item/${item.row_id}?q=${encodeURIComponent(query)}`;
 
   return (
     <Link
-      to={`/item/${item.row_id}?q=${encodeURIComponent(query)}`}
+      to={linkPath}
       onClick={onClick}
       className={`flex items-center gap-3 p-2 rounded-lg transition-colors border ${
         isActive
@@ -45,6 +55,10 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
             alt={item.name || item.row_id}
             className="w-8 h-8 object-contain"
           />
+        ) : isNPC ? (
+          <span className="text-sm text-muted-foreground">
+            {item.is_hostile ? "!" : item.is_passive ? "~" : "?"}
+          </span>
         ) : (
           <span className="text-sm text-muted-foreground">?</span>
         )}
@@ -53,9 +67,23 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
         <div className="font-medium text-sm truncate">
           {item.name || item.row_id}
         </div>
-        <Badge variant="outline" className="text-xs mt-0.5">
-          {categoryLabels[item.category] || item.category}
-        </Badge>
+        <div className="flex gap-1 mt-0.5">
+          {isNPC && (
+            <Badge variant="destructive" className="text-xs">
+              NPC
+            </Badge>
+          )}
+          {item.category && (
+            <Badge variant="outline" className="text-xs">
+              {categoryLabels[item.category] || item.category}
+            </Badge>
+          )}
+          {isNPC && item.is_hostile && (
+            <Badge variant="secondary" className="text-xs">
+              Hostile
+            </Badge>
+          )}
+        </div>
       </div>
     </Link>
   );
@@ -69,13 +97,13 @@ interface SearchPanelProps {
 
 export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }: SearchPanelProps) {
   const [query, setQuery] = useState(initialQuery);
-  const [results, setResults] = useState<ItemSearchResult[]>([]);
+  const [results, setResults] = useState<UnifiedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSearchedQuery = useRef<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Recherche avec debounce - ne relance pas si même query
+  // Recherche avec debounce - ne relance pas si meme query
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -89,7 +117,7 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
       return;
     }
 
-    // Ne pas relancer si c'est la même recherche
+    // Ne pas relancer si c'est la meme recherche
     if (trimmedQuery === lastSearchedQuery.current) {
       return;
     }
@@ -98,7 +126,7 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const response = await searchItems(trimmedQuery);
+        const response = await unifiedSearch(trimmedQuery);
         setResults(response.results);
         lastSearchedQuery.current = trimmedQuery;
       } catch {

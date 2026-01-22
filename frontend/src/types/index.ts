@@ -309,3 +309,80 @@ export interface Item {
   upgrade_tree: UpgradeTreeNode | null;
   cooking_chain: LinkedItem[];
 }
+
+// NPCs
+
+export interface NPCSearchResult {
+  type: "npc";
+  row_id: string;
+  name: string | null;
+  description: string | null;
+  category: string | null;
+  is_hostile: boolean;
+  is_passive: boolean;
+}
+
+export interface NPCSearchResponse {
+  query: string;
+  count: number;
+  results: NPCSearchResult[];
+}
+
+export interface HPZones {
+  head: number;
+  body: number;
+  limbs: number;
+}
+
+export interface CombatStats {
+  melee_attack_damage: number;
+  ranged_attack_damage: number;
+  attack_range: number;
+}
+
+export interface MovementStats {
+  default_walk_speed: number;
+  default_run_speed: number;
+}
+
+export interface NPCLootTable {
+  loot_type: string;
+  salvage: Salvage | null;
+}
+
+export interface NPC {
+  id: number;
+  row_id: string;
+  name: string | null;
+  description: string | null;
+  hp_zones: HPZones;
+  combat: CombatStats;
+  movement: MovementStats;
+  is_hostile: boolean;
+  is_passive: boolean;
+  aggro_range: number;
+  damage_resistances: string[];
+  damage_weaknesses: string[];
+  category: string | null;
+  spawn_weight: number;
+  loot_tables: NPCLootTable[];
+}
+
+// Recherche unifiee
+
+export interface UnifiedSearchResult {
+  type: "item" | "npc";
+  row_id: string;
+  name: string | null;
+  description: string | null;
+  icon_path: string | null;
+  category: string | null;
+  is_hostile?: boolean | null;
+  is_passive?: boolean | null;
+}
+
+export interface UnifiedSearchResponse {
+  query: string;
+  count: number;
+  results: UnifiedSearchResult[];
+}

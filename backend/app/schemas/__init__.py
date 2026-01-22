@@ -15,6 +15,7 @@ from app.schemas.item import (
     BenchMinimalResponse,
     RecipeResponse,
     ItemResponse,
+    SalvageResponse,
 )
 from app.schemas.recipe import (
     IngredientItemMinimal,
@@ -22,6 +23,16 @@ from app.schemas.recipe import (
     BenchMinimal,
     RecipeSchema,
     RecipeSubstituteSchema,
+)
+from app.schemas.npc import (
+    NPCMinimalResponse,
+    NPCSearchResult,
+    NPCSearchResponse,
+    NPCLootTableResponse,
+    HPZones,
+    CombatStats,
+    MovementStats,
+    NPCResponse,
 )
 
 __all__ = [
@@ -45,10 +56,20 @@ __all__ = [
     "BenchMinimalResponse",
     "RecipeResponse",
     "ItemResponse",
+    "SalvageResponse",
     # Recipe
     "IngredientItemMinimal",
     "RecipeIngredientSchema",
     "BenchMinimal",
     "RecipeSchema",
     "RecipeSubstituteSchema",
+    # NPC
+    "NPCMinimalResponse",
+    "NPCSearchResult",
+    "NPCSearchResponse",
+    "NPCLootTableResponse",
+    "HPZones",
+    "CombatStats",
+    "MovementStats",
+    "NPCResponse",
 ]

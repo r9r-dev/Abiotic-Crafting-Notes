@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { HomePage } from "@/pages/HomePage";
 import { ItemPage } from "@/pages/ItemPage";
+import { NPCPage } from "@/pages/NPCPage";
 import { PageTransition } from "@/components/PageTransition";
 import { SearchPanel } from "@/components/SearchPanel";
 import { Button } from "@/components/ui/button";
@@ -16,22 +17,29 @@ function ItemPageWrapper() {
   return <ItemPage key={rowId} />;
 }
 
+function NPCPageWrapper() {
+  const { rowId } = useParams<{ rowId: string }>();
+  return <NPCPage key={rowId} />;
+}
+
 function AppLayout() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const isItemPage = location.pathname.startsWith("/item/");
+  const isNPCPage = location.pathname.startsWith("/npc/");
+  const isDetailPage = isItemPage || isNPCPage;
   const isHomePage = location.pathname === "/";
   const isGalleryView = searchParams.get("view") === "gallery";
   const query = searchParams.get("q") || "";
-  const hasSearchContext = isItemPage && query.length > 0;
+  const hasSearchContext = isDetailPage && query.length > 0;
 
   // Extraire le rowId pour le passer au SearchPanel
-  const rowIdMatch = location.pathname.match(/^\/item\/(.+)$/);
-  const currentItemId = rowIdMatch ? rowIdMatch[1] : undefined;
+  const rowIdMatch = location.pathname.match(/^\/(item|npc)\/(.+)$/);
+  const currentItemId = rowIdMatch ? rowIdMatch[2] : undefined;
 
-  const pageType = location.pathname === "/" ? "home" : "item";
+  const pageType = location.pathname === "/" ? "home" : isNPCPage ? "npc" : "item";
 
   // Page d'accueil minimaliste (sans galerie) : pas de padding
   const isMinimalHome = isHomePage && !isGalleryView;
@@ -55,6 +63,14 @@ function AppLayout() {
               element={
                 <PageTransition>
                   <ItemPageWrapper />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/npc/:rowId"
+              element={
+                <PageTransition>
+                  <NPCPageWrapper />
                 </PageTransition>
               }
             />
@@ -101,6 +117,14 @@ function AppLayout() {
                 element={
                   <PageTransition>
                     <ItemPageWrapper />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/npc/:rowId"
+                element={
+                  <PageTransition>
+                    <NPCPageWrapper />
                   </PageTransition>
                 }
               />
