@@ -1,5 +1,6 @@
 import json
 import unicodedata
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
@@ -13,6 +14,8 @@ from app.schemas.npc import (
     NPCSearchResult,
     NPCSearchResponse,
     NPCLootTableResponse,
+    NPCListResult,
+    NPCListResponse,
     HPZones,
     CombatStats,
     MovementStats,
@@ -161,6 +164,38 @@ def search_npcs(
             )
             for npc in results
         ],
+    )
+
+
+@router.get("/list", response_model=NPCListResponse)
+def list_npcs(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(24, ge=1, le=100),
+    category: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """Liste les NPCs avec pagination et filtres."""
+    query = db.query(NPC)
+
+    if category:
+        query = query.filter(NPC.category == category)
+
+    total = query.count()
+    results = query.order_by(NPC.name).offset(skip).limit(limit).all()
+
+    return NPCListResponse(
+        npcs=[NPCListResult(
+            row_id=npc.row_id,
+            name=npc.name,
+            description=npc.description,
+            category=npc.category,
+            is_hostile=npc.is_hostile,
+            is_passive=npc.is_passive,
+        ) for npc in results],
+        total=total,
+        skip=skip,
+        limit=limit,
+        has_more=(skip + limit) < total,
     )
 
 

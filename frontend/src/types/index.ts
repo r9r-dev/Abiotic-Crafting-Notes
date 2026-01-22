@@ -328,6 +328,23 @@ export interface NPCSearchResponse {
   results: NPCSearchResult[];
 }
 
+export interface NPCListResult {
+  row_id: string;
+  name: string | null;
+  description: string | null;
+  category: string | null;
+  is_hostile: boolean;
+  is_passive: boolean;
+}
+
+export interface NPCListResponse {
+  npcs: NPCListResult[];
+  total: number;
+  skip: number;
+  limit: number;
+  has_more: boolean;
+}
+
 export interface HPZones {
   head: number;
   body: number;

@@ -35,6 +35,28 @@ class NPCSearchResponse(BaseModel):
     results: List[NPCSearchResult]
 
 
+class NPCListResult(BaseModel):
+    """Resultat NPC pour la galerie."""
+    row_id: str
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    is_hostile: bool = True
+    is_passive: bool = False
+
+    class Config:
+        from_attributes = True
+
+
+class NPCListResponse(BaseModel):
+    """Reponse paginee pour la galerie NPC."""
+    npcs: List[NPCListResult]
+    total: int
+    skip: int
+    limit: int
+    has_more: bool
+
+
 class NPCLootTableResponse(BaseModel):
     """Loot table d'un NPC."""
     loot_type: str

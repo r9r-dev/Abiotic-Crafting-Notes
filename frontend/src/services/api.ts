@@ -1,4 +1,4 @@
-import type { User, Item, ItemSearchResponse, ItemListResponse, NPC, UnifiedSearchResponse } from "@/types";
+import type { User, Item, ItemSearchResponse, ItemListResponse, NPC, UnifiedSearchResponse, NPCListResponse } from "@/types";
 
 const API_BASE = "/api";
 
@@ -73,6 +73,22 @@ export async function listItems(params: ListItemsParams = {}): Promise<ItemListR
 // NPCs
 export async function getNPC(rowId: string): Promise<NPC> {
   return request<NPC>(`/npcs/${encodeURIComponent(rowId)}`);
+}
+
+export interface ListNPCsParams {
+  skip?: number;
+  limit?: number;
+  category?: string;
+}
+
+export async function listNPCs(params: ListNPCsParams = {}): Promise<NPCListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.skip !== undefined) searchParams.set("skip", params.skip.toString());
+  if (params.limit !== undefined) searchParams.set("limit", params.limit.toString());
+  if (params.category) searchParams.set("category", params.category);
+
+  const query = searchParams.toString();
+  return request<NPCListResponse>(`/npcs/list${query ? `?${query}` : ""}`);
 }
 
 // Recherche unifiee

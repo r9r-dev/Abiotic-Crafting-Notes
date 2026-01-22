@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import type { NPC } from "@/types";
 import { Badge } from "@/components/ui/badge";
 
@@ -14,6 +15,14 @@ const categoryLabels: Record<string, string> = {
 };
 
 export function NPCHeader({ npc }: NPCHeaderProps) {
+  const navigate = useNavigate();
+
+  const handleCategoryClick = () => {
+    if (npc.category) {
+      navigate(`/?view=gallery&type=npc&category=${encodeURIComponent(npc.category)}`);
+    }
+  };
+
   return (
     <div className="flex gap-6 items-start">
       {/* Icone placeholder */}
@@ -31,9 +40,13 @@ export function NPCHeader({ npc }: NPCHeaderProps) {
 
         {/* Badges */}
         <div className="flex flex-wrap gap-2 mt-2">
-          <Badge variant="destructive">NPC</Badge>
+          <Badge variant="secondary">NPC</Badge>
           {npc.category && (
-            <Badge variant="secondary">
+            <Badge
+              variant="secondary"
+              className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+              onClick={handleCategoryClick}
+            >
               {categoryLabels[npc.category] || npc.category}
             </Badge>
           )}

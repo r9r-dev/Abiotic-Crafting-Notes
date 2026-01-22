@@ -3,35 +3,44 @@ import { useSearchParams } from "react-router-dom";
 import { Loader2, X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { listItems } from "@/services/api";
+import { listItems, listNPCs } from "@/services/api";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { formatTag } from "@/lib/tagUtils";
 import { GalleryItemCard } from "./GalleryItemCard";
-import type { ItemListResult } from "@/types";
+import { GalleryNPCCard } from "./GalleryNPCCard";
+import type { ItemListResult, NPCListResult } from "@/types";
 
 const ITEMS_PER_PAGE = 24;
 
-const categories = [
+const itemCategories = [
   { value: "", label: "Tous" },
   { value: "weapon", label: "Armes" },
-  { value: "equipment", label: "Équipements" },
+  { value: "equipment", label: "Equipements" },
   { value: "consumable", label: "Consommables" },
-  { value: "deployable", label: "Déployables" },
-  { value: "crafting_bench", label: "Établis" },
+  { value: "deployable", label: "Deployables" },
+  { value: "crafting_bench", label: "Etablis" },
   { value: "pickup", label: "Ramassables" },
+] as const;
+
+const npcCategories = [
+  { value: "", label: "Tous" },
 ] as const;
 
 export function GalleryView() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<ItemListResult[]>([]);
+  const [npcs, setNPCs] = useState<NPCListResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
 
   // Lire les filtres depuis l'URL
+  const entityType = searchParams.get("type") || "item";
   const category = searchParams.get("category") || "";
   const tag = searchParams.get("tag");
+
+  const isNPCView = entityType === "npc";
 
   const loadItems = useCallback(async (reset: boolean = false) => {
     if (loading) return;
@@ -61,18 +70,53 @@ export function GalleryView() {
     }
   }, [items.length, category, tag, loading]);
 
+  const loadNPCs = useCallback(async (reset: boolean = false) => {
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const skip = reset ? 0 : npcs.length;
+      const response = await listNPCs({
+        skip,
+        limit: ITEMS_PER_PAGE,
+        category: category || undefined,
+      });
+
+      if (reset) {
+        setNPCs(response.npcs);
+      } else {
+        setNPCs(prev => [...prev, ...response.npcs]);
+      }
+      setTotal(response.total);
+      setHasMore(response.has_more);
+    } catch (error) {
+      console.error("Erreur chargement NPCs:", error);
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
+    }
+  }, [npcs.length, category, loading]);
+
   // Chargement initial et lors du changement de filtres
   useEffect(() => {
     setInitialLoading(true);
-    loadItems(true);
+    if (isNPCView) {
+      loadNPCs(true);
+    } else {
+      loadItems(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, tag]);
+  }, [entityType, category, tag]);
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore) {
-      loadItems(false);
+      if (isNPCView) {
+        loadNPCs(false);
+      } else {
+        loadItems(false);
+      }
     }
-  }, [loading, hasMore, loadItems]);
+  }, [loading, hasMore, isNPCView, loadItems, loadNPCs]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: handleLoadMore,
@@ -80,15 +124,22 @@ export function GalleryView() {
     loading,
   });
 
+  const handleEntityTypeChange = (value: string) => {
+    const newParams = new URLSearchParams();
+    newParams.set("view", "gallery");
+    if (value !== "item") {
+      newParams.set("type", value);
+    }
+    setSearchParams(newParams, { replace: true });
+  };
+
   const handleCategoryChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams);
-    // Mettre a jour ou supprimer la categorie
     if (value) {
       newParams.set("category", value);
     } else {
       newParams.delete("category");
     }
-    // Reset le tag lors du changement de categorie
     newParams.delete("tag");
     setSearchParams(newParams, { replace: true });
   };
@@ -99,27 +150,46 @@ export function GalleryView() {
     setSearchParams(newParams, { replace: true });
   };
 
+  const handleNPCCategoryClick = (clickedCategory: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("category", clickedCategory);
+    setSearchParams(newParams, { replace: true });
+  };
+
   const clearTag = () => {
     const newParams = new URLSearchParams(searchParams);
     newParams.delete("tag");
     setSearchParams(newParams, { replace: true });
   };
 
+  const categories = isNPCView ? npcCategories : itemCategories;
+  const currentItems = isNPCView ? npcs : items;
+
   return (
     <div className="w-full">
-      {/* Filtres par categorie */}
-      <Tabs value={category} onValueChange={handleCategoryChange} className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
-          {categories.map((cat) => (
-            <TabsTrigger key={cat.value} value={cat.value} className="flex-shrink-0">
-              {cat.label}
-            </TabsTrigger>
-          ))}
+      {/* Onglets Items / NPCs */}
+      <Tabs value={entityType} onValueChange={handleEntityTypeChange} className="w-full mb-4">
+        <TabsList>
+          <TabsTrigger value="item">Items</TabsTrigger>
+          <TabsTrigger value="npc">NPCs</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {/* Tag actif */}
-      {tag && (
+      {/* Filtres par categorie (seulement pour items) */}
+      {!isNPCView && (
+        <Tabs value={category} onValueChange={handleCategoryChange} className="w-full">
+          <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
+            {categories.map((cat) => (
+              <TabsTrigger key={cat.value} value={cat.value} className="flex-shrink-0">
+                {cat.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      )}
+
+      {/* Tag actif (seulement pour items) */}
+      {!isNPCView && tag && (
         <div className="mt-4 flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Filtre actif:</span>
           <Badge variant="default" className="flex items-center gap-1">
@@ -136,7 +206,7 @@ export function GalleryView() {
 
       {/* Compteur */}
       <div className="mt-4 text-sm text-muted-foreground">
-        {total} item{total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
+        {total} {isNPCView ? "NPC" : "item"}{total > 1 ? "s" : ""} trouve{total > 1 ? "s" : ""}
       </div>
 
       {/* Grille */}
@@ -144,20 +214,30 @@ export function GalleryView() {
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      ) : items.length === 0 ? (
+      ) : currentItems.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
-          Aucun item trouvé
+          Aucun {isNPCView ? "NPC" : "item"} trouve
         </div>
       ) : (
         <>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {items.map((item) => (
-              <GalleryItemCard
-                key={item.row_id}
-                item={item}
-                onTagClick={handleTagClick}
-              />
-            ))}
+            {isNPCView ? (
+              npcs.map((npc) => (
+                <GalleryNPCCard
+                  key={npc.row_id}
+                  npc={npc}
+                  onCategoryClick={handleNPCCategoryClick}
+                />
+              ))
+            ) : (
+              items.map((item) => (
+                <GalleryItemCard
+                  key={item.row_id}
+                  item={item}
+                  onTagClick={handleTagClick}
+                />
+              ))
+            )}
           </div>
 
           {/* Sentinel pour infinite scroll */}
