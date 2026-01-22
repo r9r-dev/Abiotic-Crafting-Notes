@@ -234,6 +234,16 @@ export interface UpgradedFrom {
   ingredients: ItemUpgradeIngredient[];
 }
 
+export interface DroppedByNPC {
+  npc_row_id: string;
+  npc_name: string | null;
+  loot_type: string;
+  salvage_row_id: string;
+  quantity_min: number;
+  quantity_max: number;
+  drop_chance: number;
+}
+
 // Recettes
 export interface IngredientItem {
   row_id: string;
@@ -305,6 +315,7 @@ export interface Item {
   used_in_recipes: UsedInRecipe[];
   used_in_upgrades: UsedInUpgrade[];
   upgraded_from: UpgradedFrom[];
+  dropped_by: DroppedByNPC[];
   // Chaines completes de transformation
   upgrade_tree: UpgradeTreeNode | null;
   cooking_chain: LinkedItem[];

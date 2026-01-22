@@ -12,6 +12,7 @@ from app.models import Item, Recipe, RecipeIngredient, Bench, RecipeSubstitute, 
 from app.models.salvage import Salvage, SalvageDrop
 from app.models.item_upgrade import ItemUpgrade, ItemUpgradeIngredient
 from app.models.consumable import Consumable
+from app.models.npc import NPC, NpcLootTable
 from app.schemas.item import (
     ItemResponse,
     RecipeResponse,
@@ -36,6 +37,7 @@ from app.schemas.item import (
     UpgradedFromResponse,
     UpgradeTreeNode,
     BuffResponse,
+    DroppedByNPCResponse,
 )
 
 router = APIRouter(prefix="/items", tags=["items"])
@@ -655,6 +657,73 @@ def _build_upgraded_from_response(
     return result
 
 
+def _build_dropped_by_response(
+    db: Session,
+    row_id: str,
+) -> list[DroppedByNPCResponse]:
+    """Construit la liste des NPCs qui peuvent drop cet item."""
+    # Trouver tous les salvage_drops qui contiennent cet item
+    drops_with_item = db.query(
+        SalvageDrop.salvage_id,
+        SalvageDrop.quantity_min,
+        SalvageDrop.quantity_max,
+        SalvageDrop.drop_chance,
+        Salvage.row_id.label("salvage_row_id"),
+    ).join(
+        Salvage, Salvage.id == SalvageDrop.salvage_id
+    ).filter(
+        SalvageDrop.item_row_id == row_id
+    ).all()
+
+    if not drops_with_item:
+        return []
+
+    # Collecter les salvage_row_id
+    salvage_row_ids = {d.salvage_row_id for d in drops_with_item}
+
+    # Trouver les NPC loot tables qui referencent ces salvages
+    loot_tables = db.query(
+        NpcLootTable.npc_id,
+        NpcLootTable.salvage_row_id,
+        NpcLootTable.loot_type,
+        NPC.row_id.label("npc_row_id"),
+        NPC.name.label("npc_name"),
+    ).join(
+        NPC, NPC.id == NpcLootTable.npc_id
+    ).filter(
+        NpcLootTable.salvage_row_id.in_(salvage_row_ids)
+    ).all()
+
+    if not loot_tables:
+        return []
+
+    # Creer un mapping salvage_row_id -> infos du drop
+    drops_map = {
+        d.salvage_row_id: {
+            "quantity_min": d.quantity_min,
+            "quantity_max": d.quantity_max,
+            "drop_chance": d.drop_chance,
+        }
+        for d in drops_with_item
+    }
+
+    # Construire les reponses
+    result = []
+    for lt in loot_tables:
+        drop_info = drops_map.get(lt.salvage_row_id, {})
+        result.append(DroppedByNPCResponse(
+            npc_row_id=lt.npc_row_id,
+            npc_name=lt.npc_name,
+            loot_type=lt.loot_type,
+            salvage_row_id=lt.salvage_row_id,
+            quantity_min=drop_info.get("quantity_min", 1),
+            quantity_max=drop_info.get("quantity_max", 1),
+            drop_chance=drop_info.get("drop_chance", 1.0),
+        ))
+
+    return result
+
+
 @router.get("/search", response_model=ItemSearchResponse)
 def search_items(
     q: str = Query(..., min_length=1, description="Terme de recherche"),
@@ -943,6 +1012,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
     used_in_recipes_response = _build_used_in_recipes_response(db, row_id, bench_map, items_cache)
     used_in_upgrades_response = _build_used_in_upgrades_response(db, row_id, items_cache)
     upgraded_from_response = _build_upgraded_from_response(db, row_id, items_cache)
+    dropped_by_response = _build_dropped_by_response(db, row_id)
 
     # Charger les chaines completes de transformation
     upgrade_tree = _get_full_upgrade_tree(db, row_id)
@@ -980,6 +1050,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
         used_in_recipes=used_in_recipes_response,
         used_in_upgrades=used_in_upgrades_response,
         upgraded_from=upgraded_from_response,
+        dropped_by=dropped_by_response,
         upgrade_tree=upgrade_tree,
         cooking_chain=cooking_chain,
     )

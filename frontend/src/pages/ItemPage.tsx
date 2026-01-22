@@ -15,6 +15,7 @@ import {
   ItemUsedInRecipes,
   ItemUsedInUpgrades,
   ItemUpgradedFrom,
+  ItemDroppedBy,
   TransformationChain,
 } from "@/components/item";
 import { ItemSalvage } from "@/components/item/ItemSalvage";
@@ -69,6 +70,12 @@ function ItemContent({ item }: { item: Item }) {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Améliorable depuis</h2>
           <ItemUpgradedFrom upgradedFrom={item.upgraded_from} />
+        </div>
+      )}
+      {item.dropped_by && item.dropped_by.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Obtenu de</h2>
+          <ItemDroppedBy droppedBy={item.dropped_by} />
         </div>
       )}
     </div>

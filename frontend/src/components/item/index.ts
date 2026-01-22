@@ -8,4 +8,5 @@ export { DeployableStats } from "./DeployableStats";
 export { ItemUsedInRecipes } from "./ItemUsedInRecipes";
 export { ItemUsedInUpgrades } from "./ItemUsedInUpgrades";
 export { ItemUpgradedFrom } from "./ItemUpgradedFrom";
+export { ItemDroppedBy } from "./ItemDroppedBy";
 export { TransformationChain } from "./TransformationChain";

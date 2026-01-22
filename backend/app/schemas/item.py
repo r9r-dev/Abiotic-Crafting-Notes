@@ -345,6 +345,20 @@ class UpgradedFromResponse(BaseModel):
         from_attributes = True
 
 
+class DroppedByNPCResponse(BaseModel):
+    """NPC qui peut drop cet item."""
+    npc_row_id: str
+    npc_name: Optional[str] = None
+    loot_type: str  # "death", "gib"
+    salvage_row_id: str  # Pour determiner le type de degat (_blunt, _slash, etc.)
+    quantity_min: int
+    quantity_max: int
+    drop_chance: float
+
+    class Config:
+        from_attributes = True
+
+
 class RecipeResponse(BaseModel):
     row_id: str
     output_item_row_id: str
@@ -420,6 +434,7 @@ class ItemResponse(BaseModel):
     used_in_recipes: List[UsedInRecipeResponse] = []
     used_in_upgrades: List[UsedInUpgradeResponse] = []
     upgraded_from: List[UpgradedFromResponse] = []
+    dropped_by: List[DroppedByNPCResponse] = []  # NPCs qui peuvent drop cet item
 
     # Chaines completes de transformation
     upgrade_tree: Optional[UpgradeTreeNode] = None  # Arbre complet d'ameliorations
