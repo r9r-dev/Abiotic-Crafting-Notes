@@ -1,47 +1,25 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   type ReactNode,
 } from "react";
 import type { User } from "@/types";
-import { getCurrentUser } from "@/services/api";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  refetch: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/**
+ * AuthProvider désactivé - pas d'authentification.
+ * La structure est conservée pour une réactivation future si nécessaire.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUser = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const userData = await getCurrentUser();
-      setUser(userData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur d'authentification");
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
   return (
-    <AuthContext.Provider value={{ user, loading, error, refetch: fetchUser }}>
+    <AuthContext.Provider value={{ user: null, loading: false, error: null }}>
       {children}
     </AuthContext.Provider>
   );

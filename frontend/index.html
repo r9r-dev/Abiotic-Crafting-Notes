@@ -7,9 +7,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a0f14" />
     <title>Abiotic Factor Database</title>
+    <style>
+      /* Écran de chargement initial - supprimé par React au montage */
+      html, body { margin: 0; padding: 0; }
+      body { background-color: #0a0f14; }
+      .initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #0a0f14;
+        gap: 1rem;
+      }
+      .initial-loader img {
+        width: 64px;
+        height: 64px;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Contenu affiché pendant le chargement de React -->
+      <div class="initial-loader">
+        <img src="/logo.png" alt="Chargement..." />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

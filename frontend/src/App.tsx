@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation, useSearchParams, useParams } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
 import { Search } from "lucide-react";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { HomePage } from "@/pages/HomePage";
 import { ItemPage } from "@/pages/ItemPage";
@@ -113,7 +113,6 @@ function AppLayout() {
 }
 
 function AppContent() {
-  const { loading, error } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
@@ -121,28 +120,6 @@ function AppContent() {
   const isHomePage = location.pathname === "/";
   const isGalleryView = searchParams.get("view") === "gallery";
   const showHeader = !isHomePage || isGalleryView;
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 text-4xl font-bold text-primary">ACN</div>
-          <p className="text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 text-4xl font-bold text-destructive">Erreur</div>
-          <p className="text-muted-foreground">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
