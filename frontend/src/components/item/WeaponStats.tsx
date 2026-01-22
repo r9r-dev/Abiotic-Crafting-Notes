@@ -9,6 +9,10 @@ import {
 } from "@/lib/enumLabels";
 import { useItemLink } from "@/hooks/useItemLink";
 
+function formatNumber(value: number, decimals: number): string {
+  return Number(value.toFixed(decimals)).toString();
+}
+
 interface WeaponStatsProps {
   weapon: Weapon;
 }
@@ -61,16 +65,16 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
         <CardContent className="space-y-0">
           <StatRow
             label="Dégâts par coup"
-            value={weapon.damage_per_hit.toFixed(1)}
+            value={formatNumber(weapon.damage_per_hit, 1)}
           />
           {weapon.time_between_shots > 0 && (
             <>
               <StatRow
                 label="Délai"
-                value={weapon.time_between_shots.toFixed(2)}
+                value={formatNumber(weapon.time_between_shots, 2)}
                 unit="s"
               />
-              <StatRow label="DPS" value={dps.toFixed(1)} highlight="positive" />
+              <StatRow label="DPS" value={formatNumber(dps, 1)} highlight="positive" />
             </>
           )}
           {weapon.burst_fire_count > 1 && (
@@ -125,21 +129,21 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
           {(weapon.bullet_spread_min > 0 || weapon.bullet_spread_max > 0) && (
             <StatRow
               label="Dispersion"
-              value={`${weapon.bullet_spread_min.toFixed(1)} - ${weapon.bullet_spread_max.toFixed(1)}`}
+              value={`${formatNumber(weapon.bullet_spread_min, 1)} - ${formatNumber(weapon.bullet_spread_max, 1)}`}
             />
           )}
           {weapon.recoil_amount > 0 && (
             <StatRow
               label="Recul"
-              value={weapon.recoil_amount.toFixed(2)}
+              value={formatNumber(weapon.recoil_amount, 2)}
               highlight={weapon.recoil_amount > 5 ? "negative" : "neutral"}
             />
           )}
           {weapon.max_aim_correction > 0 && (
-            <StatRow label="Correction visee" value={weapon.max_aim_correction.toFixed(1)} />
+            <StatRow label="Correction visée" value={formatNumber(weapon.max_aim_correction, 1)} />
           )}
           {weapon.maximum_hitscan_range > 0 && (
-            <StatRow label="Portee max" value={Math.round(weapon.maximum_hitscan_range)} unit="m" />
+            <StatRow label="Portée max" value={Math.round(weapon.maximum_hitscan_range)} unit="m" />
           )}
         </CardContent>
       </Card>
@@ -154,14 +158,14 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
             {weapon.loudness_primary > 0 && (
               <StatRow
                 label="Bruit principal"
-                value={weapon.loudness_primary.toFixed(0)}
+                value={formatNumber(weapon.loudness_primary, 0)}
                 highlight={weapon.loudness_primary > 50 ? "negative" : "neutral"}
               />
             )}
             {weapon.loudness_secondary > 0 && (
               <StatRow
                 label="Bruit secondaire"
-                value={weapon.loudness_secondary.toFixed(0)}
+                value={formatNumber(weapon.loudness_secondary, 0)}
               />
             )}
           </CardContent>
