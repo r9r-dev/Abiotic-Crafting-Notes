@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { unifiedSearch } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { GalleryView } from "@/components/gallery";
-import { VantaBackground } from "@/components/VantaBackground";
+import { ElectricStringsBackground } from "@/components/ElectricStringsBackground";
 import type { UnifiedSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
@@ -157,7 +157,7 @@ function SearchView() {
   const showResults = hasSearched || results.length > 0;
 
   return (
-    <VantaBackground className="h-screen overflow-hidden">
+    <ElectricStringsBackground speed={1} className="h-screen overflow-hidden">
       <div className="flex flex-col items-center px-4 h-screen">
         {/* Espaceur flexible pour centrer verticalement */}
         <div className={`transition-all duration-300 ${showResults ? "flex-none" : "flex-1"}`} />
@@ -228,6 +228,6 @@ function SearchView() {
           )}
         </div>
       </div>
-    </VantaBackground>
+    </ElectricStringsBackground>
   );
 }
