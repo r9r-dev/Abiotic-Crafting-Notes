@@ -44,12 +44,14 @@ export function ElectricStringsBackground({ children, className = "", speed = 1 
       nextPos: { x: number; y: number };
       first: boolean;
 
-      constructor(parent: { x: number; y: number; nextPos?: { x: number; y: number } }, l: number, a: number, first: boolean) {
+      constructor(parent: { x: number; y: number } | Segment, l: number, a: number, first: boolean) {
         this.first = first;
         if (first) {
-          this.pos = { x: parent.x, y: parent.y };
+          const p = parent as { x: number; y: number };
+          this.pos = { x: p.x, y: p.y };
         } else {
-          this.pos = { x: parent.nextPos!.x, y: parent.nextPos!.y };
+          const p = parent as Segment;
+          this.pos = { x: p.nextPos.x, y: p.nextPos.y };
         }
         this.l = l;
         this.ang = a;
