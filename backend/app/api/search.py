@@ -144,7 +144,7 @@ def unified_search(
         Item.name.label('name'),
         Item.description.label('description'),
         Item.icon_path.label('icon_path'),
-        cast(Item.category, String).label('category'),
+        func.lower(cast(Item.category, String)).label('category'),
         literal(None).label('is_hostile'),
         literal(None).label('is_passive'),
         item_relevance.label('relevance'),
