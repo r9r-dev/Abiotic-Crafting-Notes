@@ -166,11 +166,11 @@ function SearchView() {
         <div className={`w-full max-w-xl transition-all duration-300 ${showResults ? "pt-8" : ""}`}>
           {/* Titre */}
           <h1
-            className={`font-bold text-center transition-all duration-300 mb-8 ${
-              showResults ? "text-2xl" : "text-4xl"
+            className={`font-bold text-center transition-all duration-300 mb-8 abiotic-title ${
+              showResults ? "text-2xl" : "text-5xl"
             }`}
           >
-            Abiotic Factor Database
+            ABIOTIC SCIENCE
           </h1>
 
           {/* Champ de recherche */}

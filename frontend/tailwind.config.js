@@ -13,7 +13,7 @@ export default {
           bg: "#0a0f14",
           panel: "#141c24",
           border: "#1e2a36",
-          accent: "#00ff88",
+          accent: "#8DFFFB",
           danger: "#ff4444",
           warning: "#ffaa00",
           text: "#e0e8f0",

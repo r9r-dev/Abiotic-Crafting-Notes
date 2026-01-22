@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,19 +12,19 @@
     --card-foreground: 210 20% 92%;
     --popover: 210 25% 10%;
     --popover-foreground: 210 20% 92%;
-    --primary: 152 100% 50%;
+    --primary: 178 100% 78%;
     --primary-foreground: 210 30% 6%;
     --secondary: 210 20% 15%;
     --secondary-foreground: 210 20% 92%;
     --muted: 210 20% 15%;
     --muted-foreground: 210 15% 55%;
-    --accent: 152 100% 50%;
+    --accent: 178 100% 78%;
     --accent-foreground: 210 30% 6%;
     --destructive: 0 80% 60%;
     --destructive-foreground: 210 20% 92%;
     --border: 210 20% 18%;
     --input: 210 20% 18%;
-    --ring: 152 100% 50%;
+    --ring: 178 100% 78%;
     --radius: 0.5rem;
   }
 }
@@ -59,6 +61,21 @@
 /* Terminal-like glow effect */
 .glow {
   text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+}
+
+/* Abiotic Factor title style */
+.abiotic-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  background: linear-gradient(180deg, #C5FFFE 0%, #8DFFFB 50%, #1ACDC6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter:
+    drop-shadow(1px 0 0 #0d4a47)
+    drop-shadow(-1px 0 0 #0d4a47)
+    drop-shadow(0 1px 0 #0d4a47)
+    drop-shadow(0 -1px 0 #0d4a47);
 }
 
 /* Scanline effect for sci-fi feel */
