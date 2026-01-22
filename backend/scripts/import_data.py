@@ -24,7 +24,7 @@ from app.models import (
     Item, ItemCategory, ReleaseGroup,
     Weapon, Equipment, EquipSlot, Consumable, DecayTemperature, Deployable,
     Bench, BenchUpgrade, Recipe, RecipeIngredient, RecipeSubstitute, RecipeSubstituteItem,
-    Salvage, SalvageDrop, NPC, Plant, Projectile,
+    Salvage, SalvageDrop, NPC, NpcLootTable, Plant, Projectile,
     ItemUpgrade, ItemUpgradeIngredient,
     Buff
 )
@@ -574,15 +574,21 @@ class DataImporter:
         rows = self.extract_rows(data)
 
         count = 0
+        loot_table_count = 0
         for row_id, row_data in rows.items():
-            # Loot à la mort (PotentialLootWhenKilled)
-            loot_row_id = None
+            # Collecter tous les loots à la mort (PotentialLootWhenKilled peut être une liste)
+            death_loots = []
             loot_data = self.find_property(row_data, "PotentialLootWhenKilled")
             if loot_data:
-                if isinstance(loot_data, list) and len(loot_data) > 0:
-                    loot_row_id = self.parse_data_table_ref(loot_data[0])
+                if isinstance(loot_data, list):
+                    for item in loot_data:
+                        loot_id = self.parse_data_table_ref(item)
+                        if loot_id:
+                            death_loots.append(loot_id)
                 elif isinstance(loot_data, dict):
-                    loot_row_id = self.parse_data_table_ref(loot_data)
+                    loot_id = self.parse_data_table_ref(loot_data)
+                    if loot_id:
+                        death_loots.append(loot_id)
 
             # Loot de découpe (GibInfo.GibSalvage)
             gib_salvage_row_id = None
@@ -591,6 +597,9 @@ class DataImporter:
                 gib_salvage = self.find_property(gib_info, "GibSalvage")
                 if gib_salvage:
                     gib_salvage_row_id = self.parse_data_table_ref(gib_salvage)
+
+            # Utiliser le premier loot pour la colonne legacy
+            loot_row_id = death_loots[0] if death_loots else None
 
             npc = NPC(
                 row_id=row_id,
@@ -615,9 +624,34 @@ class DataImporter:
                 category=self.safe_str(self.find_property(row_data, "DefaultFaction")),
             )
             self.session.add(npc)
+            self.session.flush()  # Pour obtenir l'ID du NPC
+
+            # Ajouter tous les loots à la mort dans npc_loot_tables
+            for idx, salvage_row_id in enumerate(death_loots):
+                loot_entry = NpcLootTable(
+                    npc_id=npc.id,
+                    salvage_row_id=salvage_row_id,
+                    loot_type="death",
+                    position=idx,
+                )
+                self.session.add(loot_entry)
+                loot_table_count += 1
+
+            # Ajouter le loot de découpe dans npc_loot_tables
+            if gib_salvage_row_id:
+                loot_entry = NpcLootTable(
+                    npc_id=npc.id,
+                    salvage_row_id=gib_salvage_row_id,
+                    loot_type="gib",
+                    position=0,
+                )
+                self.session.add(loot_entry)
+                loot_table_count += 1
+
             count += 1
 
         print(f"  {count} NPCs importés")
+        print(f"  {loot_table_count} tables de loot associées")
         return count
 
     def import_plants(self) -> int:
@@ -883,6 +917,7 @@ class DataImporter:
             self.session.query(Consumable).delete()
             self.session.query(Deployable).delete()
             self.session.query(Item).delete()
+            self.session.query(NpcLootTable).delete()
             self.session.query(NPC).delete()
             self.session.query(Plant).delete()
             self.session.query(Projectile).delete()

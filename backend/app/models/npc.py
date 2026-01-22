@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Integer, Float, Boolean, Text
+from sqlalchemy import Column, String, Integer, Float, Boolean, Text, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -47,5 +48,25 @@ class NPC(Base):
     # Catégorie (faction)
     category = Column(String(100))
 
+    # Relations
+    loot_tables = relationship("NpcLootTable", back_populates="npc", cascade="all, delete-orphan")
+
     def __repr__(self):
         return f"<NPC(row_id='{self.row_id}', name='{self.name}')>"
+
+
+class NpcLootTable(Base):
+    """Tables de loot associées aux NPCs (peut en avoir plusieurs par NPC)."""
+    __tablename__ = "npc_loot_tables"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    npc_id = Column(Integer, ForeignKey("npcs.id", ondelete="CASCADE"), nullable=False, index=True)
+    salvage_row_id = Column(String(255), nullable=False, index=True)
+    loot_type = Column(String(50), default="death")  # 'death', 'gib'
+    position = Column(Integer, default=0)
+
+    # Relations
+    npc = relationship("NPC", back_populates="loot_tables")
+
+    def __repr__(self):
+        return f"<NpcLootTable(npc_id={self.npc_id}, salvage='{self.salvage_row_id}', type='{self.loot_type}')>"
