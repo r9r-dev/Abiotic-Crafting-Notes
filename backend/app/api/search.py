@@ -58,6 +58,72 @@ def _normalize_column(col):
     return normalized
 
 
+def _build_relevance_score(name_col, desc_col, rowid_col, search_term: str):
+    """
+    Construit un score de pertinence avec priorite aux mots entiers.
+
+    Scores :
+    - 1000 : nom exact
+    - 200 : mot entier dans le nom
+    - 50 : contient dans le nom
+    - 20 : mot entier dans la description
+    - 5 : contient dans la description
+    - 1 : contient dans le row_id
+    """
+    term = normalize_search_text(search_term.lower())
+
+    # Patterns pour la recherche
+    contains = f"%{term}%"
+    word_start = f"{term} %"      # mot en debut
+    word_end = f"% {term}"        # mot en fin
+    word_middle = f"% {term} %"   # mot au milieu
+    exact = term                   # correspondance exacte
+
+    name_norm = _normalize_column(func.coalesce(name_col, ''))
+    desc_norm = _normalize_column(func.coalesce(desc_col, ''))
+    rowid_norm = _normalize_column(rowid_col)
+
+    # Score pour le nom
+    name_score = (
+        # Nom exact
+        case((name_norm == exact, 1000), else_=0) +
+        # Mot entier dans le nom (debut, fin ou milieu)
+        case((name_norm.like(word_start), 200), else_=0) +
+        case((name_norm.like(word_end), 200), else_=0) +
+        case((name_norm.like(word_middle), 200), else_=0) +
+        # Contient dans le nom (mais pas mot entier - eviter double comptage)
+        case((
+            (name_norm.like(contains)) &
+            ~(name_norm == exact) &
+            ~(name_norm.like(word_start)) &
+            ~(name_norm.like(word_end)) &
+            ~(name_norm.like(word_middle)),
+            50
+        ), else_=0)
+    )
+
+    # Score pour la description
+    desc_score = (
+        # Mot entier dans la description
+        case((desc_norm.like(word_start), 20), else_=0) +
+        case((desc_norm.like(word_end), 20), else_=0) +
+        case((desc_norm.like(word_middle), 20), else_=0) +
+        # Contient dans la description
+        case((
+            (desc_norm.like(contains)) &
+            ~(desc_norm.like(word_start)) &
+            ~(desc_norm.like(word_end)) &
+            ~(desc_norm.like(word_middle)),
+            5
+        ), else_=0)
+    )
+
+    # Score pour le row_id
+    rowid_score = case((rowid_norm.like(contains), 1), else_=0)
+
+    return name_score + desc_score + rowid_score
+
+
 @router.get("", response_model=UnifiedSearchResponse)
 def unified_search(
     q: str = Query(..., min_length=1, description="Terme de recherche"),
@@ -65,24 +131,11 @@ def unified_search(
 ):
     """
     Recherche unifiee d'items et de NPCs avec tri par pertinence.
-    Les resultats sont melanges et tries par score de pertinence.
+    Priorite aux correspondances de mots entiers.
     """
-    search_normalized = f"%{normalize_search_text(q.lower())}%"
-
-    # Score de pertinence :
-    # - 100 si le nom contient le terme
-    # - 10 si la description contient le terme
-    # - 1 si le row_id contient le terme
-
     # Sous-requete pour les items
-    item_name_norm = _normalize_column(func.coalesce(Item.name, ''))
-    item_desc_norm = _normalize_column(func.coalesce(Item.description, ''))
-    item_rowid_norm = _normalize_column(Item.row_id)
-
-    item_relevance = (
-        case((item_name_norm.like(search_normalized), 100), else_=0) +
-        case((item_desc_norm.like(search_normalized), 10), else_=0) +
-        case((item_rowid_norm.like(search_normalized), 1), else_=0)
+    item_relevance = _build_relevance_score(
+        Item.name, Item.description, Item.row_id, q
     )
 
     items_query = db.query(
@@ -100,14 +153,8 @@ def unified_search(
     )
 
     # Sous-requete pour les NPCs
-    npc_name_norm = _normalize_column(func.coalesce(NPC.name, ''))
-    npc_desc_norm = _normalize_column(func.coalesce(NPC.description, ''))
-    npc_rowid_norm = _normalize_column(NPC.row_id)
-
-    npc_relevance = (
-        case((npc_name_norm.like(search_normalized), 100), else_=0) +
-        case((npc_desc_norm.like(search_normalized), 10), else_=0) +
-        case((npc_rowid_norm.like(search_normalized), 1), else_=0)
+    npc_relevance = _build_relevance_score(
+        NPC.name, NPC.description, NPC.row_id, q
     )
 
     npcs_query = db.query(
