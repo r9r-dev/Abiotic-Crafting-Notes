@@ -69,7 +69,7 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
         </div>
         <div className="flex gap-1 mt-0.5">
           {isNPC && (
-            <Badge variant="destructive" className="text-xs">
+            <Badge variant="secondary" className="text-xs">
               NPC
             </Badge>
           )}
@@ -79,7 +79,7 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
             </Badge>
           )}
           {isNPC && item.is_hostile && (
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="destructive" className="text-xs">
               Hostile
             </Badge>
           )}

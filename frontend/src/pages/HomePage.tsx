@@ -61,7 +61,7 @@ function SearchResult({ item, query }: { item: UnifiedSearchResult; query: strin
             {item.name || item.row_id}
           </span>
           {isNPC && (
-            <Badge variant="destructive" className="text-xs flex-shrink-0">
+            <Badge variant="secondary" className="text-xs flex-shrink-0">
               NPC
             </Badge>
           )}
@@ -71,7 +71,7 @@ function SearchResult({ item, query }: { item: UnifiedSearchResult; query: strin
             </Badge>
           )}
           {isNPC && item.is_hostile && (
-            <Badge variant="secondary" className="text-xs flex-shrink-0">
+            <Badge variant="destructive" className="text-xs flex-shrink-0">
               Hostile
             </Badge>
           )}
