@@ -36,8 +36,10 @@ class NPC(Base):
     damage_resistances = Column(Text)
     damage_weaknesses = Column(Text)
 
-    # Drops à la mort (référence vers une table de loot)
+    # Loot à la mort (référence vers salvage)
     loot_table_row_id = Column(String(255))
+    # Loot de découpe/gib (référence vers salvage)
+    gib_salvage_row_id = Column(String(255))
 
     # Spawn
     spawn_weight = Column(Float, default=1.0)

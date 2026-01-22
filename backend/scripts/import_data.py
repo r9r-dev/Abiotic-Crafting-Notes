@@ -575,14 +575,22 @@ class DataImporter:
 
         count = 0
         for row_id, row_data in rows.items():
-            # Extraire les données de loot
-            loot_data = self.find_property(row_data, "PotentialLootWhenKilled")
+            # Loot à la mort (PotentialLootWhenKilled)
             loot_row_id = None
+            loot_data = self.find_property(row_data, "PotentialLootWhenKilled")
             if loot_data:
-                if isinstance(loot_data, dict):
+                if isinstance(loot_data, list) and len(loot_data) > 0:
+                    loot_row_id = self.parse_data_table_ref(loot_data[0])
+                elif isinstance(loot_data, dict):
                     loot_row_id = self.parse_data_table_ref(loot_data)
-                elif isinstance(loot_data, str):
-                    loot_row_id = loot_data if loot_data != "None" else None
+
+            # Loot de découpe (GibInfo.GibSalvage)
+            gib_salvage_row_id = None
+            gib_info = self.find_property(row_data, "GibInfo")
+            if gib_info:
+                gib_salvage = self.find_property(gib_info, "GibSalvage")
+                if gib_salvage:
+                    gib_salvage_row_id = self.parse_data_table_ref(gib_salvage)
 
             npc = NPC(
                 row_id=row_id,
@@ -602,6 +610,7 @@ class DataImporter:
                 damage_resistances=json.dumps(self.find_property(row_data, "DamageResistances") or []),
                 damage_weaknesses=json.dumps(self.find_property(row_data, "DamageWeaknesses") or []),
                 loot_table_row_id=loot_row_id,
+                gib_salvage_row_id=gib_salvage_row_id,
                 spawn_weight=self.find_property(row_data, "SpawnWeight") or 1.0,
                 category=self.safe_str(self.find_property(row_data, "DefaultFaction")),
             )
