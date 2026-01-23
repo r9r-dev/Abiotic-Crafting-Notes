@@ -62,7 +62,9 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
   }
 
   // Determiner le nom a afficher
-  const displayName = isCompendium ? (item.title || item.row_id) : (item.name || item.row_id);
+  const displayName = isCompendium
+    ? (item.title || item.row_id)
+    : (item.name || item.row_id);
   const displaySubtitle = isCompendium ? item.subtitle : null;
 
   return (

@@ -3,3 +3,4 @@ export { NPCCombatStats } from "./NPCCombatStats";
 export { NPCBehavior } from "./NPCBehavior";
 export { NPCResistances } from "./NPCResistances";
 export { NPCLootTables } from "./NPCLootTables";
+export { NPCDialogues } from "./NPCDialogues";

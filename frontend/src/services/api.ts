@@ -9,6 +9,9 @@ import type {
   CompendiumEntry,
   CompendiumListResponse,
   CompendiumSearchResponse,
+  NpcConversation,
+  DialogueListResponse,
+  DialogueSearchResponse,
 } from "@/types";
 
 const API_BASE = "/api";
@@ -140,6 +143,37 @@ export async function listCompendium(params: ListCompendiumParams = {}): Promise
 
 export async function getCompendiumCategories(): Promise<Record<string, number>> {
   return request<Record<string, number>>("/compendium/categories");
+}
+
+// Dialogues
+export async function getDialogue(rowId: string): Promise<NpcConversation> {
+  return request<NpcConversation>(`/dialogues/${encodeURIComponent(rowId)}`);
+}
+
+export async function getDialogueByNPC(npcRowId: string): Promise<NpcConversation | null> {
+  return request<NpcConversation | null>(`/dialogues/by-npc/${encodeURIComponent(npcRowId)}`);
+}
+
+export async function getDialogueByName(name: string): Promise<NpcConversation[]> {
+  return request<NpcConversation[]>(`/dialogues/by-name/${encodeURIComponent(name)}`);
+}
+
+export async function searchDialogues(query: string): Promise<DialogueSearchResponse> {
+  return request<DialogueSearchResponse>(`/dialogues/search?q=${encodeURIComponent(query)}`);
+}
+
+export interface ListDialoguesParams {
+  skip?: number;
+  limit?: number;
+}
+
+export async function listDialogues(params: ListDialoguesParams = {}): Promise<DialogueListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.skip !== undefined) searchParams.set("skip", params.skip.toString());
+  if (params.limit !== undefined) searchParams.set("limit", params.limit.toString());
+
+  const query = searchParams.toString();
+  return request<DialogueListResponse>(`/dialogues/list${query ? `?${query}` : ""}`);
 }
 
 export { ApiError };

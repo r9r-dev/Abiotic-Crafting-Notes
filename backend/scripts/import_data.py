@@ -29,6 +29,8 @@ from app.models import (
     Buff,
     CompendiumEntry, CompendiumSection, CompendiumRecipeUnlock,
     CompendiumCategory, CompendiumUnlockType,
+    NpcConversation, DialogueLine, DialogueUnlock,
+    DialogueLineType, DialogueUnlockType,
 )
 
 
@@ -38,6 +40,7 @@ ITEMS_DIR = DATA_DIR / "Items"
 DATATABLES_DIR = DATA_DIR / "DataTables"
 TRANSLATIONS_FR_FILE = DATA_DIR / "fr.json"
 TRANSLATIONS_EN_FILE = DATA_DIR / "en.json"
+DIALOGUE_MAPPING_FILE = DATA_DIR / "dialogue_mapping.json"
 
 
 class DataImporter:
@@ -47,6 +50,7 @@ class DataImporter:
         self.session = session
         self.translations_fr: dict = {}
         self.translations_en: dict = {}
+        self.dialogue_mapping: dict = {}  # Mapping audio_asset_name -> texte
         self.items_cache: dict[str, dict] = {}  # Cache des items par row_id
 
     def load_translations(self) -> None:
@@ -64,6 +68,12 @@ class DataImporter:
             self.translations_en = json.load(f)
         en_count = sum(len(v) for v in self.translations_en.values())
         print(f"  {en_count} traductions EN chargées (fallback)")
+
+        # Charger le mapping des dialogues
+        if DIALOGUE_MAPPING_FILE.exists():
+            with open(DIALOGUE_MAPPING_FILE, "r", encoding="utf-8") as f:
+                self.dialogue_mapping = json.load(f)
+            print(f"  {len(self.dialogue_mapping)} textes de dialogue chargés")
 
     def get_translation(self, table_name: str, row_id: str, field: str) -> str | None:
         """Récupère une traduction FR, avec fallback sur EN si absente."""
@@ -1091,6 +1101,208 @@ class DataImporter:
         print(f"  {recipe_unlock_count} recettes à débloquer importées")
         return entry_count
 
+    def _parse_dialogue_line_type(self, type_key: str) -> DialogueLineType:
+        """Parse le type de ligne de dialogue depuis la clé JSON."""
+        mapping = {
+            "BeckoningLines": DialogueLineType.BECKONING,
+            "IdleLines": DialogueLineType.IDLE,
+            "InitalContactMessages": DialogueLineType.INITIAL_CONTACT,  # Typo originale du jeu
+            "ReturnMessages": DialogueLineType.RETURN,
+            "VendorInteraction_Positive": DialogueLineType.VENDOR_POSITIVE,
+            "VendorInteraction_Negative": DialogueLineType.VENDOR_NEGATIVE,
+        }
+        return mapping.get(type_key, DialogueLineType.BECKONING)
+
+    def _parse_dialogue_unlock_type(self, type_str: str) -> DialogueUnlockType:
+        """Parse le type de déblocage."""
+        if "Recipe" in type_str or "DT_Recipes" in type_str:
+            return DialogueUnlockType.RECIPE
+        elif "Journal" in type_str or "DT_JournalEntries" in type_str:
+            return DialogueUnlockType.JOURNAL
+        elif "Compendium" in type_str or "DT_Compendium" in type_str:
+            return DialogueUnlockType.COMPENDIUM
+        else:
+            return DialogueUnlockType.WORLD_FLAG
+
+    def _extract_audio_asset_name(self, asset_path: str | None) -> str | None:
+        """Extrait le nom de l'asset audio depuis le chemin complet."""
+        if not asset_path:
+            return None
+        # Format: /Game/Audio/NarrativeNPCs/Warren/warren_beckon_01_Dialogue.warren_beckon_01_Dialogue
+        parts = asset_path.split("/")
+        if parts:
+            return parts[-1].split(".")[0]
+        return None
+
+    def _get_journal_title(self, row_id: str) -> str | None:
+        """Récupère le titre traduit d'une entrée de journal."""
+        journal_entries = self.translations_fr.get("DT_JournalEntries", {})
+        return journal_entries.get(f"{row_id}_Title")
+
+    def _get_compendium_title(self, row_id: str) -> str | None:
+        """Récupère le titre traduit d'une entrée de compendium."""
+        compendium = self.translations_fr.get("DT_Compendium", {})
+        return compendium.get(f"{row_id}_Title")
+
+    def import_dialogues(self) -> int:
+        """Importe les conversations des NPCs narratifs."""
+        print("\nImport des dialogues...")
+
+        filepath = DATATABLES_DIR / "DT_NPC_Conversations.json"
+        if not filepath.exists():
+            print("  [SKIP] Fichier DT_NPC_Conversations.json non trouvé")
+            return 0
+
+        data = self.load_json_file(filepath)
+        rows = self.extract_rows(data)
+
+        conversation_count = 0
+        line_count = 0
+        line_with_text_count = 0
+        unlock_count = 0
+
+        line_types = [
+            "BeckoningLines",
+            "IdleLines",
+            "InitalContactMessages",  # Typo originale du jeu
+            "ReturnMessages",
+            "VendorInteraction_Positive",
+            "VendorInteraction_Negative",
+        ]
+
+        for row_id, row_data in rows.items():
+            # Nom du NPC
+            npc_name_data = row_data.get("NPCName", {})
+            npc_name = npc_name_data.get("LocalizedString") or npc_name_data.get("SourceString")
+
+            # Traduction FR si disponible
+            npc_name_fr = self.get_translation("DT_NPC_Conversations", row_id, "NPCName")
+            if npc_name_fr:
+                npc_name = npc_name_fr
+
+            # Flag de completion
+            world_flag = row_data.get("WorldFlagToComplete", {})
+            world_flag_name = world_flag.get("RowName")
+            if world_flag_name == "None":
+                world_flag_name = None
+
+            # Créer la conversation
+            conversation = NpcConversation(
+                row_id=row_id,
+                npc_name=npc_name,
+                npc_row_id=None,  # Sera lié manuellement si nécessaire
+                world_flag_to_complete=world_flag_name,
+            )
+            self.session.add(conversation)
+            self.session.flush()
+
+            # Importer les lignes de dialogue par type
+            for line_type_key in line_types:
+                lines = row_data.get(line_type_key, [])
+                line_type = self._parse_dialogue_line_type(line_type_key)
+
+                for idx, line_data in enumerate(lines):
+                    # Extraire le chemin audio
+                    audio_data = line_data.get("DialogToSpeak", {})
+                    audio_path = audio_data.get("AssetPathName")
+                    audio_asset_name = self._extract_audio_asset_name(audio_path)
+
+                    # Montage delay
+                    montage_delay = line_data.get("MontageDelay", 0.0)
+
+                    # Récupérer le texte depuis le mapping
+                    dialogue_text = None
+                    if audio_asset_name:
+                        dialogue_text = self.dialogue_mapping.get(audio_asset_name)
+                        # Essayer aussi avec _Dialogue suffix
+                        if not dialogue_text:
+                            dialogue_text = self.dialogue_mapping.get(f"{audio_asset_name}_Dialogue")
+
+                    # Créer la ligne
+                    dialogue_line = DialogueLine(
+                        conversation_id=conversation.id,
+                        line_type=line_type,
+                        position=idx,
+                        audio_asset_name=audio_asset_name,
+                        text=dialogue_text,
+                        montage_delay=montage_delay,
+                    )
+                    self.session.add(dialogue_line)
+                    self.session.flush()
+                    line_count += 1
+                    if dialogue_text:
+                        line_with_text_count += 1
+
+                    # Déblocages (recettes)
+                    recipes_to_unlock = line_data.get("RecipesToUnlock", [])
+                    for recipe_ref in recipes_to_unlock:
+                        recipe_row_id = self.parse_data_table_ref(recipe_ref)
+                        if recipe_row_id:
+                            # Chercher le nom de la recette
+                            recipe = self.session.query(Recipe).filter(Recipe.row_id == recipe_row_id).first()
+                            recipe_name = recipe.name if recipe else None
+                            unlock = DialogueUnlock(
+                                dialogue_line_id=dialogue_line.id,
+                                unlock_type=DialogueUnlockType.RECIPE,
+                                unlock_row_id=recipe_row_id,
+                                unlock_name=recipe_name,
+                            )
+                            self.session.add(unlock)
+                            unlock_count += 1
+
+                    # Déblocages (journal)
+                    journal_entries = line_data.get("JournalEntriesToAdd", [])
+                    for journal_ref in journal_entries:
+                        journal_row_id = self.parse_data_table_ref(journal_ref)
+                        if journal_row_id:
+                            # Chercher le titre traduit du journal
+                            journal_title = self._get_journal_title(journal_row_id)
+                            unlock = DialogueUnlock(
+                                dialogue_line_id=dialogue_line.id,
+                                unlock_type=DialogueUnlockType.JOURNAL,
+                                unlock_row_id=journal_row_id,
+                                unlock_name=journal_title,
+                            )
+                            self.session.add(unlock)
+                            unlock_count += 1
+
+                    # Déblocages (compendium)
+                    compendium_entries = line_data.get("CompendiumEntriesToUnlock", [])
+                    for compendium_ref in compendium_entries:
+                        compendium_row_id = self.parse_data_table_ref(compendium_ref)
+                        if compendium_row_id:
+                            # Chercher le titre traduit du compendium
+                            compendium_title = self._get_compendium_title(compendium_row_id)
+                            unlock = DialogueUnlock(
+                                dialogue_line_id=dialogue_line.id,
+                                unlock_type=DialogueUnlockType.COMPENDIUM,
+                                unlock_row_id=compendium_row_id,
+                                unlock_name=compendium_title,
+                            )
+                            self.session.add(unlock)
+                            unlock_count += 1
+
+                    # Déblocages (world flags) - pas de nom traduit
+                    world_flags = line_data.get("WorldFlagsToTrigger", [])
+                    for flag_ref in world_flags:
+                        flag_row_id = self.parse_data_table_ref(flag_ref)
+                        if flag_row_id:
+                            unlock = DialogueUnlock(
+                                dialogue_line_id=dialogue_line.id,
+                                unlock_type=DialogueUnlockType.WORLD_FLAG,
+                                unlock_row_id=flag_row_id,
+                                unlock_name=None,  # World flags n'ont pas de nom traduit
+                            )
+                            self.session.add(unlock)
+                            unlock_count += 1
+
+            conversation_count += 1
+
+        print(f"  {conversation_count} conversations importées")
+        print(f"  {line_count} lignes de dialogue importées ({line_with_text_count} avec texte)")
+        print(f"  {unlock_count} déblocages importés")
+        return conversation_count
+
     def run(self, reset: bool = False) -> None:
         """Exécute l'import complet."""
         print("=" * 60)
@@ -1123,6 +1335,9 @@ class DataImporter:
             self.session.query(CompendiumRecipeUnlock).delete()
             self.session.query(CompendiumSection).delete()
             self.session.query(CompendiumEntry).delete()
+            self.session.query(DialogueUnlock).delete()
+            self.session.query(DialogueLine).delete()
+            self.session.query(NpcConversation).delete()
             self.session.commit()
             print("  Données supprimées")
 
@@ -1141,6 +1356,7 @@ class DataImporter:
         self.import_projectiles()
         self.import_buffs()
         self.import_compendium()
+        self.import_dialogues()
 
         # Commit final
         self.session.commit()

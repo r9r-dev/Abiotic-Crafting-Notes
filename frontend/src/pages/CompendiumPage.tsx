@@ -9,13 +9,19 @@ import {
   CompendiumSections,
   CompendiumKillRequirement,
   CompendiumRecipeUnlocks,
+  CompendiumDialogues,
 } from "@/components/compendium";
 
 function CompendiumContent({ entry }: { entry: CompendiumEntry }) {
+  const isPerson = entry.category.toUpperCase() === "PEOPLE";
+
   return (
     <div className="space-y-6">
       <CompendiumHeader entry={entry} />
       <CompendiumSections sections={entry.sections} />
+      {isPerson && entry.title && (
+        <CompendiumDialogues characterName={entry.title} />
+      )}
       <CompendiumKillRequirement entry={entry} />
       <CompendiumRecipeUnlocks recipeUnlocks={entry.recipe_unlocks} />
     </div>

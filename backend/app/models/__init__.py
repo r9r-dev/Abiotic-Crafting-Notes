@@ -20,6 +20,13 @@ from app.models.compendium import (
     CompendiumCategory,
     CompendiumUnlockType,
 )
+from app.models.dialogue import (
+    NpcConversation,
+    DialogueLine,
+    DialogueUnlock,
+    DialogueLineType,
+    DialogueUnlockType,
+)
 
 __all__ = [
     # User
@@ -60,4 +67,10 @@ __all__ = [
     "CompendiumRecipeUnlock",
     "CompendiumCategory",
     "CompendiumUnlockType",
+    # Dialogues
+    "NpcConversation",
+    "DialogueLine",
+    "DialogueUnlock",
+    "DialogueLineType",
+    "DialogueUnlockType",
 ]

@@ -47,6 +47,18 @@ from app.schemas.compendium import (
     CompendiumNPCLink,
     CompendiumResponse,
 )
+from app.schemas.dialogue import (
+    DialogueUnlockResponse,
+    DialogueLineResponse,
+    DialogueLinesByType,
+    NpcConversationMinimal,
+    NpcConversationSearchResult,
+    DialogueSearchResponse,
+    DialogueListResult,
+    DialogueListResponse,
+    NPCLinkResponse,
+    NpcConversationResponse,
+)
 
 __all__ = [
     # User
@@ -97,4 +109,15 @@ __all__ = [
     "CompendiumListResponse",
     "CompendiumNPCLink",
     "CompendiumResponse",
+    # Dialogue
+    "DialogueUnlockResponse",
+    "DialogueLineResponse",
+    "DialogueLinesByType",
+    "NpcConversationMinimal",
+    "NpcConversationSearchResult",
+    "DialogueSearchResponse",
+    "DialogueListResult",
+    "DialogueListResponse",
+    "NPCLinkResponse",
+    "NpcConversationResponse",
 ]

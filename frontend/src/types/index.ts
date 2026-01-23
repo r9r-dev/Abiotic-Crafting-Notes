@@ -494,3 +494,86 @@ export interface CompendiumEntry {
   kill_section_image_path: string | null;
   recipe_unlocks: CompendiumRecipeUnlock[];
 }
+
+// Dialogues
+
+export type DialogueLineType =
+  | "BeckoningLines"
+  | "IdleLines"
+  | "InitalContactMessages"
+  | "ReturnMessages"
+  | "VendorInteraction_Positive"
+  | "VendorInteraction_Negative";
+
+export type DialogueUnlockType = "recipe" | "journal" | "compendium" | "world_flag";
+
+export interface DialogueUnlock {
+  unlock_type: DialogueUnlockType;
+  unlock_row_id: string;
+  unlock_name: string | null;
+}
+
+export interface DialogueLine {
+  line_type: DialogueLineType;
+  position: number;
+  audio_asset_name: string | null;
+  text: string | null;
+  montage_delay: number;
+  unlocks: DialogueUnlock[];
+}
+
+export interface DialogueLinesByType {
+  beckoning: DialogueLine[];
+  idle: DialogueLine[];
+  initial_contact: DialogueLine[];
+  return_messages: DialogueLine[];
+  vendor_positive: DialogueLine[];
+  vendor_negative: DialogueLine[];
+}
+
+export interface DialogueNPCLink {
+  row_id: string;
+  name: string | null;
+  icon_path: string | null;
+}
+
+export interface DialogueSearchResult {
+  type: "dialogue";
+  row_id: string;
+  npc_name: string | null;
+  npc_row_id: string | null;
+  matched_text: string | null;
+}
+
+export interface DialogueSearchResponse {
+  query: string;
+  count: number;
+  results: DialogueSearchResult[];
+}
+
+export interface DialogueListResult {
+  row_id: string;
+  npc_name: string | null;
+  npc_row_id: string | null;
+  npc_icon_path: string | null;
+  total_lines: number;
+  has_vendor_lines: boolean;
+}
+
+export interface DialogueListResponse {
+  conversations: DialogueListResult[];
+  total: number;
+  skip: number;
+  limit: number;
+  has_more: boolean;
+}
+
+export interface NpcConversation {
+  row_id: string;
+  npc_name: string | null;
+  npc_row_id: string | null;
+  world_flag_to_complete: string | null;
+  npc: DialogueNPCLink | null;
+  lines_by_type: DialogueLinesByType;
+  total_lines: number;
+}
