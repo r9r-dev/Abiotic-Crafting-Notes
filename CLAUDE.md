@@ -21,6 +21,7 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 │   │   ├── components/
 │   │   │   ├── ui/             # shadcn/ui (tabs, card, button, etc.)
 │   │   │   ├── item/           # 14 composants affichage items
+│   │   │   ├── npc/            # 5 composants affichage NPCs
 │   │   │   ├── Header.tsx
 │   │   │   ├── SearchPanel.tsx # Recherche avec debounce
 │   │   │   └── PageTransition.tsx
@@ -43,7 +44,7 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 │   │   ├── config.py           # Settings
 │   │   └── main.py
 │   └── requirements.txt
-├── data/                       # Icons (1311+), traductions, datatables
+├── data/                       # Icons, GUI (NPC images), traductions, datatables
 ├── .github/workflows/          # CI/CD docker.yml
 └── docker-compose.yml
 ```
@@ -62,6 +63,9 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 | GET | /api/auth/me | Utilisateur connecte |
 | GET | /api/items/{row_id} | Detail item complet avec relations |
 | GET | /api/items/search?q= | Recherche items (max 20 resultats) |
+| GET | /api/npcs/{row_id} | Detail NPC complet avec loot tables |
+| GET | /api/npcs/search?q= | Recherche NPCs (max 20 resultats) |
+| GET | /api/npcs/list | Liste NPCs avec pagination |
 
 Tu as le droit de tester l'api sur l'url de prod : https://abiotic.hellonowork.com/
 
@@ -75,6 +79,17 @@ Tu as le droit de tester l'api sur l'url de prod : https://abiotic.hellonowork.c
 ## Composants item
 
 `ItemHeader`, `ItemBaseStats`, `WeaponStats`, `EquipmentStats`, `ConsumableStats`, `DeployableStats`, `ItemRecipes`, `ItemSalvage`, `ItemUpgrades`, `ItemUsedInRecipes`, `ItemUsedInUpgrades`, `ItemUpgradedFrom`, `TransformationChain`
+
+## Composants NPC
+
+`NPCHeader`, `NPCCombatStats`, `NPCResistances`, `NPCBehavior`, `NPCLootTables`
+
+## Assets statiques
+
+| Route | Source | Description |
+|-------|--------|-------------|
+| /icons/ | data/icons/ | Icones items (1311+) |
+| /npc-icons/ | data/GUI/Compendium/Entries/ | Images NPCs du Compendium (47) |
 
 ## Developpement local
 
