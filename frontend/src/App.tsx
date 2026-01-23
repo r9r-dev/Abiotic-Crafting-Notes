@@ -3,12 +3,14 @@ import { BrowserRouter, Routes, Route, useLocation, useSearchParams, useParams }
 import { AnimatePresence } from "motion/react";
 import { Search } from "lucide-react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { Header } from "@/components/Header";
 import { HomePage } from "@/pages/HomePage";
 import { ItemPage } from "@/pages/ItemPage";
 import { NPCPage } from "@/pages/NPCPage";
 import { CompendiumPage } from "@/pages/CompendiumPage";
 import { DialoguePage } from "@/pages/DialoguePage";
+import { AdminPage } from "@/pages/AdminPage";
 import { PageTransition } from "@/components/PageTransition";
 import { SearchPanel } from "@/components/SearchPanel";
 import { Button } from "@/components/ui/button";
@@ -43,6 +45,7 @@ function AppLayout() {
   const isNPCPage = location.pathname.startsWith("/npc/");
   const isCompendiumPage = location.pathname.startsWith("/compendium/");
   const isDialoguePage = location.pathname.startsWith("/dialogue/");
+  const isAdminPage = location.pathname === "/admin";
   const isDetailPage = isItemPage || isNPCPage || isCompendiumPage || isDialoguePage;
   const isHomePage = location.pathname === "/";
   const isGalleryView = searchParams.get("view") === "gallery";
@@ -53,15 +56,15 @@ function AppLayout() {
   const rowIdMatch = location.pathname.match(/^\/(item|npc|compendium|dialogue)\/(.+)$/);
   const currentItemId = rowIdMatch ? rowIdMatch[2] : undefined;
 
-  const pageType = location.pathname === "/" ? "home" : isNPCPage ? "npc" : isCompendiumPage ? "compendium" : isDialoguePage ? "dialogue" : "item";
+  const pageType = location.pathname === "/" ? "home" : isAdminPage ? "admin" : isNPCPage ? "npc" : isCompendiumPage ? "compendium" : isDialoguePage ? "dialogue" : "item";
 
-  // Page d'accueil minimaliste (sans galerie) : pas de padding
-  const isMinimalHome = isHomePage && !isGalleryView;
+  // Pages plein ecran sans padding : accueil (sans galerie) et admin
+  const isFullscreenPage = (isHomePage && !isGalleryView) || isAdminPage;
 
   // Sans contexte de recherche : layout simple
   if (!hasSearchContext) {
     return (
-      <main className={isMinimalHome ? "" : "container mx-auto px-4 py-6"}>
+      <main className={isFullscreenPage ? "" : "container mx-auto px-4 py-6"}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={pageType}>
             <Route
@@ -101,6 +104,14 @@ function AppLayout() {
               element={
                 <PageTransition>
                   <DialoguePageWrapper />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <PageTransition>
+                  <AdminPage />
                 </PageTransition>
               }
             />
@@ -186,10 +197,11 @@ function AppContent() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  // Cacher le header sur la page d'accueil (recherche uniquement, pas galerie)
+  // Cacher le header sur la page d'accueil (recherche uniquement, pas galerie) et sur admin
   const isHomePage = location.pathname === "/";
+  const isAdminPage = location.pathname === "/admin";
   const isGalleryView = searchParams.get("view") === "gallery";
-  const showHeader = !isHomePage || isGalleryView;
+  const showHeader = (!isHomePage || isGalleryView) && !isAdminPage;
 
   return (
     <div className="min-h-screen bg-background">
@@ -203,7 +215,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <AnalyticsProvider>
+          <AppContent />
+        </AnalyticsProvider>
       </AuthProvider>
     </BrowserRouter>
   );

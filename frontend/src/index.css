@@ -78,6 +78,21 @@
     drop-shadow(0 -1px 0 #0d4a47);
 }
 
+/* Abiotic Factor title style - Red variant */
+.abiotic-title-red {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  background: linear-gradient(180deg, #FFC5C5 0%, #FF8D8D 50%, #DC2626 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter:
+    drop-shadow(1px 0 0 #4a0d0d)
+    drop-shadow(-1px 0 0 #4a0d0d)
+    drop-shadow(0 1px 0 #4a0d0d)
+    drop-shadow(0 -1px 0 #4a0d0d);
+}
+
 /* Scanline effect for sci-fi feel */
 .scanlines::after {
   content: "";

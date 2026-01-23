@@ -5,17 +5,24 @@ interface ElectricStringsBackgroundProps {
   className?: string;
   /** Vitesse de l'animation (defaut: 1, plus grand = plus rapide) */
   speed?: number;
+  /** Couleur de l'effet (defaut: "cyan", alternative: "red") */
+  color?: "cyan" | "red";
 }
 
-export function ElectricStringsBackground({ children, className = "", speed = 1 }: ElectricStringsBackgroundProps) {
+export function ElectricStringsBackground({ children, className = "", speed = 1, color = "cyan" }: ElectricStringsBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const speedRef = useRef(speed);
+  const colorRef = useRef(color);
 
-  // Mettre a jour la ref quand speed change
+  // Mettre a jour les refs quand les props changent
   useEffect(() => {
     speedRef.current = speed;
   }, [speed]);
+
+  useEffect(() => {
+    colorRef.current = color;
+  }, [color]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -130,7 +137,7 @@ export function ElectricStringsBackground({ children, className = "", speed = 1 
         }
       }
 
-      show(ctx: CanvasRenderingContext2D, target: { x: number; y: number }) {
+      show(ctx: CanvasRenderingContext2D, target: { x: number; y: number }, hueBase: number) {
         if (dist(this.x, this.y, target.x, target.y) <= this.l) {
           ctx.globalCompositeOperation = "lighter";
           ctx.beginPath();
@@ -138,10 +145,10 @@ export function ElectricStringsBackground({ children, className = "", speed = 1 
           for (let i = 0; i < this.n; i++) {
             this.segments[i].show(ctx);
           }
-          // Couleurs cyan/turquoise pour matcher le theme Abiotic Factor
+          // Couleurs basees sur hueBase (170 pour cyan, 0 pour rouge)
           ctx.strokeStyle =
             "hsl(" +
-            (this.rand * 30 + 170) +
+            (this.rand * 30 + hueBase) +
             ",100%," +
             (this.rand * 40 + 40) +
             "%)";
@@ -153,14 +160,14 @@ export function ElectricStringsBackground({ children, className = "", speed = 1 
         }
       }
 
-      show2(ctx: CanvasRenderingContext2D, target: { x: number; y: number }) {
+      show2(ctx: CanvasRenderingContext2D, target: { x: number; y: number }, activeColor: string, inactiveColor: string) {
         ctx.beginPath();
         if (dist(this.x, this.y, target.x, target.y) <= this.l) {
           ctx.arc(this.x, this.y, 2 * this.rand + 1, 0, 2 * Math.PI);
-          ctx.fillStyle = "#8DFFFB";
+          ctx.fillStyle = activeColor;
         } else {
           ctx.arc(this.x, this.y, this.rand * 2, 0, 2 * Math.PI);
-          ctx.fillStyle = "#0d4a47";
+          ctx.fillStyle = inactiveColor;
         }
         ctx.fill();
       }
@@ -196,6 +203,12 @@ export function ElectricStringsBackground({ children, className = "", speed = 1 
     function draw() {
       if (!c) return;
 
+      // Couleurs selon le theme
+      const isRed = colorRef.current === "red";
+      const hueBase = isRed ? 0 : 170;
+      const activeColor = isRed ? "#FF8D8D" : "#8DFFFB";
+      const inactiveColor = isRed ? "#4a0d0d" : "#0d4a47";
+
       if (mouse.x !== false && mouse.y !== false) {
         target.errx = mouse.x - target.x;
         target.erry = mouse.y - target.y;
@@ -219,15 +232,15 @@ export function ElectricStringsBackground({ children, className = "", speed = 1 
         0,
         2 * Math.PI
       );
-      c.fillStyle = "#8DFFFB";
+      c.fillStyle = activeColor;
       c.fill();
 
       for (let i = 0; i < numt; i++) {
         tent[i].move(last_target, target);
-        tent[i].show2(c, target);
+        tent[i].show2(c, target, activeColor, inactiveColor);
       }
       for (let i = 0; i < numt; i++) {
-        tent[i].show(c, target);
+        tent[i].show(c, target, hueBase);
       }
       last_target.x = target.x;
       last_target.y = target.y;

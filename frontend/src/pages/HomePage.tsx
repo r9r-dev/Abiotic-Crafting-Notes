@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, LayoutGrid } from "lucide-react";
+import { Search, LayoutGrid, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { unifiedSearch } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { GalleryView } from "@/components/gallery";
 import { ElectricStringsBackground } from "@/components/ElectricStringsBackground";
 import type { UnifiedSearchResult } from "@/types";
@@ -34,7 +35,17 @@ const categoryLabels: Record<string, string> = {
   THEORIES: "Theorie",
 };
 
-function SearchResult({ item, query }: { item: UnifiedSearchResult; query: string }) {
+function SearchResult({
+  item,
+  query,
+  position,
+  onResultClick,
+}: {
+  item: UnifiedSearchResult;
+  query: string;
+  position: number;
+  onResultClick: (rowId: string, itemType: string, position: number) => void;
+}) {
   const isNPC = item.type === "npc";
   const isCompendium = item.type === "compendium";
 
@@ -65,6 +76,7 @@ function SearchResult({ item, query }: { item: UnifiedSearchResult; query: strin
   return (
     <Link
       to={linkPath}
+      onClick={() => onResultClick(item.row_id, item.type, position)}
       className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors"
     >
       <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
@@ -150,11 +162,13 @@ export function HomePage() {
 
 function SearchView() {
   const { user } = useAuth();
+  const { trackSearch, trackSearchResultClick } = useAnalytics();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UnifiedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTrackedQuery = useRef<string>("");
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -174,6 +188,12 @@ function SearchView() {
         const response = await unifiedSearch(query.trim());
         setResults(response.results);
         setHasSearched(true);
+
+        // Tracker la recherche (eviter les doublons)
+        if (query.trim() !== lastTrackedQuery.current) {
+          trackSearch(query.trim(), response.results.length);
+          lastTrackedQuery.current = query.trim();
+        }
       } catch {
         setResults([]);
       } finally {
@@ -186,7 +206,11 @@ function SearchView() {
         clearTimeout(debounceRef.current);
       }
     };
-  }, [query]);
+  }, [query, trackSearch]);
+
+  const handleResultClick = (rowId: string, itemType: string, position: number) => {
+    trackSearchResultClick(query.trim(), rowId, itemType, position);
+  };
 
   const showResults = hasSearched || results.length > 0;
 
@@ -236,8 +260,14 @@ function SearchView() {
 
             {results.length > 0 && (
               <div className="space-y-1 bg-background/80 backdrop-blur-sm rounded-lg p-2">
-                {results.map((item) => (
-                  <SearchResult key={`${item.type}-${item.row_id}`} item={item} query={query} />
+                {results.map((item, index) => (
+                  <SearchResult
+                    key={`${item.type}-${item.row_id}`}
+                    item={item}
+                    query={query}
+                    position={index}
+                    onResultClick={handleResultClick}
+                  />
                 ))}
               </div>
             )}
@@ -249,12 +279,20 @@ function SearchView() {
 
         {/* Footer discret */}
         <div className="pb-4 flex flex-col items-center gap-2">
-          <Link
-            to="/?view=gallery"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-          >
-            <LayoutGrid className="h-3.5 w-3.5" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/?view=gallery"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Link>
+            <Link
+              to="/admin"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+            >
+              <Lock className="h-3.5 w-3.5" />
+            </Link>
+          </div>
           {user && (
             <span className="text-xs text-muted-foreground/60">
               {user.name}
