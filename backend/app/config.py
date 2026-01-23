@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     dev_user_email: str = "dev@local.dev"
     dev_user_name: str = "Dev User"
 
+    # Analytics
+    analytics_enabled: bool = True
+    analytics_salt: str = "abiotic-analytics-salt-change-in-prod"
+    analytics_password: str = "admin"  # Mot de passe dashboard - changer en prod
+    analytics_session_timeout_hours: int = 24  # Duree de validite d'une session
+
     @property
     def database_url(self) -> str:
         return f"postgresql://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"

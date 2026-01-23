@@ -27,6 +27,16 @@ from app.models.dialogue import (
     DialogueLineType,
     DialogueUnlockType,
 )
+from app.models.analytics import (
+    AnalyticsSession,
+    AnalyticsEvent,
+    AnalyticsSearch,
+    AnalyticsPerformance,
+    AnalyticsDailyStat,
+    DeviceType,
+    EventType,
+    PerformanceMetricType,
+)
 
 __all__ = [
     # User
@@ -73,4 +83,13 @@ __all__ = [
     "DialogueUnlock",
     "DialogueLineType",
     "DialogueUnlockType",
+    # Analytics
+    "AnalyticsSession",
+    "AnalyticsEvent",
+    "AnalyticsSearch",
+    "AnalyticsPerformance",
+    "AnalyticsDailyStat",
+    "DeviceType",
+    "EventType",
+    "PerformanceMetricType",
 ]

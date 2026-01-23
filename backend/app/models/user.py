@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, DateTime
+from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.database import Base
 
@@ -11,3 +12,6 @@ class User(Base):
     name = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    # Relations
+    analytics_sessions = relationship("AnalyticsSession", back_populates="user")
