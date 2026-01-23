@@ -22,11 +22,12 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 │   │   │   ├── ui/             # shadcn/ui (tabs, card, button, etc.)
 │   │   │   ├── item/           # 14 composants affichage items
 │   │   │   ├── npc/            # 5 composants affichage NPCs
+│   │   │   ├── compendium/     # 5 composants affichage Compendium
 │   │   │   ├── Header.tsx
 │   │   │   ├── SearchPanel.tsx # Recherche avec debounce
 │   │   │   └── PageTransition.tsx
 │   │   ├── contexts/           # AuthContext
-│   │   ├── pages/              # HomePage, ItemPage
+│   │   ├── pages/              # HomePage, ItemPage, NPCPage, CompendiumPage
 │   │   ├── services/           # api.ts
 │   │   ├── types/              # Types complets (~280 lignes)
 │   │   ├── hooks/              # useItemLink
@@ -37,8 +38,11 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── auth.py         # GET /auth/me
-│   │   │   └── items.py        # GET /items/{row_id}, /items/search
-│   │   ├── models/             # 13 modeles ORM
+│   │   │   ├── items.py        # GET /items/{row_id}, /items/search
+│   │   │   ├── npcs.py         # GET /npcs/{row_id}, /npcs/search, /npcs/list
+│   │   │   ├── compendium.py   # GET /compendium/{row_id}, /compendium/search
+│   │   │   └── search.py       # GET /search (recherche unifiee)
+│   │   ├── models/             # 16 modeles ORM
 │   │   ├── schemas/            # Pydantic responses
 │   │   ├── auth.py             # Extraction headers Pangolin
 │   │   ├── config.py           # Settings
@@ -51,7 +55,7 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 
 ## Modeles de donnees
 
-**Backend (SQLAlchemy)**: User, Item, Weapon, Equipment, Consumable, Deployable, Recipe, RecipeIngredient, ItemUpgrade, Salvage, SalvageDrop, Bench, NPC, Plant, Projectile
+**Backend (SQLAlchemy)**: User, Item, Weapon, Equipment, Consumable, Deployable, Recipe, RecipeIngredient, ItemUpgrade, Salvage, SalvageDrop, Bench, NPC, NpcLootTable, Plant, Projectile, Buff, CompendiumEntry, CompendiumSection, CompendiumRecipeUnlock
 
 **Frontend (TypeScript)**: Types miroir + relations inverses (UsedInRecipe, UsedInUpgrade, UpgradedFrom) + chaines de transformation (upgrade_chain, cooking_chain)
 
@@ -66,6 +70,11 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 | GET | /api/npcs/{row_id} | Detail NPC complet avec loot tables |
 | GET | /api/npcs/search?q= | Recherche NPCs (max 20 resultats) |
 | GET | /api/npcs/list | Liste NPCs avec pagination |
+| GET | /api/compendium/{row_id} | Detail entree Compendium avec sections |
+| GET | /api/compendium/search?q= | Recherche Compendium (max 20 resultats) |
+| GET | /api/compendium/list | Liste Compendium avec pagination |
+| GET | /api/compendium/categories | Categories avec compteurs |
+| GET | /api/compendium/by-npc/{npc_row_id} | Entree Compendium liee a un NPC |
 
 Tu as le droit de tester l'api sur l'url de prod : https://abiotic.hellonowork.com/
 
@@ -84,12 +93,19 @@ Tu as le droit de tester l'api sur l'url de prod : https://abiotic.hellonowork.c
 
 `NPCHeader`, `NPCCombatStats`, `NPCResistances`, `NPCBehavior`, `NPCLootTables`
 
+## Composants Compendium
+
+`CompendiumHeader`, `CompendiumSections`, `CompendiumKillRequirement`, `CompendiumRecipeUnlocks`, `CompendiumLoreCard`
+
+Categories: Entity (creatures), IS (items speciaux), People (personnages), Location (lieux), Theories
+
 ## Assets statiques
 
 | Route | Source | Description |
 |-------|--------|-------------|
 | /icons/ | data/icons/ | Icones items (1311+) |
-| /npc-icons/ | data/GUI/Compendium/Entries/ | Images NPCs du Compendium (47) |
+| /npc-icons/ | data/GUI/Compendium/Entries/ | Images NPCs du Compendium |
+| /compendium/ | data/GUI/Compendium/Entries/ | Images Compendium (167) |
 
 ## Developpement local
 

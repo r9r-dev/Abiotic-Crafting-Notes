@@ -13,6 +13,13 @@ from app.models.npc import NPC, NpcLootTable
 from app.models.plant import Plant
 from app.models.projectile import Projectile
 from app.models.buff import Buff
+from app.models.compendium import (
+    CompendiumEntry,
+    CompendiumSection,
+    CompendiumRecipeUnlock,
+    CompendiumCategory,
+    CompendiumUnlockType,
+)
 
 __all__ = [
     # User
@@ -47,4 +54,10 @@ __all__ = [
     "Projectile",
     # Buffs
     "Buff",
+    # Compendium
+    "CompendiumEntry",
+    "CompendiumSection",
+    "CompendiumRecipeUnlock",
+    "CompendiumCategory",
+    "CompendiumUnlockType",
 ]

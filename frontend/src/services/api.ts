@@ -1,4 +1,15 @@
-import type { User, Item, ItemSearchResponse, ItemListResponse, NPC, UnifiedSearchResponse, NPCListResponse } from "@/types";
+import type {
+  User,
+  Item,
+  ItemSearchResponse,
+  ItemListResponse,
+  NPC,
+  UnifiedSearchResponse,
+  NPCListResponse,
+  CompendiumEntry,
+  CompendiumListResponse,
+  CompendiumSearchResponse,
+} from "@/types";
 
 const API_BASE = "/api";
 
@@ -94,6 +105,41 @@ export async function listNPCs(params: ListNPCsParams = {}): Promise<NPCListResp
 // Recherche unifiee
 export async function unifiedSearch(query: string): Promise<UnifiedSearchResponse> {
   return request<UnifiedSearchResponse>(`/search?q=${encodeURIComponent(query)}`);
+}
+
+// Compendium
+export async function getCompendiumEntry(rowId: string): Promise<CompendiumEntry> {
+  return request<CompendiumEntry>(`/compendium/${encodeURIComponent(rowId)}`);
+}
+
+export async function getCompendiumByNPC(npcRowId: string): Promise<CompendiumEntry | null> {
+  return request<CompendiumEntry | null>(`/compendium/by-npc/${encodeURIComponent(npcRowId)}`);
+}
+
+export async function searchCompendium(query: string, category?: string): Promise<CompendiumSearchResponse> {
+  const params = new URLSearchParams({ q: query });
+  if (category) params.set("category", category);
+  return request<CompendiumSearchResponse>(`/compendium/search?${params.toString()}`);
+}
+
+export interface ListCompendiumParams {
+  skip?: number;
+  limit?: number;
+  category?: string;
+}
+
+export async function listCompendium(params: ListCompendiumParams = {}): Promise<CompendiumListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.skip !== undefined) searchParams.set("skip", params.skip.toString());
+  if (params.limit !== undefined) searchParams.set("limit", params.limit.toString());
+  if (params.category) searchParams.set("category", params.category);
+
+  const query = searchParams.toString();
+  return request<CompendiumListResponse>(`/compendium/list${query ? `?${query}` : ""}`);
+}
+
+export async function getCompendiumCategories(): Promise<Record<string, number>> {
+  return request<Record<string, number>>("/compendium/categories");
 }
 
 export { ApiError };

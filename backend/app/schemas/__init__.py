@@ -36,6 +36,17 @@ from app.schemas.npc import (
     MovementStats,
     NPCResponse,
 )
+from app.schemas.compendium import (
+    CompendiumSectionResponse,
+    CompendiumRecipeUnlockResponse,
+    CompendiumEntryMinimal,
+    CompendiumSearchResult,
+    CompendiumSearchResponse,
+    CompendiumListResult,
+    CompendiumListResponse,
+    CompendiumNPCLink,
+    CompendiumResponse,
+)
 
 __all__ = [
     # User
@@ -76,4 +87,14 @@ __all__ = [
     "CombatStats",
     "MovementStats",
     "NPCResponse",
+    # Compendium
+    "CompendiumSectionResponse",
+    "CompendiumRecipeUnlockResponse",
+    "CompendiumEntryMinimal",
+    "CompendiumSearchResult",
+    "CompendiumSearchResponse",
+    "CompendiumListResult",
+    "CompendiumListResponse",
+    "CompendiumNPCLink",
+    "CompendiumResponse",
 ]

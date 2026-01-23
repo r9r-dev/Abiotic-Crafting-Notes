@@ -402,7 +402,7 @@ export interface NPC {
 // Recherche unifiee
 
 export interface UnifiedSearchResult {
-  type: "item" | "npc";
+  type: "item" | "npc" | "compendium";
   row_id: string;
   name: string | null;
   description: string | null;
@@ -410,10 +410,87 @@ export interface UnifiedSearchResult {
   category: string | null;
   is_hostile?: boolean | null;
   is_passive?: boolean | null;
+  // Compendium specific
+  title?: string | null;
+  subtitle?: string | null;
 }
 
 export interface UnifiedSearchResponse {
   query: string;
   count: number;
   results: UnifiedSearchResult[];
+}
+
+// Compendium
+
+export type CompendiumCategory = "Entity" | "IS" | "People" | "Location" | "Theories";
+export type CompendiumUnlockType = "Exploration" | "Email" | "NarrativeNPC" | "Kill";
+
+export interface CompendiumSection {
+  position: number;
+  unlock_type: CompendiumUnlockType;
+  text: string;
+  image_path: string | null;
+}
+
+export interface CompendiumRecipeUnlock {
+  recipe_row_id: string;
+  recipe_name: string | null;
+  from_kill_section: boolean;
+}
+
+export interface CompendiumNPCLink {
+  row_id: string;
+  name: string | null;
+  icon_path: string | null;
+}
+
+export interface CompendiumSearchResult {
+  type: "compendium";
+  row_id: string;
+  title: string | null;
+  subtitle: string | null;
+  category: CompendiumCategory;
+  image_path: string | null;
+  npc_row_id: string | null;
+}
+
+export interface CompendiumSearchResponse {
+  query: string;
+  count: number;
+  results: CompendiumSearchResult[];
+}
+
+export interface CompendiumListResult {
+  row_id: string;
+  title: string | null;
+  subtitle: string | null;
+  category: CompendiumCategory;
+  image_path: string | null;
+  npc_row_id: string | null;
+  has_kill_requirement: boolean;
+}
+
+export interface CompendiumListResponse {
+  entries: CompendiumListResult[];
+  total: number;
+  skip: number;
+  limit: number;
+  has_more: boolean;
+}
+
+export interface CompendiumEntry {
+  row_id: string;
+  title: string | null;
+  subtitle: string | null;
+  category: CompendiumCategory;
+  image_path: string | null;
+  npc_row_id: string | null;
+  npc: CompendiumNPCLink | null;
+  sections: CompendiumSection[];
+  has_kill_requirement: boolean;
+  kill_required_count: number;
+  kill_section_text: string | null;
+  kill_section_image_path: string | null;
+  recipe_unlocks: CompendiumRecipeUnlock[];
 }

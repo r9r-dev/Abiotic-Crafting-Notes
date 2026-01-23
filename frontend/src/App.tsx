@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { HomePage } from "@/pages/HomePage";
 import { ItemPage } from "@/pages/ItemPage";
 import { NPCPage } from "@/pages/NPCPage";
+import { CompendiumPage } from "@/pages/CompendiumPage";
 import { PageTransition } from "@/components/PageTransition";
 import { SearchPanel } from "@/components/SearchPanel";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,11 @@ function NPCPageWrapper() {
   return <NPCPage key={rowId} />;
 }
 
+function CompendiumPageWrapper() {
+  const { rowId } = useParams<{ rowId: string }>();
+  return <CompendiumPage key={rowId} />;
+}
+
 function AppLayout() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -29,17 +35,18 @@ function AppLayout() {
 
   const isItemPage = location.pathname.startsWith("/item/");
   const isNPCPage = location.pathname.startsWith("/npc/");
-  const isDetailPage = isItemPage || isNPCPage;
+  const isCompendiumPage = location.pathname.startsWith("/compendium/");
+  const isDetailPage = isItemPage || isNPCPage || isCompendiumPage;
   const isHomePage = location.pathname === "/";
   const isGalleryView = searchParams.get("view") === "gallery";
   const query = searchParams.get("q") || "";
   const hasSearchContext = isDetailPage && query.length > 0;
 
   // Extraire le rowId pour le passer au SearchPanel
-  const rowIdMatch = location.pathname.match(/^\/(item|npc)\/(.+)$/);
+  const rowIdMatch = location.pathname.match(/^\/(item|npc|compendium)\/(.+)$/);
   const currentItemId = rowIdMatch ? rowIdMatch[2] : undefined;
 
-  const pageType = location.pathname === "/" ? "home" : isNPCPage ? "npc" : "item";
+  const pageType = location.pathname === "/" ? "home" : isNPCPage ? "npc" : isCompendiumPage ? "compendium" : "item";
 
   // Page d'accueil minimaliste (sans galerie) : pas de padding
   const isMinimalHome = isHomePage && !isGalleryView;
@@ -71,6 +78,14 @@ function AppLayout() {
               element={
                 <PageTransition>
                   <NPCPageWrapper />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/compendium/:rowId"
+              element={
+                <PageTransition>
+                  <CompendiumPageWrapper />
                 </PageTransition>
               }
             />
@@ -125,6 +140,14 @@ function AppLayout() {
                 element={
                   <PageTransition>
                     <NPCPageWrapper />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/compendium/:rowId"
+                element={
+                  <PageTransition>
+                    <CompendiumPageWrapper />
                   </PageTransition>
                 }
               />

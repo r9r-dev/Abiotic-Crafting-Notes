@@ -18,7 +18,7 @@ const damageTypeLabels: Record<string, string> = {
 
 function getLootTypeLabel(lootType: string, salvageRowId?: string): string {
   if (lootType === "gib") {
-    return "Découpe";
+    return "Découpe du cadavre";
   }
 
   if (lootType === "death" && salvageRowId) {

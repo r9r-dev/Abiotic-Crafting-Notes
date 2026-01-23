@@ -7,21 +7,24 @@ interface NPCResistancesProps {
 }
 
 const damageTypeLabels: Record<string, string> = {
-  physical: "Physique",
-  fire: "Feu",
-  ice: "Glace",
-  electric: "Electrique",
-  poison: "Poison",
-  radiation: "Radiation",
-  blunt: "Contondant",
-  slash: "Tranchant",
-  pierce: "Percant",
-  energy: "Energie",
-  explosive: "Explosif",
+  Acid: "Acide",
+  Blunt: "Contondants",
+  "Blunt.DoorBash": "Contondants (portes)",
+  Bullet: "Balles",
+  "Bullet.Small": "Petites balles",
+  "Bullet.ShotgunPellet": "Chevrotine",
+  Cold: "Froid",
+  Electric: "Électrique",
+  Explosive: "Explosifs",
+  Fire: "Feu",
+  Holy: "Sacré",
+  Laser: "Lasers",
+  Sharp: "Tranchants",
+  XRay: "Rayons X",
 };
 
 function formatDamageType(type: string): string {
-  return damageTypeLabels[type.toLowerCase()] || type;
+  return damageTypeLabels[type] || type;
 }
 
 export function NPCResistances({ npc }: NPCResistancesProps) {
@@ -35,7 +38,7 @@ export function NPCResistances({ npc }: NPCResistancesProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Resistances et faiblesses</CardTitle>
+        <CardTitle className="text-base">Résistances et faiblesses</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -43,7 +46,7 @@ export function NPCResistances({ npc }: NPCResistancesProps) {
           {hasResistances && (
             <div>
               <span className="text-sm text-muted-foreground mb-2 block">
-                Resistances
+                Moins affecté par les dégâts 
               </span>
               <div className="flex flex-wrap gap-1">
                 {npc.damage_resistances.map((resistance) => (
@@ -63,7 +66,7 @@ export function NPCResistances({ npc }: NPCResistancesProps) {
           {hasWeaknesses && (
             <div>
               <span className="text-sm text-muted-foreground mb-2 block">
-                Faiblesses
+                Faible contre les dégats
               </span>
               <div className="flex flex-wrap gap-1">
                 {npc.damage_weaknesses.map((weakness) => (

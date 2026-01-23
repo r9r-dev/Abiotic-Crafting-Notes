@@ -1,41 +1,32 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import type { NPC } from "@/types";
-import { getNPC, ApiError } from "@/services/api";
+import type { CompendiumEntry } from "@/types";
+import { getCompendiumEntry, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import {
-  NPCHeader,
-  NPCCombatStats,
-  NPCBehavior,
-  NPCResistances,
-  NPCLootTables,
-} from "@/components/npc";
-import { CompendiumLoreCard } from "@/components/compendium";
+  CompendiumHeader,
+  CompendiumSections,
+  CompendiumKillRequirement,
+  CompendiumRecipeUnlocks,
+} from "@/components/compendium";
 
-function NPCContent({ npc }: { npc: NPC }) {
+function CompendiumContent({ entry }: { entry: CompendiumEntry }) {
   return (
     <div className="space-y-6">
-      <NPCHeader npc={npc} />
-      <CompendiumLoreCard npcRowId={npc.row_id} />
-      <NPCCombatStats npc={npc} />
-      <NPCBehavior npc={npc} />
-      <NPCResistances npc={npc} />
-      {npc.loot_tables.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Butin</h2>
-          <NPCLootTables lootTables={npc.loot_tables} />
-        </div>
-      )}
+      <CompendiumHeader entry={entry} />
+      <CompendiumSections sections={entry.sections} />
+      <CompendiumKillRequirement entry={entry} />
+      <CompendiumRecipeUnlocks recipeUnlocks={entry.recipe_unlocks} />
     </div>
   );
 }
 
-export function NPCPage() {
+export function CompendiumPage() {
   const { rowId } = useParams<{ rowId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [npc, setNpc] = useState<NPC | null>(null);
+  const [entry, setEntry] = useState<CompendiumEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +35,7 @@ export function NPCPage() {
 
   useEffect(() => {
     if (!rowId) {
-      setError("ID de NPC manquant");
+      setError("ID d'entree manquant");
       setLoading(false);
       return;
     }
@@ -52,13 +43,13 @@ export function NPCPage() {
     setLoading(true);
     setError(null);
 
-    getNPC(rowId)
-      .then(setNpc)
+    getCompendiumEntry(rowId)
+      .then(setEntry)
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) {
-          setError(`NPC "${rowId}" non trouve`);
+          setError(`Entree "${rowId}" non trouvee`);
         } else {
-          setError("Erreur lors du chargement du NPC");
+          setError("Erreur lors du chargement de l'entree");
         }
       })
       .finally(() => setLoading(false));
@@ -75,12 +66,12 @@ export function NPCPage() {
     );
   }
 
-  if (error || !npc) {
+  if (error || !entry) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <div className="text-center">
           <div className="text-4xl mb-4 text-destructive">!</div>
-          <p className="text-muted-foreground mb-4">{error || "NPC non trouve"}</p>
+          <p className="text-muted-foreground mb-4">{error || "Entree non trouvee"}</p>
           <Button variant="outline" onClick={() => navigate(-1)}>
             Retour
           </Button>
@@ -91,7 +82,6 @@ export function NPCPage() {
 
   return (
     <div className={hasSearchContext ? "max-w-3xl" : "max-w-3xl mx-auto"}>
-      {/* Bouton retour */}
       <div className="mb-4">
         <Button
           variant="ghost"
@@ -111,7 +101,7 @@ export function NPCPage() {
           exit={{ opacity: 0, x: -10 }}
           transition={{ ease: "easeInOut", duration: 0.15 }}
         >
-          <NPCContent npc={npc} />
+          <CompendiumContent entry={entry} />
         </motion.div>
       </AnimatePresence>
     </div>

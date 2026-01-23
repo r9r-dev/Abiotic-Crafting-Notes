@@ -26,7 +26,9 @@ from app.models import (
     Bench, BenchUpgrade, Recipe, RecipeIngredient, RecipeSubstitute, RecipeSubstituteItem,
     Salvage, SalvageDrop, NPC, NpcLootTable, Plant, Projectile,
     ItemUpgrade, ItemUpgradeIngredient,
-    Buff
+    Buff,
+    CompendiumEntry, CompendiumSection, CompendiumRecipeUnlock,
+    CompendiumCategory, CompendiumUnlockType,
 )
 
 
@@ -928,6 +930,167 @@ class DataImporter:
         print(f"  {ingredient_count} ingrédients d'amélioration importés")
         return upgrade_count
 
+    def _parse_compendium_category(self, tags: list[str]) -> CompendiumCategory:
+        """Détermine la catégorie du Compendium à partir des tags."""
+        for tag in tags:
+            if "Entity" in tag:
+                return CompendiumCategory.ENTITY
+            elif "IS" in tag:
+                return CompendiumCategory.IS
+            elif "People" in tag:
+                return CompendiumCategory.PEOPLE
+            elif "Location" in tag:
+                return CompendiumCategory.LOCATION
+            elif "Theories" in tag:
+                return CompendiumCategory.THEORIES
+        return CompendiumCategory.IS  # Default
+
+    def _parse_unlock_type(self, unlock_str: str) -> CompendiumUnlockType:
+        """Parse le type de déblocage."""
+        if "Email" in unlock_str:
+            return CompendiumUnlockType.EMAIL
+        elif "NarrativeNPC" in unlock_str:
+            return CompendiumUnlockType.NARRATIVE_NPC
+        return CompendiumUnlockType.EXPLORATION
+
+    def import_compendium(self) -> int:
+        """Importe les entrées du Compendium."""
+        print("\nImport du Compendium...")
+
+        filepath = DATATABLES_DIR / "DT_Compendium.json"
+        data = self.load_json_file(filepath)
+        rows = self.extract_rows(data)
+
+        entry_count = 0
+        section_count = 0
+        recipe_unlock_count = 0
+
+        for row_id, row_data in rows.items():
+            # Récupérer les infos de base
+            title_data = row_data.get("Title", {})
+            title = title_data.get("SourceString") or title_data.get("LocalizedString")
+
+            subtitle_data = row_data.get("Subtitle", {})
+            subtitle = subtitle_data.get("SourceString") or subtitle_data.get("LocalizedString")
+
+            # Traductions FR si disponibles
+            title_fr = self.get_translation("DT_Compendium", row_id, "Title")
+            subtitle_fr = self.get_translation("DT_Compendium", row_id, "Subtitle")
+            if title_fr:
+                title = title_fr
+            if subtitle_fr:
+                subtitle = subtitle_fr
+
+            # Catégorie
+            tags = row_data.get("Tags", [])
+            category = self._parse_compendium_category(tags)
+
+            # Lien NPC (optionnel)
+            npc_row = row_data.get("NPCRow", {})
+            npc_row_id = npc_row.get("RowName")
+            if npc_row_id == "None":
+                npc_row_id = None
+
+            # Image principale (première section)
+            sections = row_data.get("Sections", [])
+            image_path = None
+            if sections:
+                first_image = sections[0].get("OptionalSectionImage", {})
+                image_path = self.parse_icon_path(first_image)
+
+            # Kill requirement
+            has_kill = row_data.get("bHasKillRequirementSection", False)
+            kill_count = 0
+            kill_text = None
+            kill_image = None
+            if has_kill:
+                kill_section = row_data.get("KillRequirementSection", {})
+                kill_count = kill_section.get("RequiredCount", 0)
+                kill_text_data = kill_section.get("SectionText", {})
+                kill_text = kill_text_data.get("SourceString") or kill_text_data.get("LocalizedString")
+                # Traduction FR
+                kill_text_fr = self.get_translation("DT_Compendium", row_id, "KillRequirementSection_SectionText")
+                if kill_text_fr:
+                    kill_text = kill_text_fr
+                kill_image_data = kill_section.get("OptionalSectionImage", {})
+                kill_image = self.parse_icon_path(kill_image_data)
+
+            # Créer l'entrée
+            entry = CompendiumEntry(
+                row_id=row_id,
+                title=title,
+                subtitle=subtitle,
+                category=category,
+                image_path=image_path,
+                npc_row_id=npc_row_id,
+                has_kill_requirement=has_kill,
+                kill_required_count=kill_count,
+                kill_section_text=kill_text,
+                kill_section_image_path=kill_image,
+            )
+            self.session.add(entry)
+            self.session.flush()  # Pour obtenir l'ID
+
+            # Importer les sections
+            for idx, section_data in enumerate(sections):
+                unlock_type_str = section_data.get("UnlockRequirement", "")
+                unlock_type = self._parse_unlock_type(unlock_type_str)
+
+                text_data = section_data.get("SectionText", {})
+                text = text_data.get("SourceString") or text_data.get("LocalizedString")
+                # Traduction FR
+                text_fr = self.get_translation("DT_Compendium", row_id, f"Sections_Index{idx}_SectionText")
+                if text_fr:
+                    text = text_fr
+
+                image_data = section_data.get("OptionalSectionImage", {})
+                section_image = self.parse_icon_path(image_data)
+
+                section = CompendiumSection(
+                    entry_id=entry.id,
+                    position=idx,
+                    unlock_type=unlock_type,
+                    text=text or "",
+                    image_path=section_image,
+                )
+                self.session.add(section)
+                section_count += 1
+
+                # Recettes à débloquer de la section
+                recipes_to_unlock = section_data.get("RecipesToUnlock", [])
+                for recipe_ref in recipes_to_unlock:
+                    recipe_row_id = self.parse_data_table_ref(recipe_ref)
+                    if recipe_row_id:
+                        recipe_unlock = CompendiumRecipeUnlock(
+                            entry_id=entry.id,
+                            recipe_row_id=recipe_row_id,
+                            from_kill_section=False,
+                        )
+                        self.session.add(recipe_unlock)
+                        recipe_unlock_count += 1
+
+            # Recettes à débloquer du kill requirement
+            if has_kill:
+                kill_section = row_data.get("KillRequirementSection", {})
+                kill_recipes = kill_section.get("RecipesToUnlock", [])
+                for recipe_ref in kill_recipes:
+                    recipe_row_id = self.parse_data_table_ref(recipe_ref)
+                    if recipe_row_id:
+                        recipe_unlock = CompendiumRecipeUnlock(
+                            entry_id=entry.id,
+                            recipe_row_id=recipe_row_id,
+                            from_kill_section=True,
+                        )
+                        self.session.add(recipe_unlock)
+                        recipe_unlock_count += 1
+
+            entry_count += 1
+
+        print(f"  {entry_count} entrées importées")
+        print(f"  {section_count} sections importées")
+        print(f"  {recipe_unlock_count} recettes à débloquer importées")
+        return entry_count
+
     def run(self, reset: bool = False) -> None:
         """Exécute l'import complet."""
         print("=" * 60)
@@ -957,6 +1120,9 @@ class DataImporter:
             self.session.query(Plant).delete()
             self.session.query(Projectile).delete()
             self.session.query(Buff).delete()
+            self.session.query(CompendiumRecipeUnlock).delete()
+            self.session.query(CompendiumSection).delete()
+            self.session.query(CompendiumEntry).delete()
             self.session.commit()
             print("  Données supprimées")
 
@@ -974,6 +1140,7 @@ class DataImporter:
         self.import_plants()
         self.import_projectiles()
         self.import_buffs()
+        self.import_compendium()
 
         # Commit final
         self.session.commit()

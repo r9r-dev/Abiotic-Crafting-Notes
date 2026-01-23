@@ -58,6 +58,39 @@ def _parse_json_list(json_str: str | None) -> list[str]:
         return []
 
 
+def _parse_damage_tags(json_str: str | None) -> list[str]:
+    """Parse un GameplayTagQuery pour extraire les types de dégâts.
+
+    Format attendu:
+    {"TagDictionary": [{"TagName": "DamageType.Blunt"}, {"TagName": "DamageType.Fire"}], ...}
+
+    Retourne: ["Blunt", "Fire"]
+    """
+    if not json_str:
+        return []
+    try:
+        data = json.loads(json_str)
+        if not isinstance(data, dict):
+            return []
+
+        tag_dict = data.get("TagDictionary", [])
+        if not isinstance(tag_dict, list):
+            return []
+
+        damage_types = []
+        for tag in tag_dict:
+            if isinstance(tag, dict) and "TagName" in tag:
+                tag_name = tag["TagName"]
+                # Extraire le type après "DamageType."
+                if tag_name.startswith("DamageType."):
+                    damage_type = tag_name.replace("DamageType.", "")
+                    damage_types.append(damage_type)
+
+        return damage_types
+    except json.JSONDecodeError:
+        return []
+
+
 def _build_salvage_response(
     db: Session,
     salvage: Salvage,
@@ -213,7 +246,7 @@ def get_npc(row_id: str, db: Session = Depends(get_db)):
     ).filter(NPC.row_id == row_id).first()
 
     if not npc:
-        raise HTTPException(status_code=404, detail=f"NPC '{row_id}' non trouve")
+        raise HTTPException(status_code=404, detail=f"NPC '{row_id}' non trouvé")
 
     # Cache pour les items lies
     items_cache: dict = {}
@@ -273,8 +306,8 @@ def get_npc(row_id: str, db: Session = Depends(get_db)):
         is_hostile=npc.is_hostile,
         is_passive=npc.is_passive,
         aggro_range=npc.aggro_range,
-        damage_resistances=_parse_json_list(npc.damage_resistances),
-        damage_weaknesses=_parse_json_list(npc.damage_weaknesses),
+        damage_resistances=_parse_damage_tags(npc.damage_resistances),
+        damage_weaknesses=_parse_damage_tags(npc.damage_weaknesses),
         category=npc.category,
         spawn_weight=npc.spawn_weight,
         loot_tables=loot_tables_response,

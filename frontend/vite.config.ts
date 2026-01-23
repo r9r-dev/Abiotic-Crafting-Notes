@@ -27,6 +27,15 @@ export default defineConfig({
             next()
           }
         })
+        server.middlewares.use('/compendium', (req, res, next) => {
+          const iconPath = path.resolve(__dirname, '../data/GUI/Compendium/Entries', req.url!.slice(1) || '')
+          if (fs.existsSync(iconPath) && fs.statSync(iconPath).isFile()) {
+            res.setHeader('Content-Type', 'image/png')
+            fs.createReadStream(iconPath).pipe(res)
+          } else {
+            next()
+          }
+        })
       },
     },
   ],
