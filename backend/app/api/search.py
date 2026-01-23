@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, literal, union_all, case, cast, String
 
 from app.database import get_db
-from app.models import Item, NPC
+from app.models import Item, NPC, CompendiumEntry
 
 
 router = APIRouter(prefix="/search", tags=["search"])
@@ -26,7 +26,7 @@ def normalize_search_text(text: str) -> str:
 
 
 class UnifiedSearchResult(BaseModel):
-    """Resultat de recherche unifie (item ou NPC)."""
+    """Resultat de recherche unifie (item, NPC ou Compendium)."""
     type: str
     row_id: str
     name: Optional[str] = None
@@ -35,6 +35,9 @@ class UnifiedSearchResult(BaseModel):
     category: Optional[str] = None
     is_hostile: Optional[bool] = None
     is_passive: Optional[bool] = None
+    # Compendium specific
+    title: Optional[str] = None
+    subtitle: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -147,6 +150,8 @@ def unified_search(
         func.lower(cast(Item.category, String)).label('category'),
         literal(None).label('is_hostile'),
         literal(None).label('is_passive'),
+        literal(None).label('title'),
+        literal(None).label('subtitle'),
         item_relevance.label('relevance'),
     ).filter(
         item_relevance > 0
@@ -166,13 +171,36 @@ def unified_search(
         NPC.category.label('category'),
         NPC.is_hostile.label('is_hostile'),
         NPC.is_passive.label('is_passive'),
+        literal(None).label('title'),
+        literal(None).label('subtitle'),
         npc_relevance.label('relevance'),
     ).filter(
         npc_relevance > 0
     )
 
-    # UNION des deux requetes
-    combined = union_all(items_query, npcs_query).alias('combined')
+    # Sous-requete pour le Compendium
+    compendium_relevance = _build_relevance_score(
+        CompendiumEntry.title, CompendiumEntry.subtitle, CompendiumEntry.row_id, q
+    )
+
+    compendium_query = db.query(
+        literal('compendium').label('type'),
+        CompendiumEntry.row_id.label('row_id'),
+        literal(None).label('name'),
+        literal(None).label('description'),
+        CompendiumEntry.image_path.label('icon_path'),
+        cast(CompendiumEntry.category, String).label('category'),
+        literal(None).label('is_hostile'),
+        literal(None).label('is_passive'),
+        CompendiumEntry.title.label('title'),
+        CompendiumEntry.subtitle.label('subtitle'),
+        compendium_relevance.label('relevance'),
+    ).filter(
+        compendium_relevance > 0
+    )
+
+    # UNION des trois requetes
+    combined = union_all(items_query, npcs_query, compendium_query).alias('combined')
 
     # Requete finale triee par pertinence
     results = db.query(combined).order_by(
@@ -193,6 +221,8 @@ def unified_search(
                 category=r.category,
                 is_hostile=r.is_hostile,
                 is_passive=r.is_passive,
+                title=r.title,
+                subtitle=r.subtitle,
             )
             for r in results
         ],

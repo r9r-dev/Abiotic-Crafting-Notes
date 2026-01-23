@@ -26,14 +26,41 @@ const categoryLabels: Record<string, string> = {
   robot: "Robot",
   creature: "Creature",
   mutant: "Mutant",
+  // Compendium categories
+  ENTITY: "Entite",
+  IS: "Item Special",
+  PEOPLE: "Personnage",
+  LOCATION: "Lieu",
+  THEORIES: "Theorie",
 };
 
 function SearchResult({ item, query }: { item: UnifiedSearchResult; query: string }) {
   const isNPC = item.type === "npc";
-  const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
-  const linkPath = isNPC
-    ? `/npc/${item.row_id}?q=${encodeURIComponent(query)}`
-    : `/item/${item.row_id}?q=${encodeURIComponent(query)}`;
+  const isCompendium = item.type === "compendium";
+
+  // Determiner l'URL de l'icone selon le type
+  let iconUrl: string | null = null;
+  if (item.icon_path) {
+    if (isCompendium) {
+      iconUrl = `/compendium/${item.icon_path}`;
+    } else {
+      iconUrl = `/icons/${item.icon_path}`;
+    }
+  }
+
+  // Determiner le chemin du lien
+  let linkPath: string;
+  if (isNPC) {
+    linkPath = `/npc/${item.row_id}?q=${encodeURIComponent(query)}`;
+  } else if (isCompendium) {
+    linkPath = `/compendium/${item.row_id}?q=${encodeURIComponent(query)}`;
+  } else {
+    linkPath = `/item/${item.row_id}?q=${encodeURIComponent(query)}`;
+  }
+
+  // Determiner le nom et la description a afficher
+  const displayName = isCompendium ? (item.title || item.row_id) : (item.name || item.row_id);
+  const displayDescription = isCompendium ? item.subtitle : item.description;
 
   return (
     <Link
@@ -44,13 +71,15 @@ function SearchResult({ item, query }: { item: UnifiedSearchResult; query: strin
         {iconUrl ? (
           <img
             src={iconUrl}
-            alt={item.name || item.row_id}
+            alt={displayName}
             className="w-10 h-10 object-contain"
           />
         ) : isNPC ? (
           <span className="text-xl text-muted-foreground">
             {item.is_hostile ? "!" : item.is_passive ? "~" : "?"}
           </span>
+        ) : isCompendium ? (
+          <span className="text-xl text-muted-foreground">C</span>
         ) : (
           <span className="text-xl text-muted-foreground">?</span>
         )}
@@ -58,11 +87,16 @@ function SearchResult({ item, query }: { item: UnifiedSearchResult; query: strin
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium truncate">
-            {item.name || item.row_id}
+            {displayName}
           </span>
           {isNPC && (
             <Badge variant="secondary" className="text-xs flex-shrink-0">
               NPC
+            </Badge>
+          )}
+          {isCompendium && (
+            <Badge variant="secondary" className="text-xs flex-shrink-0">
+              Compendium
             </Badge>
           )}
           {item.category && (
@@ -76,9 +110,9 @@ function SearchResult({ item, query }: { item: UnifiedSearchResult; query: strin
             </Badge>
           )}
         </div>
-        {item.description && (
+        {displayDescription && (
           <p className="text-sm text-muted-foreground truncate">
-            {item.description}
+            {displayDescription}
           </p>
         )}
       </div>

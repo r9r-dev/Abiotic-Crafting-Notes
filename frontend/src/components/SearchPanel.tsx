@@ -22,6 +22,12 @@ const categoryLabels: Record<string, string> = {
   robot: "Robot",
   creature: "Creature",
   mutant: "Mutant",
+  // Compendium categories
+  ENTITY: "Entite",
+  IS: "Item Special",
+  PEOPLE: "Personnage",
+  LOCATION: "Lieu",
+  THEORIES: "Theorie",
 };
 
 interface SearchResultItemProps {
@@ -33,10 +39,31 @@ interface SearchResultItemProps {
 
 function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemProps) {
   const isNPC = item.type === "npc";
-  const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
-  const linkPath = isNPC
-    ? `/npc/${item.row_id}?q=${encodeURIComponent(query)}`
-    : `/item/${item.row_id}?q=${encodeURIComponent(query)}`;
+  const isCompendium = item.type === "compendium";
+
+  // Determiner l'URL de l'icone selon le type
+  let iconUrl: string | null = null;
+  if (item.icon_path) {
+    if (isCompendium) {
+      iconUrl = `/compendium/${item.icon_path}`;
+    } else {
+      iconUrl = `/icons/${item.icon_path}`;
+    }
+  }
+
+  // Determiner le chemin du lien
+  let linkPath: string;
+  if (isNPC) {
+    linkPath = `/npc/${item.row_id}?q=${encodeURIComponent(query)}`;
+  } else if (isCompendium) {
+    linkPath = `/compendium/${item.row_id}?q=${encodeURIComponent(query)}`;
+  } else {
+    linkPath = `/item/${item.row_id}?q=${encodeURIComponent(query)}`;
+  }
+
+  // Determiner le nom a afficher
+  const displayName = isCompendium ? (item.title || item.row_id) : (item.name || item.row_id);
+  const displaySubtitle = isCompendium ? item.subtitle : null;
 
   return (
     <Link
@@ -52,25 +79,37 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
         {iconUrl ? (
           <img
             src={iconUrl}
-            alt={item.name || item.row_id}
+            alt={displayName}
             className="w-8 h-8 object-contain"
           />
         ) : isNPC ? (
           <span className="text-sm text-muted-foreground">
             {item.is_hostile ? "!" : item.is_passive ? "~" : "?"}
           </span>
+        ) : isCompendium ? (
+          <span className="text-sm text-muted-foreground">C</span>
         ) : (
           <span className="text-sm text-muted-foreground">?</span>
         )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm truncate">
-          {item.name || item.row_id}
+          {displayName}
         </div>
+        {displaySubtitle && (
+          <div className="text-xs text-muted-foreground truncate">
+            {displaySubtitle}
+          </div>
+        )}
         <div className="flex gap-1 mt-0.5">
           {isNPC && (
             <Badge variant="secondary" className="text-xs">
               NPC
+            </Badge>
+          )}
+          {isCompendium && (
+            <Badge variant="secondary" className="text-xs">
+              Compendium
             </Badge>
           )}
           {item.category && (
