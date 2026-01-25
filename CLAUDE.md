@@ -191,6 +191,15 @@ Les images Compendium/NPC sont servies en WebP via `getCompendiumIconUrl(path, s
 | 64 | Thumbnails |
 | 48 | HomePage/SearchPanel (resultats recherche) |
 
+### Images Open Graph
+
+Les images OG sont generees dynamiquement par le backend (`/api/og/{type}/{row_id}`) :
+
+- **Police**: Poppins (fichiers TTF dans `backend/fonts/`)
+- **Couleurs**: Palette cyan du site (`#8DFFFB`, `#C5FFFE`, `#1ACDC6`)
+- **Style titre**: Gradient vertical cyan sur fond sombre
+- **Dimensions**: 1200x630px (standard OG)
+
 ### Regeneration des WebP
 
 ```bash
