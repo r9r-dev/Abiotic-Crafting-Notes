@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import type { NpcConversation } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Store, UserCircle } from "lucide-react";
+import { getCompendiumIconUrl } from "@/lib/icons";
 
 interface DialogueHeaderProps {
   conversation: NpcConversation;
@@ -34,7 +35,7 @@ export function DialogueHeader({ conversation }: DialogueHeaderProps) {
       {conversation.npc?.icon_path && (
         <div className="flex-shrink-0 w-24 h-24 md:w-32 md:h-32 bg-muted rounded-lg overflow-hidden border flex items-center justify-center">
           <img
-            src={`/npc-icons/${conversation.npc.icon_path}`}
+            src={getCompendiumIconUrl(conversation.npc.icon_path, 128) || ""}
             alt={conversation.npc_name || conversation.row_id}
             className="w-full h-full object-contain" loading="lazy"
           />

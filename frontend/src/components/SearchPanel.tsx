@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { unifiedSearch } from "@/services/api";
-import { getIconUrl } from "@/lib/icons";
+import { getIconUrl, getCompendiumIconUrl } from "@/lib/icons";
 import type { UnifiedSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
@@ -43,11 +43,11 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
   const isCompendium = item.type === "compendium";
 
   // Determiner l'URL de l'icone selon le type
-  // SearchPanel displays at 32x32
+  // SearchPanel displays at 32x32 (use 48 for Compendium as closest available size)
   let iconUrl: string | null = null;
   if (item.icon_path) {
     if (isCompendium) {
-      iconUrl = `/compendium/${item.icon_path}`;
+      iconUrl = getCompendiumIconUrl(item.icon_path, 48);
     } else {
       iconUrl = getIconUrl(item.icon_path, 32);
     }

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { NPC } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { getCompendiumIconUrl } from "@/lib/icons";
 
 interface NPCHeaderProps {
   npc: NPC;
@@ -16,7 +17,8 @@ const categoryLabels: Record<string, string> = {
 
 export function NPCHeader({ npc }: NPCHeaderProps) {
   const navigate = useNavigate();
-  const iconUrl = npc.icon_path ? `/npc-icons/${npc.icon_path}` : null;
+  // lg:w-80 = 320px max
+  const iconUrl = getCompendiumIconUrl(npc.icon_path, 320);
 
   const handleCategoryClick = () => {
     if (npc.category) {

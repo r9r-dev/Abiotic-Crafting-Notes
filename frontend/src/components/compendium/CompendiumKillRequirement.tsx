@@ -1,6 +1,7 @@
 import type { CompendiumEntry } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getCompendiumIconUrl } from "@/lib/icons";
 
 interface CompendiumKillRequirementProps {
   entry: CompendiumEntry;
@@ -28,7 +29,7 @@ export function CompendiumKillRequirement({ entry }: CompendiumKillRequirementPr
         {entry.kill_section_image_path && (
           <div className="mb-4">
             <img
-              src={`/compendium/${entry.kill_section_image_path}`}
+              src={getCompendiumIconUrl(entry.kill_section_image_path, 512) || ""}
               alt=""
               className="max-w-full h-auto rounded-lg border" loading="lazy"
             />

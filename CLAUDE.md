@@ -34,7 +34,7 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 │   │   ├── services/           # api.ts, analytics.ts, fingerprint.ts
 │   │   ├── types/              # Types complets (~280 lignes)
 │   │   ├── hooks/              # useItemLink
-│   │   └── lib/                # utils, enumLabels, icons (getIconUrl)
+│   │   └── lib/                # utils, enumLabels, icons (getIconUrl, getCompendiumIconUrl)
 │   ├── Dockerfile              # Multi-stage Bun + Nginx
 │   └── nginx.conf
 ├── backend/
@@ -57,10 +57,12 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 ├── data/
 │   ├── icons/                  # Icones PNG originales (1309 fichiers)
 │   ├── icons-webp/             # Icones WebP optimisees (10472 fichiers, genere)
-│   └── GUI/                    # Images NPC, Compendium, traductions
+│   ├── compendium-webp/        # Images Compendium WebP optimisees (1008 fichiers, genere)
+│   └── GUI/                    # Images NPC, Compendium originales, traductions
 ├── scripts/
 │   ├── extract_dialogue_mapping.py
-│   └── convert_icons_webp_magick.sh  # Conversion PNG→WebP multi-tailles
+│   ├── convert_icons_webp_magick.sh      # Conversion icones PNG→WebP
+│   └── convert_compendium_webp.sh        # Conversion Compendium PNG→WebP
 ├── .github/workflows/          # CI/CD docker.yml
 └── docker-compose.yml
 ```
@@ -148,12 +150,15 @@ Page accessible via `/admin`, protégée par mot de passe (défaut: "admin", con
 |-------|--------|-------------|
 | /icons-webp/ | data/icons-webp/ | Icones WebP optimisees (8 tailles par icone) |
 | /icons/ | data/icons/ | Icones PNG originales (fallback) |
-| /npc-icons/ | data/GUI/Compendium/Entries/ | Images NPCs du Compendium |
-| /compendium/ | data/GUI/Compendium/Entries/ | Images Compendium (167) |
+| /compendium-webp/ | data/compendium-webp/ | Images Compendium WebP optimisees (6 tailles) |
+| /compendium/ | data/GUI/Compendium/Entries/ | Images Compendium PNG originales (fallback) |
+| /npc-icons/ | data/GUI/Compendium/Entries/ | Images NPCs PNG (fallback legacy) |
 
 ## Optimisation des images
 
-Les icones sont servies en WebP avec tailles pixel-perfect via `getIconUrl(path, size)` :
+### Icones Items (`getIconUrl`)
+
+Les icones items sont servies en WebP avec tailles pixel-perfect via `getIconUrl(path, size)` :
 
 | Taille | Utilisation |
 |--------|-------------|
@@ -165,7 +170,25 @@ Les icones sont servies en WebP avec tailles pixel-perfect via `getIconUrl(path,
 | 24 | ItemRecipes, ItemSalvage, NPCLootTables |
 | 20 | WeaponStats |
 
-Pour regenerer les WebP : `./scripts/convert_icons_webp_magick.sh`
+### Images Compendium (`getCompendiumIconUrl`)
+
+Les images Compendium/NPC sont servies en WebP via `getCompendiumIconUrl(path, size)` :
+
+| Taille | Utilisation |
+|--------|-------------|
+| 512 | CompendiumSections (pleine largeur) |
+| 320 | CompendiumHeader, NPCHeader (lg:w-80) |
+| 256 | CompendiumHeader, NPCHeader (md:w-64) |
+| 128 | DialogueHeader |
+| 64 | Thumbnails |
+| 48 | HomePage/SearchPanel (resultats recherche) |
+
+### Regeneration des WebP
+
+```bash
+./scripts/convert_icons_webp_magick.sh    # Icones items (1309 PNG → 10472 WebP)
+./scripts/convert_compendium_webp.sh      # Compendium (168 PNG → 1008 WebP)
+```
 
 ## Developpement local
 

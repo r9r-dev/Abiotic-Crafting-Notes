@@ -10,7 +10,7 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { GalleryView } from "@/components/gallery";
 import { ElectricStringsBackground } from "@/components/ElectricStringsBackground";
 import { SEO } from "@/components/SEO";
-import { getIconUrl } from "@/lib/icons";
+import { getIconUrl, getCompendiumIconUrl } from "@/lib/icons";
 import type { UnifiedSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
@@ -52,11 +52,11 @@ function SearchResult({
   const isCompendium = item.type === "compendium";
 
   // Determiner l'URL de l'icone selon le type
-  // HomePage displays at 40x40
+  // HomePage displays at 40x40 (use 48 for Compendium as closest available size)
   let iconUrl: string | null = null;
   if (item.icon_path) {
     if (isCompendium) {
-      iconUrl = `/compendium/${item.icon_path}`;
+      iconUrl = getCompendiumIconUrl(item.icon_path, 48);
     } else {
       iconUrl = getIconUrl(item.icon_path, 40);
     }

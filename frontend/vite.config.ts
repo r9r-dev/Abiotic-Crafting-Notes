@@ -29,6 +29,17 @@ export default defineConfig({
             next()
           }
         })
+        // Serve optimized WebP Compendium images
+        server.middlewares.use('/compendium-webp', (req, res, next) => {
+          const imagePath = path.resolve(__dirname, '../data/compendium-webp', req.url!.slice(1) || '')
+          if (fs.existsSync(imagePath) && fs.statSync(imagePath).isFile()) {
+            res.setHeader('Content-Type', 'image/webp')
+            fs.createReadStream(imagePath).pipe(res)
+          } else {
+            next()
+          }
+        })
+        // Serve NPC icons (fallback PNG)
         server.middlewares.use('/npc-icons', (req, res, next) => {
           const iconPath = path.resolve(__dirname, '../data/GUI/Compendium/Entries', req.url!.slice(1) || '')
           if (fs.existsSync(iconPath) && fs.statSync(iconPath).isFile()) {
@@ -38,6 +49,7 @@ export default defineConfig({
             next()
           }
         })
+        // Serve Compendium images (fallback PNG)
         server.middlewares.use('/compendium', (req, res, next) => {
           const iconPath = path.resolve(__dirname, '../data/GUI/Compendium/Entries', req.url!.slice(1) || '')
           if (fs.existsSync(iconPath) && fs.statSync(iconPath).isFile()) {

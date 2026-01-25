@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { CompendiumEntry } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { getCompendiumIconUrl } from "@/lib/icons";
 
 interface CompendiumHeaderProps {
   entry: CompendiumEntry;
@@ -24,7 +25,8 @@ const categoryColors: Record<string, string> = {
 
 export function CompendiumHeader({ entry }: CompendiumHeaderProps) {
   const navigate = useNavigate();
-  const imageUrl = entry.image_path ? `/compendium/${entry.image_path}` : null;
+  // lg:w-80 = 320px max
+  const imageUrl = getCompendiumIconUrl(entry.image_path, 320);
 
   const handleCategoryClick = () => {
     navigate(`/compendium?category=${encodeURIComponent(entry.category)}`);

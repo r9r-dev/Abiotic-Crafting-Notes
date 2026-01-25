@@ -1,6 +1,7 @@
 import type { CompendiumSection } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getCompendiumIconUrl } from "@/lib/icons";
 
 interface CompendiumSectionsProps {
   sections: CompendiumSection[];
@@ -46,7 +47,7 @@ export function CompendiumSections({ sections }: CompendiumSectionsProps) {
             {section.image_path && index > 0 && (
               <div className="mb-4">
                 <img
-                  src={`/compendium/${section.image_path}`}
+                  src={getCompendiumIconUrl(section.image_path, 512) || ""}
                   alt=""
                   className="max-w-full h-auto rounded-lg border" loading="lazy"
                 />
