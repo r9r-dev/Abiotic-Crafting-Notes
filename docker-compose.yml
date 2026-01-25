@@ -19,11 +19,8 @@ services:
 
   rendertron:
     container_name: rendertron
-    image: ghcr.io/nickvdyck/rendertron:3.1.0
+    image: dockette/rendertron:latest
     restart: unless-stopped
-    environment:
-      - RENDERTRON_CACHE_MAX_ENTRIES=100
-      - RENDERTRON_TIMEOUT=10000
     networks:
       - cadence
     logging:
