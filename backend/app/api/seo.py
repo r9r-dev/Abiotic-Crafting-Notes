@@ -155,18 +155,24 @@ def draw_gradient_text(img, draw, text: str, position: tuple, font, colors: list
     """Draw text with vertical gradient effect (like the site's abiotic-title)."""
     from PIL import Image, ImageDraw
 
-    # Get text dimensions
+    # Get text bounding box - bbox returns (left, top, right, bottom)
     bbox = draw.textbbox((0, 0), text, font=font)
+    # The bbox may have offsets (text doesn't start at 0,0)
+    offset_x = bbox[0]
+    offset_y = bbox[1]
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
 
+    if text_width <= 0 or text_height <= 0:
+        return
+
     # Create a temporary image for the gradient
-    gradient = Image.new("RGB", (text_width, text_height), BG_COLOR)
+    gradient = Image.new("RGB", (text_width, text_height))
     gradient_draw = ImageDraw.Draw(gradient)
 
-    # Create vertical gradient
+    # Create vertical gradient using rectangles (faster than putpixel)
     for y in range(text_height):
-        ratio = y / text_height
+        ratio = y / max(text_height - 1, 1)
         if ratio < 0.5:
             # Top half: colors[0] to colors[1]
             r = ratio * 2
@@ -175,12 +181,13 @@ def draw_gradient_text(img, draw, text: str, position: tuple, font, colors: list
             # Bottom half: colors[1] to colors[2]
             r = (ratio - 0.5) * 2
             color = tuple(int(colors[1][i] + (colors[2][i] - colors[1][i]) * r) for i in range(3))
-        gradient_draw.line([(0, y), (text_width, y)], fill=color)
+        gradient_draw.rectangle([(0, y), (text_width - 1, y)], fill=color)
 
-    # Create mask from text
+    # Create mask from text - account for bbox offset
     mask = Image.new("L", (text_width, text_height), 0)
     mask_draw = ImageDraw.Draw(mask)
-    mask_draw.text((0, 0), text, fill=255, font=font)
+    # Draw text at negative offset to align with (0,0) of the mask
+    mask_draw.text((-offset_x, -offset_y), text, fill=255, font=font)
 
     # Paste gradient through mask
     x, y = position
