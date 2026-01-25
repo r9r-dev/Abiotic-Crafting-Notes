@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import type { Item } from "@/types";
 import { getItem, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import {
   ItemHeader,
   ItemBaseStats,
@@ -24,6 +25,13 @@ import { ItemUpgrades } from "@/components/item/ItemUpgrades";
 function ItemContent({ item }: { item: Item }) {
   return (
     <div className="space-y-6">
+      <SEO
+        title={item.name}
+        description={item.description || `Informations complètes sur ${item.name} dans Abiotic Factor : recettes, statistiques, améliorations et plus.`}
+        path={`/item/${item.row_id}`}
+        type="item"
+        rowId={item.row_id}
+      />
       <ItemHeader item={item} />
       <ItemBaseStats item={item} />
       {item.weapon && <WeaponStats weapon={item.weapon} />}

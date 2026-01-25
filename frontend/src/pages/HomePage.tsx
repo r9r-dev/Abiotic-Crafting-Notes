@@ -9,15 +9,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { GalleryView } from "@/components/gallery";
 import { ElectricStringsBackground } from "@/components/ElectricStringsBackground";
+import { SEO } from "@/components/SEO";
 import type { UnifiedSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
   weapon: "Arme",
-  equipment: "Equipement",
+  equipment: "Équipement",
   consumable: "Consommable",
-  deployable: "Deployable",
-  deployable_small: "Petit deployable",
-  crafting_bench: "Etabli",
+  deployable: "Déployable",
+  deployable_small: "Petit déployable",
+  crafting_bench: "Établi",
   pickup: "Ramassable",
   plant: "Plante",
   pet: "Familier",
@@ -25,14 +26,14 @@ const categoryLabels: Record<string, string> = {
   alien: "Alien",
   human: "Humain",
   robot: "Robot",
-  creature: "Creature",
+  creature: "Créature",
   mutant: "Mutant",
   // Compendium categories
-  ENTITY: "Entite",
-  IS: "Item Special",
+  ENTITY: "Entité",
+  IS: "Item Spécial",
   PEOPLE: "Personnage",
   LOCATION: "Lieu",
-  THEORIES: "Theorie",
+  THEORIES: "Théorie",
 };
 
 function SearchResult({
@@ -139,20 +140,27 @@ export function HomePage() {
   // Si on est en vue galerie, afficher la galerie
   if (isGalleryView) {
     return (
-      <div className="px-4 pb-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="pt-8 pb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Galerie</h1>
-            <Button variant="outline" asChild>
-              <Link to="/">
-                <Search className="h-4 w-4 mr-2" />
-                Recherche
-              </Link>
-            </Button>
+      <>
+        <SEO
+          title="Galerie"
+          description="Parcourez tous les items, NPCs et entrées du Compendium d'Abiotic Factor en mode galerie."
+          path="/?view=gallery"
+        />
+        <div className="px-4 pb-8">
+          <div className="max-w-5xl mx-auto">
+            <div className="pt-8 pb-6 flex items-center justify-between">
+              <h1 className="text-2xl font-bold">Galerie</h1>
+              <Button variant="outline" asChild>
+                <Link to="/">
+                  <Search className="h-4 w-4 mr-2" />
+                  Recherche
+                </Link>
+              </Button>
+            </div>
+            <GalleryView />
           </div>
-          <GalleryView />
         </div>
-      </div>
+      </>
     );
   }
 
@@ -216,6 +224,11 @@ function SearchView() {
 
   return (
     <ElectricStringsBackground speed={1} className="h-screen overflow-hidden">
+      <SEO
+        title="Recherche"
+        description="Base de données complète pour Abiotic Factor. Recherchez des items, recettes, NPCs, crafting et plus encore. Guide ultime pour survivre dans le laboratoire."
+        path="/"
+      />
       <div className="flex flex-col items-center px-4 h-screen">
         {/* Espaceur flexible pour centrer verticalement */}
         <div className={`transition-all duration-300 ${showResults ? "flex-none" : "flex-1"}`} />

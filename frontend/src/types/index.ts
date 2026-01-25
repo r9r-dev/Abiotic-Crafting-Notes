@@ -80,7 +80,7 @@ export interface Buff {
   description: string | null;
 }
 
-// Noeud dans l'arbre d'ameliorations
+// Noeud dans l'arbre d'améliorations
 export interface UpgradeTreeNode {
   row_id: string;
   name: string | null;
@@ -192,7 +192,7 @@ export interface Salvage {
   drops: SalvageDrop[];
 }
 
-// Item Upgrades (ameliorations)
+// Item Upgrades (améliorations)
 export interface ItemUpgradeIngredient {
   item_row_id: string;
   quantity: number;
@@ -316,7 +316,7 @@ export interface Item {
   used_in_upgrades: UsedInUpgrade[];
   upgraded_from: UpgradedFrom[];
   dropped_by: DroppedByNPC[];
-  // Chaines completes de transformation
+  // Chaines complètes de transformation
   upgrade_tree: UpgradeTreeNode | null;
   cooking_chain: LinkedItem[];
 }

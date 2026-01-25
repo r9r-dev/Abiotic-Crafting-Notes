@@ -132,7 +132,7 @@ def main():
     print("\nExtraction du mapping...")
     mapping = extract_mapping(french_translations)
 
-    print(f"\n{len(mapping)} entrees extraites")
+    print(f"\n{len(mapping)} entrées extraites")
 
     # Sauvegarder
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:

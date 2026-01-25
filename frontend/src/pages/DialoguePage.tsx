@@ -4,11 +4,19 @@ import { motion, AnimatePresence } from "motion/react";
 import type { NpcConversation } from "@/types";
 import { getDialogue, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { DialogueHeader, DialogueLines } from "@/components/dialogue";
 
 function DialogueContent({ conversation }: { conversation: NpcConversation }) {
   return (
     <div className="space-y-6">
+      <SEO
+        title={conversation.name}
+        description={`Dialogue complet : ${conversation.name}. Tous les dialogues et choix de conversation dans Abiotic Factor.`}
+        path={`/dialogue/${conversation.row_id}`}
+        type="dialogue"
+        rowId={conversation.row_id}
+      />
       <DialogueHeader conversation={conversation} />
       <DialogueLines linesByType={conversation.lines_by_type} />
     </div>
@@ -40,7 +48,7 @@ export function DialoguePage() {
       .then(setConversation)
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) {
-          setError(`Conversation "${rowId}" non trouvee`);
+          setError(`Conversation "${rowId}" non trouvée`);
         } else {
           setError("Erreur lors du chargement de la conversation");
         }

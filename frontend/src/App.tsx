@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation, useSearchParams, useParams } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
+import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { Search } from "lucide-react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
@@ -213,12 +214,14 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AnalyticsProvider>
-          <AppContent />
-        </AnalyticsProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AnalyticsProvider>
+            <AppContent />
+          </AnalyticsProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }

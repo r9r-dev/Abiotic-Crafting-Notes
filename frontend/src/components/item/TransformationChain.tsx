@@ -236,7 +236,7 @@ export function TransformationChain({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Arbre d'ameliorations */}
+        {/* Arbre d'améliorations */}
         {hasUpgradeTree && upgradeTree && (
           <TreeDisplay
             tree={upgradeTree}

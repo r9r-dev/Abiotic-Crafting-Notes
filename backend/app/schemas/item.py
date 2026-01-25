@@ -105,7 +105,7 @@ class BuffResponse(BaseModel):
 
 
 class UpgradeTreeNode(BaseModel):
-    """Noeud dans l'arbre d'ameliorations."""
+    """Noeud dans l'arbre d'améliorations."""
     row_id: str
     name: Optional[str] = None
     icon_path: Optional[str] = None
@@ -427,7 +427,7 @@ class ItemResponse(BaseModel):
     # Salvage (desassemblage)
     salvage: Optional[SalvageResponse] = None
 
-    # Ameliorations possibles
+    # améliorations possibles
     upgrades: List[ItemUpgradeResponse] = []
 
     # Relations inversees
@@ -436,9 +436,9 @@ class ItemResponse(BaseModel):
     upgraded_from: List[UpgradedFromResponse] = []
     dropped_by: List[DroppedByNPCResponse] = []  # NPCs qui peuvent drop cet item
 
-    # Chaines completes de transformation
-    upgrade_tree: Optional[UpgradeTreeNode] = None  # Arbre complet d'ameliorations
-    cooking_chain: List[LinkedItemResponse] = []  # Chaine complete de cuisson
+    # Chaines complètes de transformation
+    upgrade_tree: Optional[UpgradeTreeNode] = None  # Arbre complet d'améliorations
+    cooking_chain: List[LinkedItemResponse] = []  # Chaine complète de cuisson
 
     class Config:
         from_attributes = True

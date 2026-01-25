@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import type { NPC } from "@/types";
 import { getNPC, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import {
   NPCHeader,
   NPCCombatStats,
@@ -17,6 +18,13 @@ import { CompendiumLoreCard } from "@/components/compendium";
 function NPCContent({ npc }: { npc: NPC }) {
   return (
     <div className="space-y-6">
+      <SEO
+        title={npc.name}
+        description={`Fiche complète de ${npc.name} dans Abiotic Factor : statistiques de combat, résistances, comportement et butin.`}
+        path={`/npc/${npc.row_id}`}
+        type="npc"
+        rowId={npc.row_id}
+      />
       <NPCHeader npc={npc} />
       <CompendiumLoreCard npcRowId={npc.row_id} />
       <NPCDialogues npcRowId={npc.row_id} />

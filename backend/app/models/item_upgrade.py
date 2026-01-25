@@ -4,7 +4,7 @@ from app.database import Base
 
 
 class ItemUpgrade(Base):
-    """Ameliorations d'items (ex: Tournevis -> Chignole)."""
+    """améliorations d'items (ex: Tournevis -> Chignole)."""
     __tablename__ = "item_upgrades"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

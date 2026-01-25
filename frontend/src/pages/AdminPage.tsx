@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SEO } from "@/components/SEO";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { DashboardOverview } from "@/components/admin/DashboardOverview";
 import { SearchesChart } from "@/components/admin/SearchesChart";
@@ -57,6 +58,12 @@ export function AdminPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
+      <SEO
+        title="Administration"
+        description="Dashboard d'administration pour Abiotic Science."
+        path="/admin"
+        noIndex={true}
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
         <button

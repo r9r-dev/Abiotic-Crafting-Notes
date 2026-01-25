@@ -1,0 +1,16 @@
+# Abiotic Factor Database - robots.txt
+# https://abioticscience.fr
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://abioticscience.fr/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin
+
+# Allow all crawlers to access static assets
+Allow: /icons/
+Allow: /npc-icons/
+Allow: /compendium/

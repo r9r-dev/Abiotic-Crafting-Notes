@@ -110,7 +110,7 @@ class NPCResponse(BaseModel):
     is_passive: bool = False
     aggro_range: float = 0.0
 
-    # Resistances/Faiblesses (listes de strings)
+    # résistances/Faiblesses (listes de strings)
     damage_resistances: List[str] = []
     damage_weaknesses: List[str] = []
 

@@ -118,8 +118,8 @@ def search_dialogues(
 
 @router.get("/list", response_model=DialogueListResponse)
 def list_dialogues(
-    skip: int = Query(0, ge=0, description="Nombre d'entrees a sauter"),
-    limit: int = Query(50, ge=1, le=100, description="Nombre d'entrees a retourner"),
+    skip: int = Query(0, ge=0, description="Nombre d'entrées a sauter"),
+    limit: int = Query(50, ge=1, le=100, description="Nombre d'entrées a retourner"),
     db: Session = Depends(get_db),
 ):
     """
@@ -208,7 +208,7 @@ def get_dialogue_by_name(
 ):
     """
     Recupere toutes les conversations par nom de personnage (recherche partielle).
-    Utile pour lier les entrees Compendium aux dialogues.
+    Utile pour lier les entrées Compendium aux dialogues.
     """
     # Normaliser le nom pour la recherche
     search_name = name.lower().strip()

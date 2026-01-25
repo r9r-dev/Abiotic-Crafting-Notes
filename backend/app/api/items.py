@@ -167,7 +167,7 @@ def _get_transformation_sources(
 
 
 def _get_full_upgrade_tree(db: Session, row_id: str) -> UpgradeTreeNode | None:
-    """Construit l'arbre complet d'ameliorations contenant l'item."""
+    """Construit l'arbre complet d'améliorations contenant l'item."""
 
     # 1. Charger TOUTES les relations d'upgrade en memoire
     all_upgrades = db.query(
@@ -243,7 +243,7 @@ def _get_full_upgrade_tree(db: Session, row_id: str) -> UpgradeTreeNode | None:
 
 
 def _get_full_cooking_chain(db: Session, row_id: str) -> list[LinkedItemResponse]:
-    """Recupere la chaine complete de cuisson pour un item.
+    """Recupere la chaine complète de cuisson pour un item.
 
     Remonte jusqu'a l'item non cuit puis descend jusqu'a l'item brule/pourri.
     """
@@ -1014,7 +1014,7 @@ def get_item(row_id: str, db: Session = Depends(get_db)):
     upgraded_from_response = _build_upgraded_from_response(db, row_id, items_cache)
     dropped_by_response = _build_dropped_by_response(db, row_id)
 
-    # Charger les chaines completes de transformation
+    # Charger les chaines complètes de transformation
     upgrade_tree = _get_full_upgrade_tree(db, row_id)
     cooking_chain = _get_full_cooking_chain(db, row_id)
 

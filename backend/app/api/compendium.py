@@ -47,7 +47,7 @@ def search_compendium(
     db: Session = Depends(get_db),
 ):
     """
-    Recherche d'entrees du Compendium par titre ou sous-titre.
+    Recherche d'entrées du Compendium par titre ou sous-titre.
     Retourne jusqu'a 20 resultats.
     """
     search_normalized = f"%{normalize_search_text(q.lower())}%"
@@ -107,7 +107,7 @@ def list_compendium(
     db: Session = Depends(get_db),
 ):
     """
-    Liste les entrees du Compendium avec pagination.
+    Liste les entrées du Compendium avec pagination.
     """
     query = db.query(CompendiumEntry)
 
@@ -144,7 +144,7 @@ def list_compendium(
 @router.get("/categories")
 def get_categories(db: Session = Depends(get_db)):
     """
-    Retourne les categories disponibles avec leur nombre d'entrees.
+    Retourne les categories disponibles avec leur nombre d'entrées.
     """
     categories = {}
     for cat in CompendiumCategory:
@@ -199,7 +199,7 @@ def get_compendium_entry(
 
 
 def _build_compendium_response(db: Session, entry: CompendiumEntry) -> CompendiumResponse:
-    """Construit une reponse complete pour une entree du Compendium."""
+    """Construit une reponse complète pour une entree du Compendium."""
     # Charger le NPC lie si existe
     npc_link = None
     if entry.npc_row_id:

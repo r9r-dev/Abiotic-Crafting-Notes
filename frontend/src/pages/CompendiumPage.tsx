@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import type { CompendiumEntry } from "@/types";
 import { getCompendiumEntry, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import {
   CompendiumHeader,
   CompendiumSections,
@@ -17,6 +18,13 @@ function CompendiumContent({ entry }: { entry: CompendiumEntry }) {
 
   return (
     <div className="space-y-6">
+      <SEO
+        title={entry.title}
+        description={entry.subtitle || `Entrée du Compendium : ${entry.title}. Découvrez le lore et les informations cachées d'Abiotic Factor.`}
+        path={`/compendium/${entry.row_id}`}
+        type="compendium"
+        rowId={entry.row_id}
+      />
       <CompendiumHeader entry={entry} />
       <CompendiumSections sections={entry.sections} />
       {isPerson && entry.title && (
@@ -55,7 +63,7 @@ export function CompendiumPage() {
         if (err instanceof ApiError && err.status === 404) {
           setError(`Entree "${rowId}" non trouvee`);
         } else {
-          setError("Erreur lors du chargement de l'entree");
+          setError("Erreur lors du chargement de l'entrée");
         }
       })
       .finally(() => setLoading(false));
