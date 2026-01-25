@@ -2,12 +2,15 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and fonts
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    fonts-inter \
+    fontconfig \
+    && rm -rf /var/lib/apt/lists/* \
+    && fc-cache -f -v
 
 # Copy requirements and install dependencies
 COPY requirements.txt .
