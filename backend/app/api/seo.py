@@ -1,12 +1,13 @@
-"""SEO endpoints: sitemap.xml and OG image generation."""
+"""SEO endpoints: sitemap.xml, OG image generation, and SSR for crawlers."""
 
+import html
 import io
 import os
 from datetime import datetime
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, Response, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -15,6 +16,78 @@ from app.models import Item, NPC, CompendiumEntry, NpcConversation
 router = APIRouter(tags=["seo"])
 
 BASE_URL = "https://abioticscience.fr"
+
+
+def generate_ssr_html(
+    title: str,
+    description: str,
+    url: str,
+    og_image: str,
+    entity_type: Optional[str] = None,
+    structured_data: Optional[dict] = None,
+) -> str:
+    """Generate HTML with proper meta tags for crawlers."""
+    title_escaped = html.escape(title)
+    desc_escaped = html.escape(description[:200] if description else "")
+    url_escaped = html.escape(url)
+    og_image_escaped = html.escape(og_image)
+
+    structured_data_script = ""
+    if structured_data:
+        import json
+        structured_data_script = f'''
+    <script type="application/ld+json">
+    {json.dumps(structured_data, ensure_ascii=False, indent=2)}
+    </script>'''
+
+    return f'''<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0f14" />
+
+    <!-- SEO Meta Tags -->
+    <title>{title_escaped} - Abiotic Science</title>
+    <meta name="description" content="{desc_escaped}" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="{url_escaped}" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{url_escaped}" />
+    <meta property="og:title" content="{title_escaped}" />
+    <meta property="og:description" content="{desc_escaped}" />
+    <meta property="og:image" content="{og_image_escaped}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="Abiotic Science" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="{url_escaped}" />
+    <meta name="twitter:title" content="{title_escaped}" />
+    <meta name="twitter:description" content="{desc_escaped}" />
+    <meta name="twitter:image" content="{og_image_escaped}" />
+    {structured_data_script}
+    <style>
+      html, body {{ margin: 0; padding: 0; background-color: #0a0f14; color: #fff; font-family: system-ui, sans-serif; }}
+      .container {{ max-width: 800px; margin: 0 auto; padding: 2rem; text-align: center; }}
+      h1 {{ color: #22c55e; }}
+      a {{ color: #22c55e; }}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>{title_escaped}</h1>
+      <p>{desc_escaped}</p>
+      <p><a href="{url_escaped}">Voir sur Abiotic Science</a></p>
+    </div>
+  </body>
+</html>'''
 
 # Colors
 BG_COLOR = (10, 15, 20)  # #0a0f14
@@ -375,5 +448,90 @@ def generate_entity_og_image(
     return StreamingResponse(
         img_bytes,
         media_type="image/png",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+@router.get("/ssr/{entity_type}/{row_id}", response_class=HTMLResponse)
+def generate_ssr_page(
+    entity_type: Literal["item", "npc", "compendium", "dialogue"],
+    row_id: str,
+    db: Session = Depends(get_db),
+):
+    """Generate HTML page with proper meta tags for crawlers (Twitter, Facebook, etc.)."""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    structured_data: Optional[dict] = None
+
+    if entity_type == "item":
+        item = db.query(Item.name, Item.description, Item.category).filter(
+            Item.row_id == row_id
+        ).first()
+        if item:
+            name = item.name
+            description = item.description or f"Informations sur {item.name} dans Abiotic Factor"
+            category = item.category.value if item.category else "item"
+            structured_data = {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": name,
+                "description": description,
+                "category": category,
+                "image": f"{BASE_URL}/api/og-image/item/{row_id}",
+                "url": f"{BASE_URL}/item/{row_id}",
+            }
+    elif entity_type == "npc":
+        npc = db.query(NPC.name).filter(NPC.row_id == row_id).first()
+        if npc:
+            name = npc.name
+            description = f"Informations sur {npc.name}, un NPC dans Abiotic Factor"
+            category = "NPC"
+            structured_data = {
+                "@context": "https://schema.org",
+                "@type": "Thing",
+                "name": name,
+                "description": description,
+                "url": f"{BASE_URL}/npc/{row_id}",
+            }
+    elif entity_type == "compendium":
+        entry = db.query(CompendiumEntry.title, CompendiumEntry.category).filter(
+            CompendiumEntry.row_id == row_id
+        ).first()
+        if entry:
+            name = entry.title
+            description = f"Entrée du Compendium: {entry.title}"
+            category = entry.category or "Compendium"
+            structured_data = {
+                "@context": "https://schema.org",
+                "@type": "Article",
+                "headline": name,
+                "description": description,
+                "url": f"{BASE_URL}/compendium/{row_id}",
+            }
+    elif entity_type == "dialogue":
+        dialogue = db.query(NpcConversation.npc_name).filter(
+            NpcConversation.row_id == row_id
+        ).first()
+        if dialogue:
+            name = f"Dialogue: {dialogue.npc_name}"
+            description = f"Dialogue avec {dialogue.npc_name} dans Abiotic Factor"
+            category = "Dialogue"
+
+    if not name:
+        raise HTTPException(status_code=404, detail=f"{entity_type} '{row_id}' not found")
+
+    url = f"{BASE_URL}/{entity_type}/{row_id}"
+    og_image = f"{BASE_URL}/api/og-image/{entity_type}/{row_id}"
+
+    return HTMLResponse(
+        content=generate_ssr_html(
+            title=name,
+            description=description or "",
+            url=url,
+            og_image=og_image,
+            entity_type=entity_type,
+            structured_data=structured_data,
+        ),
         headers={"Cache-Control": "public, max-age=3600"},
     )
