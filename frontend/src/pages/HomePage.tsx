@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, LayoutGrid, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { unifiedSearch } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { GalleryView } from "@/components/gallery";
-import { ElectricStringsBackground } from "@/components/ElectricStringsBackground";
 import { SEO } from "@/components/SEO";
 import { getIconUrl, getCompendiumIconUrl } from "@/lib/icons";
 import type { UnifiedSearchResult } from "@/types";
+
+// Lazy load heavy components
+const GalleryView = lazy(() => import("@/components/gallery").then(m => ({ default: m.GalleryView })));
+const ElectricStringsBackground = lazy(() => import("@/components/ElectricStringsBackground").then(m => ({ default: m.ElectricStringsBackground })));
 
 const categoryLabels: Record<string, string> = {
   weapon: "Arme",
@@ -159,7 +161,9 @@ export function HomePage() {
                 </Link>
               </Button>
             </div>
-            <GalleryView />
+            <Suspense fallback={<div className="flex justify-center py-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+              <GalleryView />
+            </Suspense>
           </div>
         </div>
       </>
@@ -224,8 +228,13 @@ function SearchView() {
 
   const showResults = hasSearched || results.length > 0;
 
-  return (
-    <ElectricStringsBackground speed={1} className="h-screen overflow-hidden">
+  // Fallback simple pour le background pendant le lazy loading
+  const BackgroundFallback = ({ children }: { children: React.ReactNode }) => (
+    <div className="h-screen overflow-hidden bg-background">{children}</div>
+  );
+
+  const content = (
+    <>
       <SEO
         title="Recherche"
         description="Base de données complète pour Abiotic Factor. Recherchez des items, recettes, NPCs, crafting et plus encore. Guide ultime pour survivre dans le laboratoire."
@@ -315,6 +324,14 @@ function SearchView() {
           )}
         </div>
       </div>
-    </ElectricStringsBackground>
+    </>
+  );
+
+  return (
+    <Suspense fallback={<BackgroundFallback>{content}</BackgroundFallback>}>
+      <ElectricStringsBackground speed={1} className="h-screen overflow-hidden">
+        {content}
+      </ElectricStringsBackground>
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import fs from 'fs'
-import { visualizer } from 'rollup-plugin-visualizer'
+// import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
   plugins: [
@@ -87,6 +87,13 @@ export default defineConfig({
         })
       },
     },
+    // Bundle analyzer (uncomment for analysis)
+    // visualizer({
+    //   filename: 'stats.json',
+    //   template: 'raw-data',
+    //   gzipSize: true,
+    //   brotliSize: true,
+    // }),
   ],
   resolve: {
     alias: {
