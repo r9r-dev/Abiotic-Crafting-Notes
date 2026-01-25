@@ -88,8 +88,8 @@ def generate_ssr_html(
     <style>
       html, body {{ margin: 0; padding: 0; background-color: #0a0f14; color: #fff; font-family: system-ui, sans-serif; }}
       .container {{ max-width: 800px; margin: 0 auto; padding: 2rem; text-align: center; }}
-      h1 {{ color: #22c55e; }}
-      a {{ color: #22c55e; }}
+      h1 {{ color: #8DFFFB; }}
+      a {{ color: #8DFFFB; }}
       .loading {{ animation: pulse 1.5s ease-in-out infinite; }}
       @keyframes pulse {{ 0%, 100% {{ opacity: 0.4; }} 50% {{ opacity: 1; }} }}
     </style>
@@ -106,25 +106,40 @@ def generate_ssr_html(
   </body>
 </html>'''
 
-# Colors
+# Colors matching the site theme
 BG_COLOR = (10, 15, 20)  # #0a0f14
-ACCENT_COLOR = (34, 197, 94)  # Green #22c55e
+ACCENT_COLOR = (141, 255, 251)  # Cyan #8DFFFB
+ACCENT_LIGHT = (197, 255, 254)  # Light cyan #C5FFFE
+ACCENT_DARK = (26, 205, 198)  # Dark cyan #1ACDC6
 TEXT_COLOR = (255, 255, 255)
 MUTED_COLOR = (148, 163, 184)  # #94a3b8
-DARK_ACCENT = (20, 83, 45)  # Dark green
+DARK_ACCENT = (13, 74, 71)  # Dark cyan #0d4a47
+GRID_COLOR = (20, 28, 36)  # #141c24 (abiotic panel color)
 
 
-def get_font(size: int, bold: bool = False):
-    """Load Inter font with fallback."""
+def get_font(size: int, bold: bool = False, title: bool = False):
+    """Load fonts with priority: Poppins for titles, Inter for body, DejaVu fallback."""
     from PIL import ImageFont
 
-    font_paths = [
-        # Inter fonts (installed via fonts-inter)
-        "/usr/share/fonts/truetype/inter/Inter-Bold.ttf" if bold else "/usr/share/fonts/truetype/inter/Inter-Regular.ttf",
-        "/usr/share/fonts/opentype/inter/Inter-Bold.otf" if bold else "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
-        # Fallback to DejaVu
+    if title:
+        # Poppins for titles (matching site's abiotic-title style)
+        font_paths = [
+            "/usr/share/fonts/truetype/poppins/Poppins-ExtraBold.ttf",
+            "/usr/share/fonts/truetype/poppins/Poppins-Bold.ttf",
+            "/app/fonts/Poppins-ExtraBold.ttf",
+            "/app/fonts/Poppins-Bold.ttf",
+        ]
+    else:
+        # Inter for body text
+        font_paths = [
+            "/usr/share/fonts/truetype/inter/Inter-Bold.ttf" if bold else "/usr/share/fonts/truetype/inter/Inter-Regular.ttf",
+            "/usr/share/fonts/opentype/inter/Inter-Bold.otf" if bold else "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
+        ]
+
+    # Fallback to DejaVu
+    font_paths.extend([
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    ]
+    ])
 
     for path in font_paths:
         if os.path.exists(path):
@@ -134,6 +149,42 @@ def get_font(size: int, bold: bool = False):
                 continue
 
     return ImageFont.load_default()
+
+
+def draw_gradient_text(img, draw, text: str, position: tuple, font, colors: list):
+    """Draw text with vertical gradient effect (like the site's abiotic-title)."""
+    from PIL import Image, ImageDraw
+
+    # Get text dimensions
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+
+    # Create a temporary image for the gradient
+    gradient = Image.new("RGB", (text_width, text_height), BG_COLOR)
+    gradient_draw = ImageDraw.Draw(gradient)
+
+    # Create vertical gradient
+    for y in range(text_height):
+        ratio = y / text_height
+        if ratio < 0.5:
+            # Top half: colors[0] to colors[1]
+            r = ratio * 2
+            color = tuple(int(colors[0][i] + (colors[1][i] - colors[0][i]) * r) for i in range(3))
+        else:
+            # Bottom half: colors[1] to colors[2]
+            r = (ratio - 0.5) * 2
+            color = tuple(int(colors[1][i] + (colors[2][i] - colors[1][i]) * r) for i in range(3))
+        gradient_draw.line([(0, y), (text_width, y)], fill=color)
+
+    # Create mask from text
+    mask = Image.new("L", (text_width, text_height), 0)
+    mask_draw = ImageDraw.Draw(mask)
+    mask_draw.text((0, 0), text, fill=255, font=font)
+
+    # Paste gradient through mask
+    x, y = position
+    img.paste(gradient, (x, y), mask)
 
 
 def draw_rounded_rect(draw, xy, radius, fill):
@@ -212,46 +263,51 @@ def generate_sitemap(db: Session = Depends(get_db)):
 
 @router.get("/og-image/default")
 def generate_default_og_image():
-    """Generate default OG image for the site."""
+    """Generate default OG image for the site with cyan theme matching the website."""
     from PIL import Image, ImageDraw
 
     width, height = 1200, 630
     img = Image.new("RGB", (width, height), BG_COLOR)
     draw = ImageDraw.Draw(img)
 
-    # Background pattern - subtle grid
+    # Background pattern - subtle grid matching abiotic-panel
     for x in range(0, width, 40):
-        draw.line([(x, 0), (x, height)], fill=(20, 25, 30), width=1)
+        draw.line([(x, 0), (x, height)], fill=GRID_COLOR, width=1)
     for y in range(0, height, 40):
-        draw.line([(0, y), (width, y)], fill=(20, 25, 30), width=1)
+        draw.line([(0, y), (width, y)], fill=GRID_COLOR, width=1)
 
-    # Accent gradient at bottom
-    for i in range(100):
-        alpha = 1 - (i / 100)
+    # Cyan glow effect at bottom
+    for i in range(120):
+        alpha = 1 - (i / 120) ** 2
         color = (
             int(DARK_ACCENT[0] * alpha + BG_COLOR[0] * (1 - alpha)),
             int(DARK_ACCENT[1] * alpha + BG_COLOR[1] * (1 - alpha)),
             int(DARK_ACCENT[2] * alpha + BG_COLOR[2] * (1 - alpha)),
         )
-        draw.rectangle([(0, height - 100 + i), (width, height - 100 + i + 1)], fill=color)
+        draw.rectangle([(0, height - 120 + i), (width, height - 120 + i + 1)], fill=color)
 
-    # Bottom accent bar
+    # Bottom accent bar (cyan)
     draw.rectangle([(0, height - 6), (width, height)], fill=ACCENT_COLOR)
 
     # Fonts
-    title_font = get_font(64, bold=True)
-    subtitle_font = get_font(28)
-    url_font = get_font(24, bold=True)
+    title_font = get_font(72, title=True)
+    subtitle_font = get_font(26)
+    url_font = get_font(22, bold=True)
 
-    # Title
+    # Title with gradient (like abiotic-title CSS class)
     title = "ABIOTIC SCIENCE"
     title_bbox = draw.textbbox((0, 0), title, font=title_font)
     title_width = title_bbox[2] - title_bbox[0]
-    draw.text(
-        ((width - title_width) // 2, 200),
-        title,
-        fill=TEXT_COLOR,
-        font=title_font,
+    title_height = title_bbox[3] - title_bbox[1]
+    title_x = (width - title_width) // 2
+    title_y = 180
+
+    # Draw gradient text
+    draw_gradient_text(
+        img, draw, title,
+        (title_x, title_y),
+        title_font,
+        [ACCENT_LIGHT, ACCENT_COLOR, ACCENT_DARK]  # #C5FFFE -> #8DFFFB -> #1ACDC6
     )
 
     # Subtitle
@@ -259,40 +315,40 @@ def generate_default_og_image():
     subtitle_bbox = draw.textbbox((0, 0), subtitle, font=subtitle_font)
     subtitle_width = subtitle_bbox[2] - subtitle_bbox[0]
     draw.text(
-        ((width - subtitle_width) // 2, 290),
+        ((width - subtitle_width) // 2, title_y + title_height + 30),
         subtitle,
         fill=MUTED_COLOR,
         font=subtitle_font,
     )
 
-    # Features
+    # Features badges
     features = ["Items", "Recettes", "NPCs", "Compendium"]
-    feature_font = get_font(20)
+    feature_font = get_font(18)
     total_width = 0
     feature_widths = []
     for f in features:
         bbox = draw.textbbox((0, 0), f, font=feature_font)
-        w = bbox[2] - bbox[0] + 40
+        w = bbox[2] - bbox[0] + 36
         feature_widths.append(w)
         total_width += w
-    total_width += 20 * (len(features) - 1)
+    total_width += 16 * (len(features) - 1)
 
     x_start = (width - total_width) // 2
     y_pos = 380
     for i, f in enumerate(features):
         w = feature_widths[i]
-        draw_rounded_rect(draw, (x_start, y_pos, x_start + w, y_pos + 36), 18, DARK_ACCENT)
+        draw_rounded_rect(draw, (x_start, y_pos, x_start + w, y_pos + 34), 17, DARK_ACCENT)
         bbox = draw.textbbox((0, 0), f, font=feature_font)
         text_w = bbox[2] - bbox[0]
         draw.text((x_start + (w - text_w) // 2, y_pos + 8), f, fill=ACCENT_COLOR, font=feature_font)
-        x_start += w + 20
+        x_start += w + 16
 
     # URL
     url = "abioticscience.fr"
     url_bbox = draw.textbbox((0, 0), url, font=url_font)
     url_width = url_bbox[2] - url_bbox[0]
     draw.text(
-        ((width - url_width) // 2, 480),
+        ((width - url_width) // 2, 470),
         url,
         fill=ACCENT_COLOR,
         font=url_font,
@@ -315,7 +371,7 @@ def generate_entity_og_image(
     row_id: str,
     db: Session = Depends(get_db),
 ):
-    """Generate dynamic OG image for an entity."""
+    """Generate dynamic OG image for an entity with cyan theme."""
     from PIL import Image, ImageDraw
 
     # Get entity info
@@ -360,13 +416,23 @@ def generate_entity_og_image(
     img = Image.new("RGB", (width, height), BG_COLOR)
     draw = ImageDraw.Draw(img)
 
-    # Background pattern
+    # Background pattern matching site theme
     for x in range(0, width, 40):
-        draw.line([(x, 0), (x, height)], fill=(20, 25, 30), width=1)
+        draw.line([(x, 0), (x, height)], fill=GRID_COLOR, width=1)
     for y in range(0, height, 40):
-        draw.line([(0, y), (width, y)], fill=(20, 25, 30), width=1)
+        draw.line([(0, y), (width, y)], fill=GRID_COLOR, width=1)
 
-    # Bottom accent bar
+    # Cyan glow effect at bottom
+    for i in range(100):
+        alpha = 1 - (i / 100) ** 2
+        color = (
+            int(DARK_ACCENT[0] * alpha + BG_COLOR[0] * (1 - alpha)),
+            int(DARK_ACCENT[1] * alpha + BG_COLOR[1] * (1 - alpha)),
+            int(DARK_ACCENT[2] * alpha + BG_COLOR[2] * (1 - alpha)),
+        )
+        draw.rectangle([(0, height - 100 + i), (width, height - 100 + i + 1)], fill=color)
+
+    # Bottom accent bar (cyan)
     draw.rectangle([(0, height - 6), (width, height)], fill=ACCENT_COLOR)
 
     # Try to load icon
@@ -386,12 +452,12 @@ def generate_entity_og_image(
                     icon = Image.open(path).convert("RGBA")
                     icon = icon.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
 
-                    # Draw icon background
+                    # Draw icon background with cyan tint
                     draw_rounded_rect(
                         draw,
                         (icon_x - 20, icon_y - 20, icon_x + icon_size + 20, icon_y + icon_size + 20),
                         20,
-                        (30, 35, 40)
+                        (20, 35, 40)  # Slightly cyan-tinted background
                     )
 
                     img.paste(icon, (icon_x, icon_y), icon)
@@ -404,21 +470,21 @@ def generate_entity_og_image(
     text_x = icon_x + icon_size + 80 if icon_loaded else 100
 
     # Fonts
-    title_font = get_font(48, bold=True)
-    category_font = get_font(20, bold=True)
-    desc_font = get_font(22)
+    title_font = get_font(48, title=True)
+    category_font = get_font(18, bold=True)
+    desc_font = get_font(20)
     url_font = get_font(18)
 
-    # Category badge
+    # Category badge with cyan theme
     if category:
         cat_bbox = draw.textbbox((0, 0), category, font=category_font)
         cat_width = cat_bbox[2] - cat_bbox[0] + 24
-        cat_height = 32
+        cat_height = 30
         cat_y = 180
-        draw_rounded_rect(draw, (text_x, cat_y, text_x + cat_width, cat_y + cat_height), 16, DARK_ACCENT)
-        draw.text((text_x + 12, cat_y + 6), category, fill=ACCENT_COLOR, font=category_font)
+        draw_rounded_rect(draw, (text_x, cat_y, text_x + cat_width, cat_y + cat_height), 15, DARK_ACCENT)
+        draw.text((text_x + 12, cat_y + 5), category, fill=ACCENT_COLOR, font=category_font)
 
-    # Title
+    # Title with gradient
     max_title_width = width - text_x - 80
     title_text = name
     title_bbox = draw.textbbox((0, 0), title_text, font=title_font)
@@ -426,7 +492,13 @@ def generate_entity_og_image(
         title_text = title_text[:-4] + "..."
         title_bbox = draw.textbbox((0, 0), title_text, font=title_font)
 
-    draw.text((text_x, 230), title_text, fill=TEXT_COLOR, font=title_font)
+    title_y = 225
+    draw_gradient_text(
+        img, draw, title_text,
+        (text_x, title_y),
+        title_font,
+        [ACCENT_LIGHT, ACCENT_COLOR, ACCENT_DARK]
+    )
 
     # Description
     if description:
@@ -453,10 +525,10 @@ def generate_entity_og_image(
         y_offset = 310
         for line in lines:
             draw.text((text_x, y_offset), line, fill=MUTED_COLOR, font=desc_font)
-            y_offset += 32
+            y_offset += 28
 
     # Site branding
-    draw.text((text_x, height - 70), "abioticscience.fr", fill=(100, 100, 100), font=url_font)
+    draw.text((text_x, height - 65), "abioticscience.fr", fill=(80, 100, 110), font=url_font)
 
     img_bytes = io.BytesIO()
     img.save(img_bytes, format="PNG", optimize=True)

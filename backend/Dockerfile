@@ -16,6 +16,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy Poppins fonts for OG image generation
+COPY fonts/*.ttf /usr/share/fonts/truetype/poppins/
+RUN fc-cache -f -v
+
 # Copy application code
 COPY . .
 
