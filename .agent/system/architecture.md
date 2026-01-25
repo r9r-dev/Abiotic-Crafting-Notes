@@ -4,24 +4,24 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Pangolin (SSO Proxy)                     │
-│                  abiotic.hellonowork.com                     │
+│                     Pangolin (SSO Proxy)                    │
+│                       abioticscience.fr                     │
 └─────────────────────────────────┬───────────────────────────┘
                                   │ Remote-User/Email/Name
                                   ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    abiotic-frontend                          │
-│                      (nginx:80)                              │
+│                    abiotic-frontend                         │
+│                      (nginx:80)                             │
 │  ┌─────────────────┐    ┌─────────────────────────────────┐ │
 │  │  React SPA      │    │  /api/* → abiotic-backend:8080  │ │
-│  │  (dist/)        │    │                                  │ │
+│  │  (dist/)        │    │                                 │ │
 │  └─────────────────┘    └─────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
                                   │
                                   ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    abiotic-backend                           │
-│                    (uvicorn:8080)                            │
+│                    abiotic-backend                          │
+│                    (uvicorn:8080)                           │
 │  ┌────────────┐  ┌────────────┐  ┌────────────────────────┐ │
 │  │ FastAPI    │  │ SQLAlchemy │  │ recipes.json (read)    │ │
 │  │ Routes     │  │ ORM        │  │                        │ │
@@ -30,9 +30,9 @@
                                   │
                                   ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    PostgreSQL                                │
-│                    (sql:5432)                                │
-│  Tables: users, orders, order_items                          │
+│                    PostgreSQL                               │
+│                    (sql:5432)                               │
+│  Tables: users, orders, order_items                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -61,7 +61,7 @@
 
 ## Flux d'authentification
 
-1. User accede a abiotic.hellonowork.com
+1. User accede a abioticscience.fr
 2. Pangolin intercepte, verifie SSO
 3. Ajoute headers Remote-User/Email/Name
 4. Frontend charge, appelle /api/auth/me

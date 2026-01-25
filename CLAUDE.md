@@ -1,6 +1,6 @@
 # Abiotic Science Database
 
-`abiotic.hellonowork.com`
+`abioticscience.fr`
 
 # ATTENTION
 OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque chose de simple en attendant de faire mieux plus tard. Il ne faut jamais contourner un problème. Il faut le résoudre proprement.
@@ -102,7 +102,7 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 | GET | /api/analytics/dashboard/performance | Stats performance (protégé) |
 | GET | /api/analytics/dashboard/timeseries | Séries temporelles (protégé) |
 
-Tu as le droit de tester l'api sur l'url de prod : https://abiotic.hellonowork.com/
+Tu as le droit de tester l'api sur l'url de prod : https://abioticscience.fr/
 
 ## Logique de recherche
 
