@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import fs from 'fs'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
   plugins: [
@@ -107,6 +108,13 @@ export default defineConfig({
   build: {
     // Optimize minification
     minify: 'esbuild',
+    // Disable modulepreload for lazy-loaded chunks (recharts only used on /admin)
+    modulePreload: {
+      resolveDependencies: (filename, deps) => {
+        // Don't preload recharts - it's only used on /admin page
+        return deps.filter(dep => !dep.includes('recharts'));
+      },
+    },
     // Code splitting configuration
     rollupOptions: {
       output: {
