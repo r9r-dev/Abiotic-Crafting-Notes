@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import type { NPC } from "@/types";
 import { getNPC, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { getCompendiumIconUrl } from "@/lib/icons";
 import {
   NPCHeader,
   NPCCombatStats,
@@ -15,8 +17,15 @@ import {
 import { CompendiumLoreCard } from "@/components/compendium";
 
 function NPCContent({ npc }: { npc: NPC }) {
+  const lcpImageUrl = npc.icon_path ? getCompendiumIconUrl(npc.icon_path, 320) : null;
+
   return (
     <div className="space-y-6">
+      {lcpImageUrl && (
+        <Helmet>
+          <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+        </Helmet>
+      )}
       <SEO
         title={npc.name ?? undefined}
         description={`Fiche complète de ${npc.name ?? npc.row_id} dans Abiotic Factor : statistiques de combat, résistances, comportement et butin.`}

@@ -1,14 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import type { NpcConversation } from "@/types";
 import { getDialogue, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { getCompendiumIconUrl } from "@/lib/icons";
 import { DialogueHeader, DialogueLines } from "@/components/dialogue";
 
 function DialogueContent({ conversation }: { conversation: NpcConversation }) {
+  const lcpImageUrl = conversation.npc?.icon_path ? getCompendiumIconUrl(conversation.npc.icon_path, 128) : null;
+
   return (
     <div className="space-y-6">
+      {lcpImageUrl && (
+        <Helmet>
+          <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+        </Helmet>
+      )}
       <SEO
         title={conversation.npc_name ?? undefined}
         description={`Dialogue complet : ${conversation.npc_name ?? conversation.row_id}. Tous les dialogues et choix de conversation dans Abiotic Factor.`}

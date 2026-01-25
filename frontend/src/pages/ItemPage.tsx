@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import type { Item } from "@/types";
 import { getItem, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { getIconUrl } from "@/lib/icons";
 import {
   ItemHeader,
   ItemBaseStats,
@@ -22,8 +24,16 @@ import { ItemSalvage } from "@/components/item/ItemSalvage";
 import { ItemUpgrades } from "@/components/item/ItemUpgrades";
 
 function ItemContent({ item }: { item: Item }) {
+  // Preload l'image LCP pour améliorer le temps de chargement
+  const lcpImageUrl = item.icon_path ? getIconUrl(item.icon_path, 80) : null;
+
   return (
     <div className="space-y-6">
+      {lcpImageUrl && (
+        <Helmet>
+          <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+        </Helmet>
+      )}
       <SEO
         title={item.name ?? undefined}
         description={item.description ?? `Informations complètes sur ${item.name ?? item.row_id} dans Abiotic Factor : recettes, statistiques, améliorations et plus.`}

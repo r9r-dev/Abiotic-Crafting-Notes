@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import type { CompendiumEntry } from "@/types";
 import { getCompendiumEntry, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { getCompendiumIconUrl } from "@/lib/icons";
 import {
   CompendiumHeader,
   CompendiumSections,
@@ -14,9 +16,15 @@ import {
 
 function CompendiumContent({ entry }: { entry: CompendiumEntry }) {
   const isPerson = entry.category.toUpperCase() === "PEOPLE";
+  const lcpImageUrl = entry.image_path ? getCompendiumIconUrl(entry.image_path, 320) : null;
 
   return (
     <div className="space-y-6">
+      {lcpImageUrl && (
+        <Helmet>
+          <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+        </Helmet>
+      )}
       <SEO
         title={entry.title ?? undefined}
         description={entry.subtitle ?? `Entrée du Compendium : ${entry.title ?? entry.row_id}. Découvrez le lore et les informations cachées d'Abiotic Factor.`}
