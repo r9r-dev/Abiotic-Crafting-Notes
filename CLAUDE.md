@@ -7,7 +7,7 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 
 ## Stack technique
 
-- **Frontend**: React 19, Vite 6, shadcn/ui, TailwindCSS, TypeScript 5.6, Bun, Motion, Recharts
+- **Frontend**: React 19, Vite 6, shadcn/ui, TailwindCSS, TypeScript 5.6, Bun, Recharts
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy 2, Pydantic 2
 - **Database**: PostgreSQL (externe sur `sql:5432`)
 - **Auth**: Pangolin SSO via headers HTTP (Remote-User, Remote-Email, Remote-Name)
@@ -34,7 +34,7 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 │   │   ├── services/           # api.ts, analytics.ts, fingerprint.ts
 │   │   ├── types/              # Types complets (~280 lignes)
 │   │   ├── hooks/              # useItemLink
-│   │   └── lib/                # utils, enumLabels
+│   │   └── lib/                # utils, enumLabels, icons (getIconUrl)
 │   ├── Dockerfile              # Multi-stage Bun + Nginx
 │   └── nginx.conf
 ├── backend/
@@ -54,8 +54,13 @@ OBLIGATOIRE : Ne jamais simplifier, prendre de raccourcis. Ne pas faire quelque 
 │   │   ├── config.py           # Settings
 │   │   └── main.py
 │   └── requirements.txt
-├── data/                       # Icons, GUI (NPC images), traductions, datatables
-├── scripts/                    # Scripts d'extraction (extract_dialogue_mapping.py)
+├── data/
+│   ├── icons/                  # Icones PNG originales (1309 fichiers)
+│   ├── icons-webp/             # Icones WebP optimisees (10472 fichiers, genere)
+│   └── GUI/                    # Images NPC, Compendium, traductions
+├── scripts/
+│   ├── extract_dialogue_mapping.py
+│   └── convert_icons_webp_magick.sh  # Conversion PNG→WebP multi-tailles
 ├── .github/workflows/          # CI/CD docker.yml
 └── docker-compose.yml
 ```
@@ -141,9 +146,26 @@ Page accessible via `/admin`, protégée par mot de passe (défaut: "admin", con
 
 | Route | Source | Description |
 |-------|--------|-------------|
-| /icons/ | data/icons/ | Icones items (1311+) |
+| /icons-webp/ | data/icons-webp/ | Icones WebP optimisees (8 tailles par icone) |
+| /icons/ | data/icons/ | Icones PNG originales (fallback) |
 | /npc-icons/ | data/GUI/Compendium/Entries/ | Images NPCs du Compendium |
 | /compendium/ | data/GUI/Compendium/Entries/ | Images Compendium (167) |
+
+## Optimisation des images
+
+Les icones sont servies en WebP avec tailles pixel-perfect via `getIconUrl(path, size)` :
+
+| Taille | Utilisation |
+|--------|-------------|
+| 80 | ItemHeader |
+| 56 | TransformationChain |
+| 48 | GalleryItemCard |
+| 40 | HomePage search results |
+| 32 | SearchPanel, ItemUpgrades output, EquipmentStats |
+| 24 | ItemRecipes, ItemSalvage, NPCLootTables |
+| 20 | WeaponStats |
+
+Pour regenerer les WebP : `./scripts/convert_icons_webp_magick.sh`
 
 ## Developpement local
 
@@ -192,6 +214,13 @@ Variables d'environnement (backend):
 - `ANALYTICS_SALT`: Sel pour anonymisation des fingerprints (changer en production)
 - `ANALYTICS_PASSWORD`: Mot de passe dashboard admin (défaut: "admin", changer en production)
 - `ANALYTICS_SESSION_TIMEOUT_HOURS`: Duree de validite d'une session (défaut: 24h)
+
+## Performance
+
+- **Code splitting**: Pages lazy-loaded via `React.lazy()` (ItemPage, NPCPage, etc.)
+- **Animations CSS**: Remplace Motion.js par animations Tailwind (`animate-page-enter`, `animate-content-enter`)
+- **SSR crawlers-only**: Nginx sert SSR uniquement aux bots (Googlebot, Twitterbot, etc.)
+- **Chunks Vite**: `vendor-recharts`, `vendor-radix`, `vendor-react` separes
 
 ## CI/CD
 
