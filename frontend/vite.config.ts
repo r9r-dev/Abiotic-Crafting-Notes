@@ -126,8 +126,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Separate recharts (heavy, only used in /admin)
-          'vendor-recharts': ['recharts'],
+          // Note: recharts is NOT listed here - let Vite handle it automatically
+          // so it only loads with AdminPage (lazy-loaded)
           // Separate radix UI components
           'vendor-radix': [
             '@radix-ui/react-dialog',
