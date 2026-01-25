@@ -58,6 +58,18 @@ interface PerformanceMetric {
 const API_BASE = '/api/analytics';
 const FLUSH_INTERVAL = 5000; // 5 secondes
 const MAX_QUEUE_SIZE = 50;
+const PERF_BATCH_DELAY = 3000; // 3 secondes - délai avant envoi des métriques de performance
+
+/**
+ * Exécute une fonction quand le navigateur est idle (non-bloquant).
+ */
+function runWhenIdle(callback: () => void, timeout = 2000): void {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(callback, { timeout });
+  } else {
+    setTimeout(callback, 100);
+  }
+}
 
 /**
  * Service Analytics singleton.
@@ -65,7 +77,9 @@ const MAX_QUEUE_SIZE = 50;
 class AnalyticsService {
   private sessionId: string | null = null;
   private eventQueue: QueuedEvent[] = [];
+  private performanceQueue: PerformanceMetric[] = [];
   private flushTimer: ReturnType<typeof setInterval> | null = null;
+  private perfFlushTimer: ReturnType<typeof setTimeout> | null = null;
   private isInitialized = false;
   private isInitializing = false;
   private initPromise: Promise<void> | null = null;
@@ -73,7 +87,7 @@ class AnalyticsService {
   private searchStartTime: number | null = null;
 
   /**
-   * Initialise la session analytics.
+   * Initialise la session analytics de manière différée (non-bloquante).
    */
   async init(): Promise<void> {
     if (this.isInitialized) return;
@@ -84,7 +98,12 @@ class AnalyticsService {
     }
 
     this.isInitializing = true;
-    this.initPromise = this.doInit();
+    // Différer l'initialisation pour ne pas bloquer le rendu initial
+    this.initPromise = new Promise((resolve) => {
+      runWhenIdle(() => {
+        this.doInit().then(resolve);
+      });
+    });
     return this.initPromise;
   }
 
@@ -456,40 +475,66 @@ class AnalyticsService {
   }
 
   /**
-   * Track une métrique de performance.
+   * Track une métrique de performance (batché pour éviter les requêtes multiples).
    */
   trackPerformance(
     metricType: PerformanceMetricType,
     value: number,
     rating?: string
   ): void {
-    if (!this.isInitialized || !this.sessionId) return;
-
-    const metrics: PerformanceMetric[] = [{
+    // Ajouter à la queue même si pas encore initialisé (sera envoyé plus tard)
+    this.performanceQueue.push({
       metric_type: metricType,
       value,
       rating,
       page_path: window.location.pathname,
-    }];
-
-    fetch(`${API_BASE}/performance`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        session_id: this.sessionId,
-        metrics,
-      }),
-    }).catch(() => {
-      // Ignore errors
     });
+
+    // Programmer l'envoi différé si pas déjà programmé
+    if (!this.perfFlushTimer) {
+      this.perfFlushTimer = setTimeout(() => {
+        this.flushPerformance();
+      }, PERF_BATCH_DELAY);
+    }
+  }
+
+  /**
+   * Envoie les métriques de performance en batch.
+   */
+  private flushPerformance(): void {
+    this.perfFlushTimer = null;
+
+    if (!this.isInitialized || !this.sessionId || this.performanceQueue.length === 0) {
+      return;
+    }
+
+    const metrics = [...this.performanceQueue];
+    this.performanceQueue = [];
+
+    // Utiliser sendBeacon si disponible (non-bloquant, fonctionne même si page se ferme)
+    const payload = JSON.stringify({
+      session_id: this.sessionId,
+      metrics,
+    });
+
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(`${API_BASE}/performance`, new Blob([payload], { type: 'application/json' }));
+    } else {
+      fetch(`${API_BASE}/performance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true,
+      }).catch(() => {
+        // Ignore errors
+      });
+    }
   }
 
   /**
    * Track la latence d'un appel API.
    */
   trackApiLatency(_endpoint: string, durationMs: number): void {
-    if (!this.isInitialized) return;
-
     this.trackPerformance('api_latency', durationMs, undefined);
   }
 
@@ -515,7 +560,12 @@ class AnalyticsService {
       clearInterval(this.flushTimer);
       this.flushTimer = null;
     }
+    if (this.perfFlushTimer) {
+      clearTimeout(this.perfFlushTimer);
+      this.perfFlushTimer = null;
+    }
     this.flush();
+    this.flushPerformance();
   }
 }
 
