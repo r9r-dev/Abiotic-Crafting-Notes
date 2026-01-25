@@ -9,6 +9,17 @@ export default defineConfig({
     {
       name: 'serve-icons',
       configureServer(server) {
+        // Serve optimized WebP icons
+        server.middlewares.use('/icons-webp', (req, res, next) => {
+          const iconPath = path.resolve(__dirname, '../data/icons-webp', req.url!.slice(1) || '')
+          if (fs.existsSync(iconPath) && fs.statSync(iconPath).isFile()) {
+            res.setHeader('Content-Type', 'image/webp')
+            fs.createReadStream(iconPath).pipe(res)
+          } else {
+            next()
+          }
+        })
+        // Serve original PNG icons (fallback)
         server.middlewares.use('/icons', (req, res, next) => {
           const iconPath = path.resolve(__dirname, '../data/icons', req.url!.slice(1) || '')
           if (fs.existsSync(iconPath) && fs.statSync(iconPath).isFile()) {
