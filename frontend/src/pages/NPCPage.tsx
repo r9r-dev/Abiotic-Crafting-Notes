@@ -19,8 +19,8 @@ function NPCContent({ npc }: { npc: NPC }) {
   return (
     <div className="space-y-6">
       <SEO
-        title={npc.name}
-        description={`Fiche complète de ${npc.name} dans Abiotic Factor : statistiques de combat, résistances, comportement et butin.`}
+        title={npc.name ?? undefined}
+        description={`Fiche complète de ${npc.name ?? npc.row_id} dans Abiotic Factor : statistiques de combat, résistances, comportement et butin.`}
         path={`/npc/${npc.row_id}`}
         type="npc"
         rowId={npc.row_id}

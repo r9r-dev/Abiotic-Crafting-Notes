@@ -19,8 +19,8 @@ function CompendiumContent({ entry }: { entry: CompendiumEntry }) {
   return (
     <div className="space-y-6">
       <SEO
-        title={entry.title}
-        description={entry.subtitle || `Entrée du Compendium : ${entry.title}. Découvrez le lore et les informations cachées d'Abiotic Factor.`}
+        title={entry.title ?? undefined}
+        description={entry.subtitle ?? `Entrée du Compendium : ${entry.title ?? entry.row_id}. Découvrez le lore et les informations cachées d'Abiotic Factor.`}
         path={`/compendium/${entry.row_id}`}
         type="compendium"
         rowId={entry.row_id}

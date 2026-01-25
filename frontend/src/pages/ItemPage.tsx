@@ -26,8 +26,8 @@ function ItemContent({ item }: { item: Item }) {
   return (
     <div className="space-y-6">
       <SEO
-        title={item.name}
-        description={item.description || `Informations complètes sur ${item.name} dans Abiotic Factor : recettes, statistiques, améliorations et plus.`}
+        title={item.name ?? undefined}
+        description={item.description ?? `Informations complètes sur ${item.name ?? item.row_id} dans Abiotic Factor : recettes, statistiques, améliorations et plus.`}
         path={`/item/${item.row_id}`}
         type="item"
         rowId={item.row_id}

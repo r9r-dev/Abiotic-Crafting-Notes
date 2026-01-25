@@ -11,8 +11,8 @@ function DialogueContent({ conversation }: { conversation: NpcConversation }) {
   return (
     <div className="space-y-6">
       <SEO
-        title={conversation.name}
-        description={`Dialogue complet : ${conversation.name}. Tous les dialogues et choix de conversation dans Abiotic Factor.`}
+        title={conversation.npc_name ?? undefined}
+        description={`Dialogue complet : ${conversation.npc_name ?? conversation.row_id}. Tous les dialogues et choix de conversation dans Abiotic Factor.`}
         path={`/dialogue/${conversation.row_id}`}
         type="dialogue"
         rowId={conversation.row_id}
