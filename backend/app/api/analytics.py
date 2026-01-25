@@ -894,10 +894,112 @@ def get_performance_analytics(
         for p in slowest_pages
     ]
 
+    # Web Vitals par jour (pour graphique d'évolution)
+    web_vitals_by_day = []
+    main_vitals = [DBPerformanceMetricType.LCP, DBPerformanceMetricType.FCP, DBPerformanceMetricType.TTFB]
+
+    daily_stats = db.query(
+        func.date(AnalyticsPerformance.created_at).label("date"),
+        AnalyticsPerformance.metric_type,
+        func.avg(AnalyticsPerformance.metric_value).label("avg_value"),
+        func.count(AnalyticsPerformance.id).label("sample_count"),
+    ).filter(
+        and_(
+            AnalyticsPerformance.created_at >= period_start,
+            AnalyticsPerformance.metric_type.in_(main_vitals),
+        )
+    ).group_by(
+        func.date(AnalyticsPerformance.created_at),
+        AnalyticsPerformance.metric_type
+    ).order_by("date").all()
+
+    # Organiser par jour
+    days_data: dict = {}
+    for row in daily_stats:
+        date_str = str(row.date)
+        if date_str not in days_data:
+            days_data[date_str] = {"date": date_str}
+        days_data[date_str][row.metric_type.value] = round(float(row.avg_value), 2)
+
+    web_vitals_by_day = list(days_data.values())
+
+    # Web Vitals par type d'appareil
+    web_vitals_by_device = []
+    device_types = [DBDeviceType.DESKTOP, DBDeviceType.MOBILE, DBDeviceType.TABLET]
+
+    for device_type in device_types:
+        device_stats = {}
+        for metric_type in web_vital_types:
+            result = db.query(
+                func.avg(AnalyticsPerformance.metric_value).label("avg"),
+                func.count(AnalyticsPerformance.id).label("count"),
+            ).join(
+                AnalyticsSession,
+                AnalyticsPerformance.session_id == AnalyticsSession.id
+            ).filter(
+                and_(
+                    AnalyticsPerformance.created_at >= period_start,
+                    AnalyticsPerformance.metric_type == metric_type,
+                    AnalyticsSession.device_type == device_type,
+                )
+            ).first()
+
+            if result and result.count > 0:
+                device_stats[metric_type.value] = {
+                    "avg_value": round(float(result.avg), 2),
+                    "sample_count": result.count,
+                }
+
+        if device_stats:
+            web_vitals_by_device.append({
+                "device_type": device_type.value,
+                "metrics": device_stats,
+            })
+
+    # Distribution globale des ratings (pour graphique de distribution)
+    distribution = []
+    for metric_type in web_vital_types:
+        good = db.query(func.count(AnalyticsPerformance.id)).filter(
+            and_(
+                AnalyticsPerformance.created_at >= period_start,
+                AnalyticsPerformance.metric_type == metric_type,
+                AnalyticsPerformance.metric_rating == "good",
+            )
+        ).scalar() or 0
+
+        needs_improvement = db.query(func.count(AnalyticsPerformance.id)).filter(
+            and_(
+                AnalyticsPerformance.created_at >= period_start,
+                AnalyticsPerformance.metric_type == metric_type,
+                AnalyticsPerformance.metric_rating == "needs-improvement",
+            )
+        ).scalar() or 0
+
+        poor = db.query(func.count(AnalyticsPerformance.id)).filter(
+            and_(
+                AnalyticsPerformance.created_at >= period_start,
+                AnalyticsPerformance.metric_type == metric_type,
+                AnalyticsPerformance.metric_rating == "poor",
+            )
+        ).scalar() or 0
+
+        total = good + needs_improvement + poor
+        if total > 0:
+            distribution.append({
+                "metric_type": metric_type.value,
+                "good_pct": round(good / total * 100, 1),
+                "needs_improvement_pct": round(needs_improvement / total * 100, 1),
+                "poor_pct": round(poor / total * 100, 1),
+                "total": total,
+            })
+
     return {
         "web_vitals": web_vitals,
         "api_metrics": api_metrics,
         "slowest_pages": slowest_pages_list,
+        "web_vitals_by_day": web_vitals_by_day,
+        "web_vitals_by_device": web_vitals_by_device,
+        "distribution": distribution,
     }
 
 
