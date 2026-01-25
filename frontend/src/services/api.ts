@@ -13,6 +13,7 @@ import type {
   DialogueListResponse,
   DialogueSearchResponse,
 } from "@/types";
+import { analytics } from "./analytics";
 
 const API_BASE = "/api";
 
@@ -31,6 +32,8 @@ async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const startTime = performance.now();
+
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -38,6 +41,10 @@ async function request<T>(
       ...options.headers,
     },
   });
+
+  // Mesurer la latence API
+  const duration = performance.now() - startTime;
+  analytics.trackApiLatency(path, duration);
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));

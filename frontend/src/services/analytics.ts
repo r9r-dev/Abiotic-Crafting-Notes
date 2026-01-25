@@ -206,6 +206,82 @@ class AnalyticsService {
       } catch {
         // Observer non supporte
       }
+
+      // TTFB (Time to First Byte) via Navigation Timing API
+      try {
+        const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+        if (navEntries.length > 0) {
+          const navTiming = navEntries[0];
+          const ttfb = navTiming.responseStart - navTiming.requestStart;
+          if (ttfb > 0) {
+            this.trackPerformance('ttfb', ttfb, this.rateWebVital('ttfb', ttfb));
+          }
+        }
+      } catch {
+        // Navigation Timing non supporte
+      }
+
+      // PAGE_LOAD (temps total de chargement) - attendre que la page soit chargee
+      const trackPageLoad = () => {
+        try {
+          const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+          if (navEntries.length > 0) {
+            const navTiming = navEntries[0];
+            const pageLoad = navTiming.loadEventEnd - navTiming.startTime;
+            if (pageLoad > 0) {
+              this.trackPerformance('page_load', pageLoad);
+            }
+          }
+        } catch {
+          // Navigation Timing non supporte
+        }
+      };
+
+      if (document.readyState === 'complete') {
+        trackPageLoad();
+      } else {
+        window.addEventListener('load', trackPageLoad, { once: true });
+      }
+
+      // FID (First Input Delay)
+      try {
+        const fidObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          const firstEntry = entries[0];
+          if (firstEntry) {
+            // @ts-expect-error - processingStart n'est pas standard
+            const fid = firstEntry.processingStart - firstEntry.startTime;
+            this.trackPerformance('fid', fid, this.rateWebVital('fid', fid));
+            fidObserver.disconnect();
+          }
+        });
+        fidObserver.observe({ type: 'first-input', buffered: true });
+      } catch {
+        // Observer non supporte
+      }
+
+      // INP (Interaction to Next Paint)
+      try {
+        let maxInp = 0;
+        const inpObserver = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            const duration = entry.duration;
+            if (duration > maxInp) {
+              maxInp = duration;
+            }
+          }
+        });
+        inpObserver.observe({ type: 'event', buffered: true });
+
+        // Envoyer INP apres un delai (capture les interactions initiales)
+        setTimeout(() => {
+          if (maxInp > 0) {
+            this.trackPerformance('inp', maxInp, this.rateWebVital('inp', maxInp));
+          }
+        }, 10000);
+      } catch {
+        // Observer non supporte
+      }
     }
   }
 
