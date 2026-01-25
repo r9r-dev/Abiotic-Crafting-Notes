@@ -500,6 +500,7 @@ def generate_ssr_page(
                 "author": {
                     "@type": "Person",
                     "name": "Ronan Lamour",
+                    "url": "https://ronan.lamour.bzh"
                 },
             }
     elif entity_type == "npc":

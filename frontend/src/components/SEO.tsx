@@ -110,6 +110,7 @@ function generateStructuredData({
       author: {
         "@type": "Person",
         name: "Ronan Lamour",
+        "url": "https://ronan.lamour.bzh"
       },
     };
   }
@@ -125,6 +126,7 @@ function generateStructuredData({
       author: {
         "@type": "Person",
         name: "Ronan Lamour",
+        "url": "https://ronan.lamour.bzh"
       },
     };
   }
