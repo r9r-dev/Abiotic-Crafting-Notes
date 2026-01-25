@@ -8,24 +8,19 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'css-async-load',
+      name: 'css-preload',
       transformIndexHtml(html, ctx) {
-        // Make CSS non-render-blocking for better LCP (only in build mode)
+        // Add preload hint for CSS (keeps render-blocking but improves loading priority)
         if (ctx.bundle) {
           const cssFile = Object.keys(ctx.bundle).find(
             (name) => name.endsWith('.css') && name.includes('index')
           )
           if (cssFile) {
-            // Add preload hint at top of head
+            // Add preload hint at top of head for faster CSS loading
             const preloadTag = `<link rel="preload" href="/${cssFile}" as="style" />`
             html = html.replace(
               '<meta charset="UTF-8" />',
               `<meta charset="UTF-8" />\n    ${preloadTag}`
-            )
-            // Convert blocking stylesheet to async loading
-            html = html.replace(
-              `<link rel="stylesheet" crossorigin href="/${cssFile}">`,
-              `<link rel="stylesheet" href="/${cssFile}" media="print" onload="this.media='all'" />\n    <noscript><link rel="stylesheet" href="/${cssFile}" /></noscript>`
             )
           }
         }
