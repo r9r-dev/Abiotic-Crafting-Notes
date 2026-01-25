@@ -144,6 +144,14 @@ Types de lignes: Normal, Choice, Action, System
 
 Page accessible via `/admin`, protégée par mot de passe (défaut: "admin", configurable via `ANALYTICS_PASSWORD`)
 
+**PerformanceChart** affiche:
+- Score global de performance (méthodologie Lighthouse, 0-100)
+- Évolution temporelle des Web Vitals (LCP, FCP, TTFB sur 7 jours)
+- Distribution des mesures (pourcentage Bon/À améliorer/Mauvais par métrique)
+- Comparaison par appareil (Desktop, Mobile, Tablette)
+- Latence API et pages les plus lentes
+- Guide des métriques Web Vitals avec seuils et définitions
+
 ## Assets statiques
 
 | Route | Source | Description |
