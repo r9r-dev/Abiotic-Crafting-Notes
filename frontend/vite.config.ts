@@ -56,4 +56,29 @@ export default defineConfig({
       allow: ['..'],
     },
   },
+  build: {
+    // Optimize minification
+    minify: 'esbuild',
+    // Code splitting configuration
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate recharts (heavy, only used in /admin)
+          'vendor-recharts': ['recharts'],
+          // Separate radix UI components
+          'vendor-radix': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+          ],
+          // React core
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
+    // Warn on large chunks
+    chunkSizeWarningLimit: 500,
+  },
 })

@@ -2,6 +2,7 @@ import type { Equipment, EquipSlot } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
+import { getIconUrl } from "@/lib/icons";
 
 interface EquipmentStatsProps {
   equipment: Equipment;
@@ -44,16 +45,17 @@ const slotLabels: Record<EquipSlot, string> = {
   Accessory: "Accessoire",
 };
 
-const slotIcons: Record<EquipSlot, string> = {
-  Head: "/icons/icon_helmet.png",
-  Torso: "/icons/icon_armor.png",
-  Suit: "/icons/icon_suit.png",
-  Legs: "/icons/icon_pants.png",
-  Feet: "/icons/icon_pants.png",
-  Hands: "/icons/icon_arm.png",
-  Back: "/icons/icon_backpack.png",
-  Face: "/icons/icon_headlamp.png",
-  Accessory: "/icons/icon_trinket.png",
+// Icon paths for equipment slots (without extension)
+const slotIconPaths: Record<EquipSlot, string> = {
+  Head: "icon_helmet",
+  Torso: "icon_armor",
+  Suit: "icon_suit",
+  Legs: "icon_pants",
+  Feet: "icon_pants",
+  Hands: "icon_arm",
+  Back: "icon_backpack",
+  Face: "icon_headlamp",
+  Accessory: "icon_trinket",
 };
 
 const mitigationTypeLabels: Record<string, string> = {
@@ -117,9 +119,9 @@ export function EquipmentStats({ equipment }: EquipmentStatsProps) {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
                 <img
-                  src={slotIcons[equipment.equip_slot!]}
+                  src={getIconUrl(slotIconPaths[equipment.equip_slot!], 32) || ""}
                   alt={slotLabels[equipment.equip_slot!]}
-                  className="w-8 h-8 object-contain"
+                  className="w-8 h-8 object-contain" loading="lazy" width="32" height="32"
                 />
               </div>
               <div>

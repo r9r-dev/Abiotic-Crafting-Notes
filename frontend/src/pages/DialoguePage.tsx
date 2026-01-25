@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
 import type { NpcConversation } from "@/types";
 import { getDialogue, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -94,17 +93,9 @@ export function DialoguePage() {
         </Button>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={rowId}
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -10 }}
-          transition={{ ease: "easeInOut", duration: 0.15 }}
-        >
-          <DialogueContent conversation={conversation} />
-        </motion.div>
-      </AnimatePresence>
+      <div key={rowId} className="animate-content-enter">
+        <DialogueContent conversation={conversation} />
+      </div>
     </div>
   );
 }

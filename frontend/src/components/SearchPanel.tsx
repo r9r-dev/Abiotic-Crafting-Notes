@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { unifiedSearch } from "@/services/api";
+import { getIconUrl } from "@/lib/icons";
 import type { UnifiedSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
@@ -42,12 +43,13 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
   const isCompendium = item.type === "compendium";
 
   // Determiner l'URL de l'icone selon le type
+  // SearchPanel displays at 32x32
   let iconUrl: string | null = null;
   if (item.icon_path) {
     if (isCompendium) {
       iconUrl = `/compendium/${item.icon_path}`;
     } else {
-      iconUrl = `/icons/${item.icon_path}`;
+      iconUrl = getIconUrl(item.icon_path, 32);
     }
   }
 
@@ -83,6 +85,9 @@ function SearchResultItem({ item, isActive, query, onClick }: SearchResultItemPr
             src={iconUrl}
             alt={displayName}
             className="w-8 h-8 object-contain"
+            loading="lazy"
+            width="32"
+            height="32"
           />
         ) : isNPC ? (
           <span className="text-sm text-muted-foreground">

@@ -8,6 +8,7 @@ import {
   getDamageTypeLabel,
 } from "@/lib/enumLabels";
 import { useItemLink } from "@/hooks/useItemLink";
+import { getIconUrl } from "@/lib/icons";
 
 function formatNumber(value: number, decimals: number): string {
   return Number(value.toFixed(decimals)).toString();
@@ -103,9 +104,9 @@ export function WeaponStats({ weapon }: WeaponStatsProps) {
                 >
                   {weapon.ammo_item.icon_path && (
                     <img
-                      src={`/icons/${weapon.ammo_item.icon_path}`}
+                      src={getIconUrl(weapon.ammo_item.icon_path, 20) || ""}
                       alt={weapon.ammo_item.name || weapon.ammo_item.row_id}
-                      className="w-5 h-5 object-contain"
+                      className="w-5 h-5 object-contain" loading="lazy" width="20" height="20"
                     />
                   )}
                   <span className="font-medium">

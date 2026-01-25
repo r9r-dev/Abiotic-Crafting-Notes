@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
 import type { NPC } from "@/types";
 import { getNPC, ApiError } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -113,17 +112,9 @@ export function NPCPage() {
         </Button>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={rowId}
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -10 }}
-          transition={{ ease: "easeInOut", duration: 0.15 }}
-        >
-          <NPCContent npc={npc} />
-        </motion.div>
-      </AnimatePresence>
+      <div key={rowId} className="animate-content-enter">
+        <NPCContent npc={npc} />
+      </div>
     </div>
   );
 }

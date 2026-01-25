@@ -3,6 +3,7 @@ import type { UsedInUpgrade } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useItemLink } from "@/hooks/useItemLink";
+import { getIconUrl } from "@/lib/icons";
 
 interface ItemUsedInUpgradesProps {
   usedInUpgrades: UsedInUpgrade[];
@@ -18,12 +19,8 @@ export function ItemUsedInUpgrades({ usedInUpgrades }: ItemUsedInUpgradesProps) 
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {usedInUpgrades.map((upgrade) => {
-        const sourceIconUrl = upgrade.source_item?.icon_path
-          ? `/icons/${upgrade.source_item.icon_path}`
-          : null;
-        const outputIconUrl = upgrade.output_item?.icon_path
-          ? `/icons/${upgrade.output_item.icon_path}`
-          : null;
+        const sourceIconUrl = getIconUrl(upgrade.source_item?.icon_path, 24);
+        const outputIconUrl = getIconUrl(upgrade.output_item?.icon_path, 24);
 
         return (
           <Card key={upgrade.id}>
@@ -38,7 +35,7 @@ export function ItemUsedInUpgrades({ usedInUpgrades }: ItemUsedInUpgradesProps) 
                     <img
                       src={sourceIconUrl}
                       alt={upgrade.source_item?.name || upgrade.source_item_row_id}
-                      className="w-6 h-6 object-contain"
+                      className="w-6 h-6 object-contain" loading="lazy" width="24" height="24"
                     />
                   ) : (
                     <div className="w-6 h-6 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">
@@ -61,7 +58,7 @@ export function ItemUsedInUpgrades({ usedInUpgrades }: ItemUsedInUpgradesProps) 
                     <img
                       src={outputIconUrl}
                       alt={upgrade.output_item?.name || upgrade.output_item_row_id}
-                      className="w-6 h-6 object-contain"
+                      className="w-6 h-6 object-contain" loading="lazy" width="24" height="24"
                     />
                   ) : (
                     <div className="w-6 h-6 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">

@@ -10,6 +10,7 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { GalleryView } from "@/components/gallery";
 import { ElectricStringsBackground } from "@/components/ElectricStringsBackground";
 import { SEO } from "@/components/SEO";
+import { getIconUrl } from "@/lib/icons";
 import type { UnifiedSearchResult } from "@/types";
 
 const categoryLabels: Record<string, string> = {
@@ -51,12 +52,13 @@ function SearchResult({
   const isCompendium = item.type === "compendium";
 
   // Determiner l'URL de l'icone selon le type
+  // HomePage displays at 40x40
   let iconUrl: string | null = null;
   if (item.icon_path) {
     if (isCompendium) {
       iconUrl = `/compendium/${item.icon_path}`;
     } else {
-      iconUrl = `/icons/${item.icon_path}`;
+      iconUrl = getIconUrl(item.icon_path, 40);
     }
   }
 
@@ -85,7 +87,7 @@ function SearchResult({
           <img
             src={iconUrl}
             alt={displayName}
-            className="w-10 h-10 object-contain"
+            className="w-10 h-10 object-contain" loading="lazy" width="40" height="40"
           />
         ) : isNPC ? (
           <span className="text-xl text-muted-foreground">

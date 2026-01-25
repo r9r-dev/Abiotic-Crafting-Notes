@@ -3,6 +3,7 @@ import type { NPCLootTable } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useItemLink } from "@/hooks/useItemLink";
+import { getIconUrl } from "@/lib/icons";
 
 interface NPCLootTablesProps {
   lootTables: NPCLootTable[];
@@ -74,9 +75,7 @@ export function NPCLootTables({ lootTables }: NPCLootTablesProps) {
           <CardContent>
             <div className="grid gap-2">
               {lootTable.salvage?.drops.map((drop, idx) => {
-                const iconUrl = drop.item?.icon_path
-                  ? `/icons/${drop.item.icon_path}`
-                  : null;
+                const iconUrl = getIconUrl(drop.item?.icon_path, 24);
 
                 const quantityText =
                   drop.quantity_min === drop.quantity_max
@@ -95,7 +94,7 @@ export function NPCLootTables({ lootTables }: NPCLootTablesProps) {
                       <img
                         src={iconUrl}
                         alt={drop.item?.name || drop.item_row_id}
-                        className="w-6 h-6 object-contain"
+                        className="w-6 h-6 object-contain" loading="lazy" width="24" height="24"
                       />
                     ) : (
                       <div className="w-6 h-6 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">

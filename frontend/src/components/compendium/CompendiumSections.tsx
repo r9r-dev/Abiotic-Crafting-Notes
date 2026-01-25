@@ -48,7 +48,7 @@ export function CompendiumSections({ sections }: CompendiumSectionsProps) {
                 <img
                   src={`/compendium/${section.image_path}`}
                   alt=""
-                  className="max-w-full h-auto rounded-lg border"
+                  className="max-w-full h-auto rounded-lg border" loading="lazy"
                 />
               </div>
             )}

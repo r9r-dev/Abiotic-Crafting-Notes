@@ -3,6 +3,7 @@ import type { Recipe } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useItemLink } from "@/hooks/useItemLink";
+import { getIconUrl } from "@/lib/icons";
 
 interface ItemRecipesProps {
   recipes: Recipe[];
@@ -21,7 +22,7 @@ function IngredientBadge({
   iconPath,
   quantity,
 }: IngredientBadgeProps) {
-  const iconUrl = iconPath ? `/icons/${iconPath}` : null;
+  const iconUrl = getIconUrl(iconPath, 24);
 
   return (
     <Link
@@ -29,7 +30,7 @@ function IngredientBadge({
       className="flex items-center gap-2 bg-muted/50 hover:bg-muted rounded-md px-2 py-1.5 transition-colors"
     >
       {iconUrl ? (
-        <img src={iconUrl} alt={name || "item"} className="w-6 h-6 object-contain" />
+        <img src={iconUrl} alt={name || "item"} className="w-6 h-6 object-contain" loading="lazy" width="24" height="24" />
       ) : (
         <div className="w-6 h-6 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">
           ?

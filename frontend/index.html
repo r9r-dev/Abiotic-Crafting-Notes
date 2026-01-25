@@ -2,8 +2,13 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <!-- Preconnect to Google Fonts for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="icon" type="image/png" sizes="64x64" href="/logo-64.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo-180.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a0f14" />
 
@@ -69,6 +74,7 @@
       .initial-loader img {
         width: 64px;
         height: 64px;
+        aspect-ratio: 1;
         animation: pulse 1.5s ease-in-out infinite;
       }
       @keyframes pulse {
@@ -81,7 +87,10 @@
     <div id="root">
       <!-- Contenu affiché pendant le chargement de React -->
       <div class="initial-loader">
-        <img src="/logo.png" alt="Chargement..." />
+        <picture>
+          <source srcset="/logo-64.webp" type="image/webp" />
+          <img src="/logo-64.png" alt="Chargement..." width="64" height="64" />
+        </picture>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

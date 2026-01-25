@@ -3,6 +3,7 @@ import type { Consumable, LinkedItem, UpgradeTreeNode } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useItemLink } from "@/hooks/useItemLink";
+import { getIconUrl } from "@/lib/icons";
 
 interface TransformationChainProps {
   consumable?: Consumable | null;
@@ -25,7 +26,7 @@ function ItemIcon({
   isCurrent: boolean;
   linkTo: string;
 }) {
-  const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
+  const iconUrl = getIconUrl(item.icon_path, 56);
 
   const content = (
     <div
@@ -41,7 +42,7 @@ function ItemIcon({
         <img
           src={iconUrl}
           alt={item.name || item.row_id}
-          className="w-14 h-14 object-contain"
+          className="w-14 h-14 object-contain" loading="lazy" width="56" height="56"
         />
       ) : (
         <div className="w-14 h-14 bg-muted-foreground/20 rounded flex items-center justify-center text-sm">

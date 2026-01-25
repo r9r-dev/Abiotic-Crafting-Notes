@@ -36,7 +36,7 @@ export function DialogueHeader({ conversation }: DialogueHeaderProps) {
           <img
             src={`/npc-icons/${conversation.npc.icon_path}`}
             alt={conversation.npc_name || conversation.row_id}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain" loading="lazy"
           />
         </div>
       )}

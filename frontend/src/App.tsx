@@ -1,40 +1,66 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, useLocation, useSearchParams, useParams, useNavigate } from "react-router-dom";
-import { AnimatePresence } from "motion/react";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { Search } from "lucide-react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { Header } from "@/components/Header";
 import { HomePage } from "@/pages/HomePage";
-import { ItemPage } from "@/pages/ItemPage";
-import { NPCPage } from "@/pages/NPCPage";
-import { CompendiumPage } from "@/pages/CompendiumPage";
-import { DialoguePage } from "@/pages/DialoguePage";
-import { AdminPage } from "@/pages/AdminPage";
 import { PageTransition } from "@/components/PageTransition";
 import { SearchPanel } from "@/components/SearchPanel";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
+// Lazy load pages for code splitting
+const ItemPage = lazy(() => import("@/pages/ItemPage").then(m => ({ default: m.ItemPage })));
+const NPCPage = lazy(() => import("@/pages/NPCPage").then(m => ({ default: m.NPCPage })));
+const CompendiumPage = lazy(() => import("@/pages/CompendiumPage").then(m => ({ default: m.CompendiumPage })));
+const DialoguePage = lazy(() => import("@/pages/DialoguePage").then(m => ({ default: m.DialoguePage })));
+const AdminPage = lazy(() => import("@/pages/AdminPage").then(m => ({ default: m.AdminPage })));
+
+// Loading fallback component
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
 function ItemPageWrapper() {
   const { rowId } = useParams<{ rowId: string }>();
-  return <ItemPage key={rowId} />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <ItemPage key={rowId} />
+    </Suspense>
+  );
 }
 
 function NPCPageWrapper() {
   const { rowId } = useParams<{ rowId: string }>();
-  return <NPCPage key={rowId} />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <NPCPage key={rowId} />
+    </Suspense>
+  );
 }
 
 function CompendiumPageWrapper() {
   const { rowId } = useParams<{ rowId: string }>();
-  return <CompendiumPage key={rowId} />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CompendiumPage key={rowId} />
+    </Suspense>
+  );
 }
 
 function DialoguePageWrapper() {
   const { rowId } = useParams<{ rowId: string }>();
-  return <DialoguePage key={rowId} />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <DialoguePage key={rowId} />
+    </Suspense>
+  );
 }
 
 // Handle SSR redirect: when coming from SSR page, the URL has a hash with the real path
@@ -83,7 +109,6 @@ function AppLayout() {
   if (!hasSearchContext) {
     return (
       <main className={isFullscreenPage ? "" : "container mx-auto px-4 py-6"}>
-        <AnimatePresence mode="wait">
           <Routes location={location} key={pageType}>
             <Route
               path="/"
@@ -129,12 +154,13 @@ function AppLayout() {
               path="/admin"
               element={
                 <PageTransition>
-                  <AdminPage />
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminPage />
+                  </Suspense>
                 </PageTransition>
               }
             />
           </Routes>
-        </AnimatePresence>
       </main>
     );
   }
@@ -169,7 +195,6 @@ function AppLayout() {
             </Sheet>
           </div>
 
-          <AnimatePresence mode="wait">
             <Routes location={location} key={pageType}>
               <Route
                 path="/item/:rowId"
@@ -204,7 +229,6 @@ function AppLayout() {
                 }
               />
             </Routes>
-          </AnimatePresence>
         </div>
       </div>
     </main>

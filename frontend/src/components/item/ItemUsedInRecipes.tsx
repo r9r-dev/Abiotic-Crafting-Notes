@@ -3,6 +3,7 @@ import type { UsedInRecipe } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useItemLink } from "@/hooks/useItemLink";
+import { getIconUrl } from "@/lib/icons";
 
 interface ItemUsedInRecipesProps {
   usedInRecipes: UsedInRecipe[];
@@ -18,9 +19,7 @@ export function ItemUsedInRecipes({ usedInRecipes }: ItemUsedInRecipesProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {usedInRecipes.map((recipe) => {
-        const outputIconUrl = recipe.output_item?.icon_path
-          ? `/icons/${recipe.output_item.icon_path}`
-          : null;
+        const outputIconUrl = getIconUrl(recipe.output_item?.icon_path, 32);
 
         return (
           <Card key={recipe.row_id}>
@@ -34,7 +33,7 @@ export function ItemUsedInRecipes({ usedInRecipes }: ItemUsedInRecipesProps) {
                     <img
                       src={outputIconUrl}
                       alt={recipe.output_item?.name || recipe.output_item_row_id}
-                      className="w-8 h-8 object-contain"
+                      className="w-8 h-8 object-contain" loading="lazy" width="32" height="32"
                     />
                   ) : (
                     <div className="w-8 h-8 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">

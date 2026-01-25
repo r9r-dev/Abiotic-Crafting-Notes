@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { parseGameplayTags, formatTag, filterGenericTags } from "@/lib/tagUtils";
+import { getIconUrl } from "@/lib/icons";
 import type { ItemListResult } from "@/types";
 
 interface GalleryItemCardProps {
@@ -21,7 +22,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 export function GalleryItemCard({ item, onTagClick }: GalleryItemCardProps) {
-  const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
+  const iconUrl = getIconUrl(item.icon_path, 48);
   const tags = filterGenericTags(parseGameplayTags(item.gameplay_tags)).slice(0, 3);
 
   return (
@@ -38,6 +39,9 @@ export function GalleryItemCard({ item, onTagClick }: GalleryItemCardProps) {
                 src={iconUrl}
                 alt={item.name || item.row_id}
                 className="w-12 h-12 object-contain"
+                loading="lazy"
+                width="48"
+                height="48"
               />
             ) : (
               <span className="text-2xl text-muted-foreground">?</span>

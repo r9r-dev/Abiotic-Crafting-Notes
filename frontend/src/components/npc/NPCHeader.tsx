@@ -32,7 +32,7 @@ export function NPCHeader({ npc }: NPCHeaderProps) {
           <img
             src={iconUrl}
             alt={npc.name || npc.row_id}
-            className="w-full h-auto object-contain"
+            className="w-full h-auto object-contain" loading="lazy"
           />
         </div>
       )}

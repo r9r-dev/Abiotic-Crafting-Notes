@@ -3,6 +3,7 @@ import type { Salvage } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useItemLink } from "@/hooks/useItemLink";
+import { getIconUrl } from "@/lib/icons";
 
 interface ItemSalvageProps {
   salvage: Salvage;
@@ -34,9 +35,7 @@ export function ItemSalvage({ salvage }: ItemSalvageProps) {
       <CardContent>
         <div className="grid gap-2">
           {salvage.drops.map((drop, idx) => {
-            const iconUrl = drop.item?.icon_path
-              ? `/icons/${drop.item.icon_path}`
-              : null;
+            const iconUrl = getIconUrl(drop.item?.icon_path, 24);
 
             const quantityText =
               drop.quantity_min === drop.quantity_max
@@ -55,7 +54,7 @@ export function ItemSalvage({ salvage }: ItemSalvageProps) {
                   <img
                     src={iconUrl}
                     alt={drop.item?.name || drop.item_row_id}
-                    className="w-6 h-6 object-contain"
+                    className="w-6 h-6 object-contain" loading="lazy" width="24" height="24"
                   />
                 ) : (
                   <div className="w-6 h-6 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">

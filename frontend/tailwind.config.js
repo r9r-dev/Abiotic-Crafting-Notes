@@ -61,6 +61,20 @@ export default {
       fontFamily: {
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
+      keyframes: {
+        "page-enter": {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "content-enter": {
+          "0%": { opacity: "0", transform: "translateX(10px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+      },
+      animation: {
+        "page-enter": "page-enter 0.2s ease-in-out",
+        "content-enter": "content-enter 0.15s ease-in-out",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

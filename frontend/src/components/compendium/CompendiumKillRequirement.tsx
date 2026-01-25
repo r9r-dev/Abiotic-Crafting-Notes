@@ -30,7 +30,7 @@ export function CompendiumKillRequirement({ entry }: CompendiumKillRequirementPr
             <img
               src={`/compendium/${entry.kill_section_image_path}`}
               alt=""
-              className="max-w-full h-auto rounded-lg border"
+              className="max-w-full h-auto rounded-lg border" loading="lazy"
             />
           </div>
         )}

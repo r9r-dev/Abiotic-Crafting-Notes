@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import type { Item, ItemCategory, ReleaseGroup } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { parseGameplayTags, formatTag, filterGenericTags } from "@/lib/tagUtils";
+import { getIconUrl } from "@/lib/icons";
 
 interface ItemHeaderProps {
   item: Item;
@@ -27,7 +28,7 @@ const releaseGroupLabels: Record<ReleaseGroup, string> = {
 
 export function ItemHeader({ item }: ItemHeaderProps) {
   const navigate = useNavigate();
-  const iconUrl = item.icon_path ? `/icons/${item.icon_path}` : null;
+  const iconUrl = getIconUrl(item.icon_path, 80);
   const gameplayTags = filterGenericTags(parseGameplayTags(item.gameplay_tags));
 
   const handleCategoryClick = () => {
@@ -47,6 +48,9 @@ export function ItemHeader({ item }: ItemHeaderProps) {
             src={iconUrl}
             alt={item.name || item.row_id}
             className="w-20 h-20 object-contain"
+            loading="lazy"
+            width="80"
+            height="80"
           />
         ) : (
           <span className="text-4xl text-muted-foreground">?</span>

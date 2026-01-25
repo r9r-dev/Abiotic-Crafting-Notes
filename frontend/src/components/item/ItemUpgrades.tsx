@@ -3,6 +3,7 @@ import type { ItemUpgrade } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useItemLink } from "@/hooks/useItemLink";
+import { getIconUrl } from "@/lib/icons";
 
 interface ItemUpgradesProps {
   upgrades: ItemUpgrade[];
@@ -18,9 +19,7 @@ export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {upgrades.map((upgrade) => {
-        const outputIconUrl = upgrade.output_item?.icon_path
-          ? `/icons/${upgrade.output_item.icon_path}`
-          : null;
+        const outputIconUrl = getIconUrl(upgrade.output_item?.icon_path, 32);
 
         return (
           <Card key={upgrade.id}>
@@ -35,7 +34,7 @@ export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
                     <img
                       src={outputIconUrl}
                       alt={upgrade.output_item?.name || upgrade.output_item_row_id}
-                      className="w-8 h-8 object-contain"
+                      className="w-8 h-8 object-contain" loading="lazy" width="32" height="32"
                     />
                   ) : (
                     <div className="w-8 h-8 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">
@@ -52,9 +51,7 @@ export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
             <CardContent>
               <div className="grid gap-2">
                 {upgrade.ingredients.map((ing, idx) => {
-                  const iconUrl = ing.item?.icon_path
-                    ? `/icons/${ing.item.icon_path}`
-                    : null;
+                  const iconUrl = getIconUrl(ing.item?.icon_path, 24);
 
                   return (
                     <Link
@@ -66,7 +63,7 @@ export function ItemUpgrades({ upgrades }: ItemUpgradesProps) {
                         <img
                           src={iconUrl}
                           alt={ing.item?.name || ing.item_row_id}
-                          className="w-6 h-6 object-contain"
+                          className="w-6 h-6 object-contain" loading="lazy" width="24" height="24"
                         />
                       ) : (
                         <div className="w-6 h-6 bg-muted-foreground/20 rounded flex items-center justify-center text-xs">
