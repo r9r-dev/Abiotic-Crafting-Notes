@@ -45,7 +45,10 @@ export function CompendiumHeader({ entry }: CompendiumHeaderProps) {
           <img
             src={imageUrl}
             alt={entry.title || entry.row_id}
-            className="w-full h-auto object-contain" loading="lazy"
+            className="w-full h-auto object-contain"
+            width="320"
+            height="320"
+            fetchPriority="high"
           />
         </div>
       )}

@@ -37,7 +37,10 @@ export function DialogueHeader({ conversation }: DialogueHeaderProps) {
           <img
             src={getCompendiumIconUrl(conversation.npc.icon_path, 128) || ""}
             alt={conversation.npc_name || conversation.row_id}
-            className="w-full h-full object-contain" loading="lazy"
+            className="w-full h-full object-contain"
+            width="128"
+            height="128"
+            fetchPriority="high"
           />
         </div>
       )}

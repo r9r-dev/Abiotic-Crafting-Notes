@@ -48,9 +48,9 @@ export function ItemHeader({ item }: ItemHeaderProps) {
             src={iconUrl}
             alt={item.name || item.row_id}
             className="w-20 h-20 object-contain"
-            loading="lazy"
             width="80"
             height="80"
+            fetchPriority="high"
           />
         ) : (
           <span className="text-4xl text-muted-foreground">?</span>
