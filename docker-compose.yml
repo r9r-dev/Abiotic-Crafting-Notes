@@ -5,7 +5,6 @@ services:
     restart: unless-stopped
     depends_on:
       - abiotic-backend
-      - rendertron
     volumes:
       - ./icons:/app/data/icons:ro
       - ./data/GUI:/app/data/GUI:ro
@@ -16,18 +15,6 @@ services:
       options:
         gelf-address: udp://localhost:12201
         tag: abiotic-frontend
-
-  rendertron:
-    container_name: rendertron
-    image: dockette/rendertron:latest
-    restart: unless-stopped
-    networks:
-      - cadence
-    logging:
-      driver: gelf
-      options:
-        gelf-address: udp://localhost:12201
-        tag: rendertron
 
   abiotic-backend:
     container_name: abiotic-backend
