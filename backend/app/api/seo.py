@@ -40,6 +40,9 @@ def generate_ssr_html(
     {json.dumps(structured_data, ensure_ascii=False, indent=2)}
     </script>'''
 
+    # Path for SPA redirect (remove base URL)
+    path = url.replace(BASE_URL, "")
+
     return f'''<!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -73,18 +76,32 @@ def generate_ssr_html(
     <meta name="twitter:description" content="{desc_escaped}" />
     <meta name="twitter:image" content="{og_image_escaped}" />
     {structured_data_script}
+
+    <!-- Redirect real users to SPA (crawlers don't execute JS) -->
+    <script>
+      window.location.replace('/?ssr=0#' + '{path}');
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0;url=/?ssr=0#{path}">
+    </noscript>
+
     <style>
       html, body {{ margin: 0; padding: 0; background-color: #0a0f14; color: #fff; font-family: system-ui, sans-serif; }}
       .container {{ max-width: 800px; margin: 0 auto; padding: 2rem; text-align: center; }}
       h1 {{ color: #22c55e; }}
       a {{ color: #22c55e; }}
+      .loading {{ animation: pulse 1.5s ease-in-out infinite; }}
+      @keyframes pulse {{ 0%, 100% {{ opacity: 0.4; }} 50% {{ opacity: 1; }} }}
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>{title_escaped}</h1>
-      <p>{desc_escaped}</p>
-      <p><a href="{url_escaped}">Voir sur Abiotic Science</a></p>
+      <p class="loading">Chargement...</p>
+      <noscript>
+        <h1>{title_escaped}</h1>
+        <p>{desc_escaped}</p>
+        <p><a href="{url_escaped}">Voir sur Abiotic Science</a></p>
+      </noscript>
     </div>
   </body>
 </html>'''
@@ -238,7 +255,7 @@ def generate_default_og_image():
     )
 
     # Subtitle
-    subtitle = "Base de donnees complete pour Abiotic Factor"
+    subtitle = "Base de données complète pour Abiotic Factor"
     subtitle_bbox = draw.textbbox((0, 0), subtitle, font=subtitle_font)
     subtitle_width = subtitle_bbox[2] - subtitle_bbox[0]
     draw.text(
@@ -481,16 +498,8 @@ def generate_ssr_page(
                 "image": f"{BASE_URL}/api/og-image/item/{row_id}",
                 "url": f"{BASE_URL}/item/{row_id}",
                 "author": {
-                    "@type": "Organization",
-                    "name": "Abiotic Science",
-                },
-                "publisher": {
-                    "@type": "Organization",
-                    "name": "Abiotic Science",
-                    "logo": {
-                        "@type": "ImageObject",
-                        "url": f"{BASE_URL}/logo.png",
-                    },
+                    "@type": "Person",
+                    "name": "Ronan Lamour",
                 },
             }
     elif entity_type == "npc":

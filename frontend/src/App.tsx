@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { BrowserRouter, Routes, Route, useLocation, useSearchParams, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation, useSearchParams, useParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { Search } from "lucide-react";
@@ -35,6 +35,23 @@ function CompendiumPageWrapper() {
 function DialoguePageWrapper() {
   const { rowId } = useParams<{ rowId: string }>();
   return <DialoguePage key={rowId} />;
+}
+
+// Handle SSR redirect: when coming from SSR page, the URL has a hash with the real path
+function SSRRedirectHandler() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if we have a hash that looks like a path (from SSR redirect)
+    if (location.hash && location.hash.startsWith("#/")) {
+      const targetPath = location.hash.slice(1); // Remove the #
+      // Navigate to the real path and clear the hash
+      navigate(targetPath, { replace: true });
+    }
+  }, [location.hash, navigate]);
+
+  return null;
 }
 
 function AppLayout() {
@@ -206,6 +223,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SSRRedirectHandler />
       {showHeader && <Header />}
       <AppLayout />
     </div>

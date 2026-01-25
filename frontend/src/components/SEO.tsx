@@ -108,13 +108,8 @@ function generateStructuredData({
       url: url,
       image: image,
       author: {
-        "@type": "Organization",
-        name: "Abiotic Science",
-      },
-      publisher: {
-        "@type": "Organization",
-        name: "Abiotic Science",
-        url: BASE_URL,
+        "@type": "Person",
+        name: "Ronan Lamour",
       },
     };
   }
@@ -128,13 +123,8 @@ function generateStructuredData({
       url: url,
       image: image,
       author: {
-        "@type": "Organization",
-        name: "Abiotic Science",
-      },
-      publisher: {
-        "@type": "Organization",
-        name: "Abiotic Science",
-        url: BASE_URL,
+        "@type": "Person",
+        name: "Ronan Lamour",
       },
     };
   }
