@@ -102,14 +102,19 @@ function generateStructuredData({
   if (type === "item") {
     return {
       ...baseData,
-      "@type": "Product",
-      name: title,
+      "@type": "Article",
+      headline: title,
       description: description,
       url: url,
       image: image,
-      brand: {
-        "@type": "Brand",
-        name: "Abiotic Factor",
+      author: {
+        "@type": "Organization",
+        name: "Abiotic Science",
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "Abiotic Science",
+        url: BASE_URL,
       },
     };
   }

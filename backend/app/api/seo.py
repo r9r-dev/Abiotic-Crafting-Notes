@@ -472,14 +472,26 @@ def generate_ssr_page(
             name = item.name
             description = item.description or f"Informations sur {item.name} dans Abiotic Factor"
             category = item.category.value if item.category else "item"
+            # Use Article instead of Product to avoid Google requiring offers/review/aggregateRating
             structured_data = {
                 "@context": "https://schema.org",
-                "@type": "Product",
-                "name": name,
+                "@type": "Article",
+                "headline": name,
                 "description": description,
-                "category": category,
                 "image": f"{BASE_URL}/api/og-image/item/{row_id}",
                 "url": f"{BASE_URL}/item/{row_id}",
+                "author": {
+                    "@type": "Organization",
+                    "name": "Abiotic Science",
+                },
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "Abiotic Science",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": f"{BASE_URL}/logo.png",
+                    },
+                },
             }
     elif entity_type == "npc":
         npc = db.query(NPC.name).filter(NPC.row_id == row_id).first()
