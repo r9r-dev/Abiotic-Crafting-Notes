@@ -215,7 +215,7 @@ function SearchView() {
       } finally {
         setLoading(false);
       }
-    }, 500);
+    }, 600);
 
     return () => {
       if (debounceRef.current) {
