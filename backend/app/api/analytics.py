@@ -621,6 +621,47 @@ def get_search_analytics(
         for s in zero_result_searches
     ]
 
+    # 50 dernières recherches avec informations de session
+    recent_searches = db.query(
+        AnalyticsSearch.query,
+        AnalyticsSearch.query_normalized,
+        AnalyticsSearch.results_count,
+        AnalyticsSearch.selected_item_row_id,
+        AnalyticsSearch.selected_item_type,
+        AnalyticsSearch.selected_position,
+        AnalyticsSearch.time_to_select_ms,
+        AnalyticsSearch.created_at,
+        AnalyticsSession.device_type,
+        AnalyticsSession.browser,
+        AnalyticsSession.os,
+        AnalyticsSession.language,
+    ).join(
+        AnalyticsSession,
+        AnalyticsSearch.session_id == AnalyticsSession.id
+    ).filter(
+        AnalyticsSearch.created_at >= period_start
+    ).order_by(
+        desc(AnalyticsSearch.created_at)
+    ).limit(50).all()
+
+    recent_searches_list = [
+        {
+            "query": s.query,
+            "query_normalized": s.query_normalized,
+            "results_count": s.results_count,
+            "selected_item_row_id": s.selected_item_row_id,
+            "selected_item_type": s.selected_item_type,
+            "selected_position": s.selected_position,
+            "time_to_select_ms": s.time_to_select_ms,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+            "device_type": s.device_type.value if s.device_type else None,
+            "browser": s.browser,
+            "os": s.os,
+            "language": s.language,
+        }
+        for s in recent_searches
+    ]
+
     return {
         "total_searches": total_searches,
         "searches_with_results": searches_with_results,
@@ -631,6 +672,7 @@ def get_search_analytics(
         "zero_results_rate": round((total_searches - searches_with_results) / total_searches * 100, 1) if total_searches > 0 else 0,
         "top_searches": top_searches_list,
         "zero_result_searches": zero_results_list,
+        "recent_searches": recent_searches_list,
     }
 
 

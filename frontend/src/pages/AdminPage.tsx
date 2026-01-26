@@ -70,7 +70,7 @@ export function AdminPage() {
           onClick={handleLogout}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Deconnexion
+          Déconnexion
         </button>
       </div>
 

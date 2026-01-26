@@ -257,7 +257,7 @@ export function DashboardOverview({ token, onAuthError }: DashboardOverviewProps
               <span className="font-medium">{overview.avg_pageviews_per_session.toFixed(1)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Taux de succes recherche</span>
+              <span className="text-muted-foreground">Taux de succès recherche</span>
               <span className="font-medium">{overview.search_success_rate.toFixed(1)}%</span>
             </div>
           </CardContent>

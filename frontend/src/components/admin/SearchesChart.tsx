@@ -13,7 +13,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Search, AlertCircle, CheckCircle } from "lucide-react";
+import { Search, AlertCircle, CheckCircle, Monitor, Smartphone, Tablet, Clock } from "lucide-react";
 
 interface SearchesChartProps {
   token: string;
@@ -33,6 +33,21 @@ interface ZeroResultSearch {
   last_searched: string;
 }
 
+interface RecentSearch {
+  query: string;
+  query_normalized: string | null;
+  results_count: number;
+  selected_item_row_id: string | null;
+  selected_item_type: string | null;
+  selected_position: number | null;
+  time_to_select_ms: number | null;
+  created_at: string;
+  device_type: string | null;
+  browser: string | null;
+  os: string | null;
+  language: string | null;
+}
+
 interface SearchAnalytics {
   total_searches: number;
   searches_with_results: number;
@@ -43,6 +58,7 @@ interface SearchAnalytics {
   zero_results_rate: number;
   top_searches: TopSearch[];
   zero_result_searches: ZeroResultSearch[];
+  recent_searches: RecentSearch[];
 }
 
 export function SearchesChart({ token, onAuthError }: SearchesChartProps) {
@@ -121,13 +137,13 @@ export function SearchesChart({ token, onAuthError }: SearchesChartProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux de succes</CardTitle>
+            <CardTitle className="text-sm font-medium">Taux de succès</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.search_success_rate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
-              {data.searches_with_selection} selections
+              {data.searches_with_selection} sélections
             </p>
           </CardContent>
         </Card>
@@ -153,7 +169,7 @@ export function SearchesChart({ token, onAuthError }: SearchesChartProps) {
             <div className="text-2xl font-bold">{data.avg_results_count.toFixed(1)}</div>
             {data.avg_time_to_select_ms && (
               <p className="text-xs text-muted-foreground">
-                Selection en {(data.avg_time_to_select_ms / 1000).toFixed(1)}s
+                Sélection en {(data.avg_time_to_select_ms / 1000).toFixed(1)}s
               </p>
             )}
           </CardContent>
@@ -239,6 +255,107 @@ export function SearchesChart({ token, onAuthError }: SearchesChartProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* 50 dernières recherches */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            50 dernières recherches
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {data.recent_searches.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-2 font-medium">Date</th>
+                    <th className="text-left py-2 px-2 font-medium">Mot clé</th>
+                    <th className="text-left py-2 px-2 font-medium">Normalisé</th>
+                    <th className="text-center py-2 px-2 font-medium">Résultats</th>
+                    <th className="text-left py-2 px-2 font-medium">Sélection</th>
+                    <th className="text-center py-2 px-2 font-medium">Position</th>
+                    <th className="text-right py-2 px-2 font-medium">Temps</th>
+                    <th className="text-center py-2 px-2 font-medium">Appareil</th>
+                    <th className="text-left py-2 px-2 font-medium">Navigateur</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {data.recent_searches.map((search, index) => {
+                    const date = new Date(search.created_at);
+                    const DeviceIcon = search.device_type === "mobile" ? Smartphone
+                      : search.device_type === "tablet" ? Tablet
+                      : Monitor;
+
+                    return (
+                      <tr key={index} className="hover:bg-muted/30">
+                        <td className="py-2 px-2 text-muted-foreground whitespace-nowrap">
+                          {date.toLocaleDateString("fr-FR")}
+                          <span className="text-xs ml-1">
+                            {date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2 font-medium max-w-[150px] truncate" title={search.query}>
+                          {search.query}
+                        </td>
+                        <td className="py-2 px-2 text-muted-foreground max-w-[120px] truncate" title={search.query_normalized || ""}>
+                          {search.query_normalized || "-"}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          <span className={search.results_count === 0 ? "text-orange-500" : ""}>
+                            {search.results_count}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2 max-w-[150px] truncate" title={search.selected_item_row_id || ""}>
+                          {search.selected_item_row_id ? (
+                            <span className="text-green-600">
+                              {search.selected_item_row_id}
+                              {search.selected_item_type && (
+                                <span className="text-xs text-muted-foreground ml-1">
+                                  ({search.selected_item_type})
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {search.selected_position !== null ? (
+                            <span className="font-mono">{search.selected_position + 1}</span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-right whitespace-nowrap">
+                          {search.time_to_select_ms !== null ? (
+                            <span className="font-mono text-xs">
+                              {(search.time_to_select_ms / 1000).toFixed(1)}s
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          <DeviceIcon className="h-4 w-4 mx-auto text-muted-foreground" />
+                        </td>
+                        <td className="py-2 px-2 text-muted-foreground text-xs">
+                          {search.browser || "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+              Aucune recherche récente
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
