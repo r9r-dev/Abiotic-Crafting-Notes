@@ -113,10 +113,10 @@ Tu as le droit de tester l'api sur l'url de prod : https://abioticscience.fr/
 
 ## Logique de recherche
 
-- Normalisation: accents (NFD), ligatures (oe->oe), points (F.O.R.G.E.->FORGE)
+- Normalisation: accents (NFD), ligatures (œ->oe, æ->ae), points (F.O.R.G.E.->FORGE)
 - Recherche sur nom OU description (case-insensitive)
-- Priorite: correspondances nom > ordre alphabetique
-- Frontend debounce: 300ms
+- Priorité: correspondances nom > ordre alphabétique
+- Frontend: minimum 3 caractères, debounce 600ms
 
 ## Composants item
 
