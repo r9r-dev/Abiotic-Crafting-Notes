@@ -144,6 +144,12 @@ Types de lignes: Normal, Choice, Action, System
 
 Page accessible via `/admin`, protégée par mot de passe (défaut: "admin", configurable via `ANALYTICS_PASSWORD`)
 
+**SearchesChart** affiche:
+- KPIs recherches (total, taux de succès, sans résultats, résultats moyens)
+- Top recherches (graphique barres)
+- Recherches sans résultat
+- Tableau des 50 dernières recherches avec: date, mot clé, normalisé, résultats, sélection (item + type + position), temps de sélection, appareil, navigateur
+
 **PerformanceChart** affiche:
 - Score global de performance (méthodologie Lighthouse, 0-100)
 - Évolution temporelle des Web Vitals (LCP, FCP, TTFB sur 7 jours)
