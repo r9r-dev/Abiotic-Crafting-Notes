@@ -189,7 +189,9 @@ function SearchView() {
       clearTimeout(debounceRef.current);
     }
 
-    if (!query.trim()) {
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery || trimmedQuery.length < 3) {
       setResults([]);
       setHasSearched(false);
       return;
@@ -199,21 +201,21 @@ function SearchView() {
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const response = await unifiedSearch(query.trim());
+        const response = await unifiedSearch(trimmedQuery);
         setResults(response.results);
         setHasSearched(true);
 
         // Tracker la recherche (eviter les doublons)
-        if (query.trim() !== lastTrackedQuery.current) {
-          trackSearch(query.trim(), response.results.length);
-          lastTrackedQuery.current = query.trim();
+        if (trimmedQuery !== lastTrackedQuery.current) {
+          trackSearch(trimmedQuery, response.results.length);
+          lastTrackedQuery.current = trimmedQuery;
         }
       } catch {
         setResults([]);
       } finally {
         setLoading(false);
       }
-    }, 200);
+    }, 500);
 
     return () => {
       if (debounceRef.current) {
@@ -270,7 +272,7 @@ function SearchView() {
 
           {/* Resultats */}
           <div className="mt-6 max-h-[50vh] overflow-y-auto">
-            {loading && query.trim() && (
+            {loading && query.trim().length >= 3 && (
               <div className="text-center py-4 text-muted-foreground">
                 Recherche...
               </div>

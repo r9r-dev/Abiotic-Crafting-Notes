@@ -149,7 +149,7 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
   const lastSearchedQuery = useRef<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Recherche avec debounce - ne relance pas si meme query
+  // Recherche avec debounce - minimum 3 caractères, ne relance pas si meme query
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -157,7 +157,7 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
 
     const trimmedQuery = query.trim();
 
-    if (!trimmedQuery) {
+    if (!trimmedQuery || trimmedQuery.length < 3) {
       setResults([]);
       lastSearchedQuery.current = "";
       return;
@@ -180,7 +180,7 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
       } finally {
         setLoading(false);
       }
-    }, 200);
+    }, 500);
 
     return () => {
       if (debounceRef.current) {
@@ -208,7 +208,7 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
 
       {/* Résultats */}
       <div className="flex-1 overflow-y-auto p-2">
-        {loading && query.trim() && (
+        {loading && query.trim().length >= 3 && (
           <div className="text-center py-4 text-sm text-muted-foreground">
             Recherche...
           </div>
