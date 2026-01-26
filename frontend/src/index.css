@@ -131,3 +131,17 @@
   );
   pointer-events: none;
 }
+
+/* Search debounce progress bar */
+@keyframes search-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.search-progress-bar {
+  animation: search-progress 600ms linear forwards;
+}

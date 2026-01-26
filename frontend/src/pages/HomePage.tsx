@@ -181,8 +181,10 @@ function SearchView() {
   const [results, setResults] = useState<UnifiedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTrackedQuery = useRef<string>("");
+  const progressKeyRef = useRef(0);
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -194,12 +196,17 @@ function SearchView() {
     if (!trimmedQuery || trimmedQuery.length < 3) {
       setResults([]);
       setHasSearched(false);
+      setIsTyping(false);
       return;
     }
 
+    // Incrémenter la clé pour redémarrer l'animation
+    progressKeyRef.current += 1;
+    setIsTyping(true);
     setLoading(true);
 
     debounceRef.current = setTimeout(async () => {
+      setIsTyping(false);
       try {
         const response = await unifiedSearch(trimmedQuery);
         setResults(response.results);
@@ -268,6 +275,15 @@ function SearchView() {
               className="pl-10 h-12 text-lg bg-background/90 backdrop-blur-sm border-foreground/20"
               autoFocus
             />
+            {/* Progress bar debounce */}
+            {isTyping && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted overflow-hidden rounded-b-md">
+                <div
+                  key={progressKeyRef.current}
+                  className="h-full bg-primary/60 search-progress-bar"
+                />
+              </div>
+            )}
           </div>
 
           {/* Resultats */}

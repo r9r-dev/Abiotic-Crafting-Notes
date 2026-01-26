@@ -145,9 +145,11 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<UnifiedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSearchedQuery = useRef<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const progressKeyRef = useRef(0);
 
   // Recherche avec debounce - minimum 3 caractères, ne relance pas si meme query
   useEffect(() => {
@@ -160,17 +162,23 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
     if (!trimmedQuery || trimmedQuery.length < 3) {
       setResults([]);
       lastSearchedQuery.current = "";
+      setIsTyping(false);
       return;
     }
 
     // Ne pas relancer si c'est la meme recherche
     if (trimmedQuery === lastSearchedQuery.current) {
+      setIsTyping(false);
       return;
     }
 
+    // Incrémenter la clé pour redémarrer l'animation
+    progressKeyRef.current += 1;
+    setIsTyping(true);
     setLoading(true);
 
     debounceRef.current = setTimeout(async () => {
+      setIsTyping(false);
       try {
         const response = await unifiedSearch(trimmedQuery);
         setResults(response.results);
@@ -203,6 +211,15 @@ export function SearchPanel({ initialQuery = "", onResultClick, currentItemId }:
             onChange={(e) => setQuery(e.target.value)}
             className="pl-9"
           />
+          {/* Progress bar debounce */}
+          {isTyping && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted overflow-hidden rounded-b-md">
+              <div
+                key={progressKeyRef.current}
+                className="h-full bg-primary/60 search-progress-bar"
+              />
+            </div>
+          )}
         </div>
       </div>
 
