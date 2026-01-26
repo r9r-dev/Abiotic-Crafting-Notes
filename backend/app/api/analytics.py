@@ -54,9 +54,12 @@ _admin_tokens: dict[str, datetime] = {}
 
 def normalize_search_text(text: str) -> str:
     """Normalise le texte pour la recherche."""
-    text = text.replace("oe", "oe").replace("OE", "OE")
-    text = text.replace("ae", "ae").replace("AE", "AE")
+    # Remplacer les ligatures
+    text = text.replace("œ", "oe").replace("Œ", "OE")
+    text = text.replace("æ", "ae").replace("Æ", "AE")
+    # Supprimer les points
     text = text.replace(".", "")
+    # Supprimer les accents
     text = "".join(
         c for c in unicodedata.normalize("NFD", text)
         if unicodedata.category(c) != "Mn"

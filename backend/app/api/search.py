@@ -15,9 +15,12 @@ router = APIRouter(prefix="/search", tags=["search"])
 
 def normalize_search_text(text: str) -> str:
     """Normalise le texte pour la recherche (accents, ligatures, points)."""
-    text = text.replace("oe", "oe").replace("OE", "OE")
-    text = text.replace("ae", "ae").replace("AE", "AE")
+    # Remplacer les ligatures
+    text = text.replace("œ", "oe").replace("Œ", "OE")
+    text = text.replace("æ", "ae").replace("Æ", "AE")
+    # Supprimer les points
     text = text.replace(".", "")
+    # Supprimer les accents
     text = "".join(
         c for c in unicodedata.normalize("NFD", text)
         if unicodedata.category(c) != "Mn"
@@ -52,9 +55,12 @@ class UnifiedSearchResponse(BaseModel):
 
 def _normalize_column(col):
     """Normalise une colonne SQL pour la recherche."""
-    normalized = func.replace(func.replace(col, "oe", "oe"), "OE", "OE")
-    normalized = func.replace(func.replace(normalized, "ae", "ae"), "AE", "AE")
+    # Remplacer les ligatures
+    normalized = func.replace(func.replace(col, "œ", "oe"), "Œ", "OE")
+    normalized = func.replace(func.replace(normalized, "æ", "ae"), "Æ", "AE")
+    # Supprimer les points
     normalized = func.replace(normalized, ".", "")
+    # Supprimer les accents
     accents_from = "àâäéèêëïîôùûüçÀÂÄÉÈÊËÏÎÔÙÛÜÇ"
     accents_to = "aaaeeeeiioouucAAAEEEEIIOOUUC"
     normalized = func.translate(func.lower(normalized), accents_from, accents_to)
