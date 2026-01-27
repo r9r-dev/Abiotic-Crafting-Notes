@@ -263,10 +263,11 @@ Variables d'environnement (backend):
 
 ## Performance
 
+- **LCP homepage**: Contenu critique (titre h1 + recherche) inline dans `index.html` avec CSS et `@font-face` Poppins inline. Script synchrone bascule vers le loader sur les routes non-homepage. Pas de `PageTransition` (opacity:0) sur la route `/`.
 - **Code splitting**: Pages lazy-loaded via `React.lazy()` (ItemPage, NPCPage, etc.)
 - **Animations CSS**: Remplace Motion.js par animations Tailwind (`animate-page-enter`, `animate-content-enter`)
 - **SSR crawlers-only**: Nginx sert SSR uniquement aux bots (Googlebot, Twitterbot, etc.)
-- **Chunks Vite**: `vendor-recharts`, `vendor-radix`, `vendor-react` separes
+- **Chunks Vite**: `vendor-radix`, `vendor-react` separes
 
 ## CI/CD
 
