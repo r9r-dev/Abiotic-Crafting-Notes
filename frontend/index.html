@@ -56,20 +56,86 @@
     }
     </script>
     <style>
-      /* Écran de chargement initial - supprimé par React au montage */
+      /* Font critique pour le titre LCP */
+      @font-face {
+        font-family: 'Poppins';
+        font-style: normal;
+        font-weight: 800;
+        font-display: swap;
+        src: url('/fonts/poppins-800.woff2') format('woff2');
+      }
+
       html, body { margin: 0; padding: 0; }
       body { background-color: #0a0f14; }
-      .initial-loader {
+
+      /* Homepage shell - contenu critique pour LCP */
+      .home-shell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        padding: 0 1rem;
+        background-color: #0a0f14;
+      }
+      .home-shell-spacer { flex: 1 1 0%; }
+      .home-shell-content {
+        width: 100%;
+        max-width: 36rem;
+        text-align: center;
+      }
+      .home-shell .abiotic-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 3rem;
+        line-height: 1;
+        margin: 0 0 2rem 0;
+        background: linear-gradient(180deg, #C5FFFE 0%, #8DFFFB 50%, #1ACDC6 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        filter:
+          drop-shadow(1px 0 0 #0d4a47)
+          drop-shadow(-1px 0 0 #0d4a47)
+          drop-shadow(0 1px 0 #0d4a47)
+          drop-shadow(0 -1px 0 #0d4a47);
+      }
+      .home-shell-search { position: relative; }
+      .home-shell-search svg {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #525252;
+        z-index: 1;
+      }
+      .home-shell-search input {
+        width: 100%;
+        height: 3rem;
+        font-size: 1.125rem;
+        padding-left: 2.5rem;
+        background: rgba(10, 15, 20, 0.9);
+        border: 1px solid rgba(230, 235, 240, 0.2);
+        border-radius: 0.5rem;
+        color: #e5e7eb;
+        outline: none;
+        box-sizing: border-box;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      /* Page loader - pour les routes non-homepage */
+      .page-loader {
         position: fixed;
         inset: 0;
-        display: flex;
+        display: none;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         background-color: #0a0f14;
         gap: 1rem;
       }
-      .initial-loader img {
+      .page-loader img {
         width: 64px;
         height: 64px;
         aspect-ratio: 1;
@@ -83,14 +149,37 @@
   </head>
   <body>
     <div id="root">
-      <!-- Contenu affiché pendant le chargement de React -->
-      <div class="initial-loader">
+      <!-- Homepage shell : contenu critique pour LCP (titre + recherche) -->
+      <div class="home-shell">
+        <div class="home-shell-spacer"></div>
+        <div class="home-shell-content">
+          <h1 class="abiotic-title">ABIOTIC SCIENCE</h1>
+          <div class="home-shell-search">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input type="text" disabled />
+          </div>
+        </div>
+        <div class="home-shell-spacer"></div>
+      </div>
+      <!-- Page loader pour les routes non-homepage -->
+      <div class="page-loader">
         <picture>
           <source srcset="/logo-64.webp" type="image/webp" />
           <img src="/logo-64.png" alt="Chargement..." width="64" height="64" />
         </picture>
       </div>
     </div>
+    <script>
+      // Basculer entre le shell homepage et le loader selon la route
+      (function() {
+        var p = window.location.pathname;
+        var s = window.location.search;
+        if (p !== '/' || s.indexOf('view=gallery') !== -1) {
+          document.querySelector('.home-shell').style.display = 'none';
+          document.querySelector('.page-loader').style.display = 'flex';
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

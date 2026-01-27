@@ -112,11 +112,7 @@ function AppLayout() {
           <Routes location={location} key={pageType}>
             <Route
               path="/"
-              element={
-                <PageTransition>
-                  <HomePage />
-                </PageTransition>
-              }
+              element={<HomePage />}
             />
             <Route
               path="/item/:rowId"
