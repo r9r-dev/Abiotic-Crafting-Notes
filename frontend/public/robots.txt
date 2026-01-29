@@ -10,6 +10,10 @@ Sitemap: https://abioticscience.fr/sitemap.xml
 # Disallow admin pages
 Disallow: /admin
 
+# Disallow search URLs (prevent indexing of search results)
+Disallow: /*?q=
+Disallow: /*?ssr=
+
 # Allow all crawlers to access static assets
 Allow: /icons/
 Allow: /npc-icons/

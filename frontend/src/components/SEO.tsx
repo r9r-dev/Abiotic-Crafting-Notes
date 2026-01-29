@@ -27,7 +27,20 @@ export function SEO({
     ? `${title} - Abiotic Factor Database`
     : "Abiotic Factor Database - Base de données complète";
 
-  const canonicalUrl = `${BASE_URL}${path}`;
+  // Clean path: remove query parameters that shouldn't be in canonical (q=, ssr=)
+  // but keep intentional ones like view=gallery
+  let cleanPath = path;
+  if (path.includes("?")) {
+    const [basePath, queryString] = path.split("?");
+    const params = new URLSearchParams(queryString);
+    // Remove search-related params from canonical
+    params.delete("q");
+    params.delete("ssr");
+    const remainingParams = params.toString();
+    cleanPath = remainingParams ? `${basePath}?${remainingParams}` : basePath;
+  }
+
+  const canonicalUrl = `${BASE_URL}${cleanPath}`;
 
   // Generate OG image URL
   let ogImage = `${BASE_URL}/api/og-image/default`;
