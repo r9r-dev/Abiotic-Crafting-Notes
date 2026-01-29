@@ -4,47 +4,39 @@ services:
     image: ghcr.io/r9r-dev/abiotic-crafting-notes-frontend:latest
     restart: unless-stopped
     depends_on:
-      - abiotic-backend
+    - abiotic-backend
     volumes:
-      - ./icons:/app/data/icons:ro
-      - ./data/GUI:/app/data/GUI:ro
+    - ./data:/app/data:ro
     networks:
-      - cadence
-    logging:
-      driver: gelf
-      options:
-        gelf-address: udp://localhost:12201
-        tag: abiotic-frontend
-
+    - cadence
   abiotic-backend:
     container_name: abiotic-backend
     image: ghcr.io/r9r-dev/abiotic-crafting-notes-backend:latest
     environment:
-      - TZ=Europe/Paris
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=sql
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=abiotic
-      - DEV_MODE=false
-      - RECIPES_DATA_PATH=/app/data/recipes.json
+    - TZ=Europe/Paris
+    - POSTGRES_USER=${POSTGRES_USER}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    - POSTGRES_HOST=sql
+    - POSTGRES_PORT=5432
+    - POSTGRES_DB=abiotic-factor
+    - DEV_MODE=false
+    - ANALYTICS_SALT=${ANALYTICS_SALT}
+    - ANALYTICS_PASSWORD=${ANALYTICS_PASSWORD}
     restart: unless-stopped
     volumes:
-      - ./data:/app/data:ro
+    - ./data:/app/data:ro
     networks:
-      - cadence
-    logging:
-      driver: gelf
-      options:
-        gelf-address: udp://localhost:12201
-        tag: abiotic-backend
+    - cadence
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8080/api/health
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
-
 networks:
   cadence:
     external: true
