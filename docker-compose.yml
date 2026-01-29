@@ -24,7 +24,7 @@ services:
       - ANALYTICS_PASSWORD=${ANALYTICS_PASSWORD}
     restart: unless-stopped
     volumes:
-      - ./data:/app/data:ro
+      - abiotic-data:/app/data:ro
     networks:
       - cadence
     healthcheck:
