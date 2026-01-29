@@ -1,6 +1,9 @@
 services:
   abiotic-frontend:
     container_name: abiotic-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     image: ghcr.io/r9r-dev/abiotic-crafting-notes-frontend:latest
     restart: unless-stopped
     depends_on:
@@ -11,6 +14,9 @@ services:
       - cadence
   abiotic-backend:
     container_name: abiotic-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     image: ghcr.io/r9r-dev/abiotic-crafting-notes-backend:latest
     environment:
       - TZ=Europe/Paris
