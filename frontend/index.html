@@ -92,7 +92,8 @@
         background: linear-gradient(180deg, #C5FFFE 0%, #8DFFFB 50%, #1ACDC6 100%);
         -webkit-background-clip: text;
         background-clip: text;
-        color: transparent;
+        color: #8DFFFB;
+        -webkit-text-fill-color: transparent;
         filter:
           drop-shadow(1px 0 0 #0d4a47)
           drop-shadow(-1px 0 0 #0d4a47)
@@ -122,6 +123,18 @@
         outline: none;
         box-sizing: border-box;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+      /* Screen reader only - accessible but visually hidden */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
 
       /* Page loader - pour les routes non-homepage */
@@ -155,8 +168,9 @@
         <div class="home-shell-content">
           <h1 class="abiotic-title">ABIOTIC SCIENCE</h1>
           <div class="home-shell-search">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            <input type="text" disabled />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <label for="search-input-shell" class="sr-only">Rechercher des items, NPCs ou entrées du Compendium</label>
+            <input type="text" id="search-input-shell" disabled />
           </div>
         </div>
         <div class="home-shell-spacer"></div>
@@ -169,17 +183,7 @@
         </picture>
       </div>
     </div>
-    <script>
-      // Basculer entre le shell homepage et le loader selon la route
-      (function() {
-        var p = window.location.pathname;
-        var s = window.location.search;
-        if (p !== '/' || s.indexOf('view=gallery') !== -1) {
-          document.querySelector('.home-shell').style.display = 'none';
-          document.querySelector('.page-loader').style.display = 'flex';
-        }
-      })();
-    </script>
+    <script src="/route-loader.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

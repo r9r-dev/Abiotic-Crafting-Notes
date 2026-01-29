@@ -266,9 +266,11 @@ function SearchView() {
 
           {/* Champ de recherche */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-600 z-10" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-600 z-10" aria-hidden="true" />
+            <label htmlFor="search-input" className="sr-only">Rechercher des items, NPCs ou entrées du Compendium</label>
             <Input
               type="text"
+              id="search-input"
               placeholder=""
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -325,14 +327,16 @@ function SearchView() {
             <Link
               to="/?view=gallery"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+              aria-label="Vue galerie"
             >
-              <LayoutGrid className="h-3.5 w-3.5" />
+              <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
             <Link
               to="/admin"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+              aria-label="Administration"
             >
-              <Lock className="h-3.5 w-3.5" />
+              <Lock className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           </div>
           {user && (

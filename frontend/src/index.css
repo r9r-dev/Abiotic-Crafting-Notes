@@ -91,7 +91,8 @@
   background: linear-gradient(180deg, #C5FFFE 0%, #8DFFFB 50%, #1ACDC6 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  color: #8DFFFB;
+  -webkit-text-fill-color: transparent;
   filter:
     drop-shadow(1px 0 0 #0d4a47)
     drop-shadow(-1px 0 0 #0d4a47)
@@ -106,7 +107,8 @@
   background: linear-gradient(180deg, #FFC5C5 0%, #FF8D8D 50%, #DC2626 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  color: #FF8D8D;
+  -webkit-text-fill-color: transparent;
   filter:
     drop-shadow(1px 0 0 #4a0d0d)
     drop-shadow(-1px 0 0 #4a0d0d)
